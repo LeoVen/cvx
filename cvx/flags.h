@@ -28,41 +28,37 @@ enum cvx_flags
  * Maps the error codes to their character representation.
  */
 // clang-format off
-static const char *cvx_flags_str[12] = {
-    "OK",
-    "ALLOC",
-    "EMPTY",
-    "NOT_FOUND",
-    "INVALID",
-    "RANGE",
-    "DUPLICATE",
-    "ERROR",
-    "THREAD",
-    "MUTEX",
-    "FULL",
-    "FTABLE"
+static const char *cvx_flags_str[10] = {
+    "OK",          // 0
+    "WRONG_TAG",   // 1
+    "ALLOC",       // 2
+    "EMPTY",       // 3
+    "FULL",        // 4
+    "RANGE",       // 5
+    "NOT_FOUND",   // 6
+    "INVALID",     // 7
+    "DUPLICATE",   // 8
+    "ERROR",       // 9
 };
 // clang-format on
 
 /**
  * cvx_flags_description
  *
- * Maps the error codes to their character representation.
+ * Maps the error codes to their description strings.
  */
 // clang-format off
-static const char *cvx_flags_description[12] = {
-    "No Error",
-    "Allocation failed",
-    "The container is empty when it should not",
-    "Key or value not found",
-    "Invalid argument or operation",
-    "Index out of range",
-    "Duplicate key or value",
-    "Generic error",
-    "Generic error for threads",
-    "Generic error for mutexes",
-    "Collection is full",
-    "Required ftable function is missing",
+static const char *cvx_flags_description[10] = {
+    "No error",                                      // 0
+    "Wrong container type for this function",        // 1
+    "Allocation failed",                             // 2
+    "The container is empty when it should not be",  // 3
+    "Container is full",                             // 4
+    "Index out of range",                            // 5
+    "Key or value not found",                        // 6
+    "Invalid argument or operation",                 // 7
+    "Duplicate key or value",                        // 8
+    "Generic or unknown error",                      // 9
 };
 // clang-format on
 
