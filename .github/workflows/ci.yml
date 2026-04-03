@@ -1,0 +1,86 @@
+name: CI
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSYS2 (Windows only)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
+
+      - name: Compile tests (Unix)
+        if: runner.os != 'Windows'
+        run: mkdir -p bin && gcc -g -Wall -Wextra -I . tests.c -o bin/tests
+
+      - name: Run tests (Unix)
+        if: runner.os != 'Windows'
+        run: ./bin/tests
+
+      - name: Install valgrind (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y valgrind
+
+      - name: Run tests with valgrind (Linux only)
+        if: runner.os == 'Linux'
+        run: valgrind --leak-check=full --error-exitcode=1 ./bin/tests
+
+      - name: Compile tests (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: mkdir -p bin && gcc -Wall -Wextra -I . tests.c -o bin/tests
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: ./bin/tests
+
+  examples:
+    name: Examples / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSYS2 (Windows only)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
+
+      - name: Compile and run examples (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p bin
+          for f in examples/*.c; do
+            name=$(basename "$f" .c)
+            gcc -Wall -Wextra -I . "$f" -o "bin/$name"
+            "./bin/$name"
+          done
+
+      - name: Compile and run examples (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          mkdir -p bin
+          for f in examples/*.c; do
+            name=$(basename "$f" .c)
+            gcc -Wall -Wextra -I . "$f" -o "bin/$name"
+            "./bin/$name"
+          done
