@@ -1,0 +1,19 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        valgrind \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /cvx
+
+COPY . .
+
+RUN mkdir -p bin && gcc -Wall -Wextra -g -O0 -I . tests.c -o bin/tests
+
+CMD ["valgrind", \
+     "--leak-check=full", \
+     "--show-leak-kinds=all", \
+     "--track-origins=yes", \
+     "--error-exitcode=1", \
+     "bin/tests"]

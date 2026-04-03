@@ -191,6 +191,21 @@ Every implementation must be given a **unique `TAG`** integer. The tag is embedd
 
 ---
 
+## Installing dependencies
+
+Required tooling
+
+- gcc
+- clang
+- clang-format
+- valgrind
+  - If you are not on linux, you can use the provided Dockerfile (you'll need docker)
+- gcovr
+  - `pip3 install gcovr`
+- watchexec
+  - `brew install watchexec`
+  - `cargo install watchexec`
+
 ## Building and running
 
 There is no build process. This is a header-only library.
@@ -219,4 +234,3 @@ gcc -Wall -Wextra -I . tests.c -o bin/tests && ./bin/tests
 ```
 
 The test framework is located in `tests/cvxtest.h`. Check it out if you want to know more.
-
