@@ -23,4 +23,5 @@ struct IMPL_STACK FUNC(CVX_(_as_, IMPL_STACK))(cvx_container *instance)
     };
 }
 
-#include "undef.h"
+#undef IMPL_STACK
+#include "cvx/undef.h"
