@@ -2,9 +2,18 @@
 #define CVX_CORE_H
 
 #include <stdbool.h>
+#include <stddef.h>
+
+#include "flags.h"
 
 #define CVX__(A, B) A##B
 #define CVX_(A, B) CVX__(A, B)
+
+typedef struct cvx_container
+{
+    size_t tag;
+    enum cvx_flags flag;
+} cvx_container;
 
 #define CVX_CONTAINER_GUARDS(TAG, _col_, error_value) \
     if (_col_->tag != TAG) \

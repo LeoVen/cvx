@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "container.h"
 #include "core.h"
 
 #define FUNC(X) CVX_(PFX, X)
