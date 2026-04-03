@@ -16,15 +16,15 @@ There are two main types of data structures:
 #include <stdio.h>
 
 // 1. Define the interface type
-#define V       int               // data type for the stack interface
+#define V         int             // data type for the stack interface
 #define INTERFACE stack           // name of the struct
 #include "cvx/istack.h"
 
 // 2. Instantiate an implementation
-#define V         int             // data type for my dynamic array implementation
-#define SNAME     my_list         // name of my dynamic array (e.g. struct my_list)
-#define PFX       ml              // prefix to all functions
-#define TAG       1               // unique tag for this implementation
+#define V          int            // data type for my dynamic array implementation
+#define SNAME      my_list        // name of my dynamic array (e.g. struct my_list)
+#define PFX        ml             // prefix to all functions
+#define TAG        1              // unique tag for this implementation
 #define IMPL_STACK stack          // generates the ml_as_stack() "cast"
 #include "cvx/dynamic_array.h"
 
