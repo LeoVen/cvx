@@ -168,7 +168,7 @@ static int run_istack_dynamic_array_tests(void)
 {
     struct cvxtest t = { 0 };
 
-    printf("istack\n");
+    printf("istack (dynamic_array)\n");
 
     CVXRUN(&t, test_ist_push_count);
     CVXRUN(&t, test_ist_push_grows);

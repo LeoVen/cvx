@@ -2,7 +2,7 @@
 #define CVX_HELPER_MACROS_H
 
 #define cvx_new(s) (s)->vtable->new()
-#define cvx_clone(s) (s)->vtable->clone(s)
+#define cvx_clone(s) (s)->vtable->clone((s)->instance)
 #define cvx_push(s, v) (s)->vtable->push((s)->instance, v)
 #define cvx_pop(s, vout) (s)->vtable->pop((s)->instance, vout)
 #define cvx_count(s) (s)->vtable->count((s)->instance)

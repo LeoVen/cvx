@@ -509,7 +509,7 @@ static int run_slinked_list_tests(void)
 {
     struct cvxtest t = { 0 };
 
-    printf("linked\n");
+    printf("slinked_list\n");
 
     CVXRUN(&t, test_sll_init);
     CVXRUN(&t, test_sll_new);
