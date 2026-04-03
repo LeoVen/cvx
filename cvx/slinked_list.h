@@ -70,13 +70,49 @@ cvx_container *FUNC(_new)(void)
 
 cvx_container *FUNC(_clone)(cvx_container *_col_)
 {
+    CVX_CONTAINER_GUARDS(TAG, _col_, NULL);
+
     cvx_container *_res_ = FUNC(_new)();
-    _res_->tag = _col_->tag;
+    if (!_res_)
+        return NULL;
+
+    struct SNAME *_orig_ = (struct SNAME *)_col_;
+    struct SNAME *_copy_ = (struct SNAME *)_res_;
+
+    struct NODE *_curr_ = _orig_->head;
+    while (_curr_)
+    {
+        struct NODE *_new_node_ = malloc(sizeof(struct NODE));
+        if (!_new_node_)
+        {
+            FUNC(_drop)(_res_);
+            return NULL;
+        }
+
+        _new_node_->next = NULL;
+
+#ifdef V_COPY
+        _new_node_->value = V_COPY(_curr_->value);
+#else
+        _new_node_->value = _curr_->value;
+#endif
+
+        if (!_copy_->head)
+        {
+            _copy_->head = _new_node_;
+            _copy_->tail = _new_node_;
+        }
+        else
+        {
+            _copy_->tail->next = _new_node_;
+            _copy_->tail = _new_node_;
+        }
+
+        _copy_->count++;
+        _curr_ = _curr_->next;
+    }
+
     _res_->flag = CVX_FLAG_OK;
-    _col_->flag = CVX_FLAG_OK;
-
-    // TODO: deep clone of nodes
-
     return _res_;
 }
 
@@ -90,6 +126,9 @@ void FUNC(_drop)(cvx_container *_col_)
     while (curr)
     {
         struct NODE *next = curr->next;
+#ifdef V_DROP
+        V_DROP(curr->value);
+#endif
         free(curr);
         curr = next;
     }
@@ -103,12 +142,13 @@ void FUNC(_clear)(cvx_container *_col_)
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-    // TODO: if individual items need to be freed
-
     struct NODE *curr = _self_->head;
     while (curr)
     {
         struct NODE *next = curr->next;
+#ifdef V_DROP
+        V_DROP(curr->value);
+#endif
         free(curr);
         curr = next;
     }

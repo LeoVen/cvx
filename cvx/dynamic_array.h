@@ -79,11 +79,27 @@ struct SNAME FUNC(_init_with)(size_t capacity)
 struct SNAME FUNC(_copy)(struct SNAME *_self_)
 {
     struct SNAME _res_ = FUNC(_init)();
-    _res_.super.tag = _self_->super.tag;
     _res_.super.flag = CVX_FLAG_OK;
 
-    // TODO: clone buffer
-    // TODO: if individual items have to be cloned
+    if (_self_->count == 0)
+        return _res_;
+
+    _res_.buffer = malloc(_self_->capacity * sizeof(V));
+    if (!_res_.buffer)
+    {
+        _res_.super.flag = CVX_FLAG_ALLOC;
+        return _res_;
+    }
+
+    _res_.capacity = _self_->capacity;
+    _res_.count = _self_->count;
+
+#ifdef V_COPY
+    for (size_t i = 0; i < _self_->count; i++)
+        _res_.buffer[i] = V_COPY(_self_->buffer[i]);
+#else
+    memcpy(_res_.buffer, _self_->buffer, _self_->count * sizeof(V));
+#endif
 
     return _res_;
 }
@@ -92,10 +108,14 @@ cvx_container *FUNC(_new)(void)
 {
     struct SNAME *_res_ = malloc(sizeof(struct SNAME));
 
+    if (!_res_)
+        return NULL;
+
     _res_->super.tag = TAG;
     _res_->super.flag = CVX_FLAG_OK;
     _res_->capacity = 0;
     _res_->count = 0;
+    _res_->buffer = NULL;
 
     return (cvx_container *)_res_;
 }
@@ -110,10 +130,6 @@ cvx_container *FUNC(_new_with)(size_t capacity)
     if (!_res_)
         return NULL;
 
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->count = 0;
-
     _res_->buffer = calloc(capacity, sizeof(V));
 
     if (!_res_->buffer)
@@ -122,6 +138,9 @@ cvx_container *FUNC(_new_with)(size_t capacity)
         return NULL;
     }
 
+    _res_->super.tag = TAG;
+    _res_->super.flag = CVX_FLAG_OK;
+    _res_->count = 0;
     _res_->capacity = capacity;
 
     return (cvx_container *)_res_;
@@ -129,15 +148,40 @@ cvx_container *FUNC(_new_with)(size_t capacity)
 
 cvx_container *FUNC(_clone)(cvx_container *_col_)
 {
+    CVX_CONTAINER_GUARDS(TAG, _col_, NULL);
+
+    struct SNAME *_orig_ = (struct SNAME *)_col_;
+
     cvx_container *_res_ = FUNC(_new)();
-    _res_->tag = _col_->tag;
+    if (!_res_)
+        return NULL;
+
+    struct SNAME *_copy_ = (struct SNAME *)_res_;
+
+    if (_orig_->count == 0)
+    {
+        _res_->flag = CVX_FLAG_OK;
+        return _res_;
+    }
+
+    _copy_->buffer = malloc(_orig_->capacity * sizeof(V));
+    if (!_copy_->buffer)
+    {
+        free(_copy_);
+        return NULL;
+    }
+
+    _copy_->capacity = _orig_->capacity;
+    _copy_->count = _orig_->count;
+
+#ifdef V_COPY
+    for (size_t i = 0; i < _orig_->count; i++)
+        _copy_->buffer[i] = V_COPY(_orig_->buffer[i]);
+#else
+    memcpy(_copy_->buffer, _orig_->buffer, _orig_->count * sizeof(V));
+#endif
+
     _res_->flag = CVX_FLAG_OK;
-
-    // TODO: clone buffer
-    // TODO: if individual items have to be cloned
-
-    _col_->flag = CVX_FLAG_OK;
-
     return _res_;
 }
 
@@ -146,6 +190,11 @@ void FUNC(_drop)(cvx_container *_col_)
     CVX_CONTAINER_GUARDS(TAG, _col_, );
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
+
+#ifdef V_DROP
+    for (size_t i = 0; i < _self_->count; i++)
+        V_DROP(_self_->buffer[i]);
+#endif
 
     free(_self_->buffer);
     free(_self_);
@@ -157,7 +206,12 @@ void FUNC(_clear)(cvx_container *_col_)
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-    // TODO: if individual items need to be freed
+#ifdef V_DROP
+    for (size_t i = 0; i < _self_->count; i++)
+    {
+        V_DROP(_self_->buffer[i]);
+    }
+#endif
 
     free(_self_->buffer);
     _self_->buffer = NULL;
@@ -307,14 +361,16 @@ void FUNC(_replace_front)(cvx_container *_col_, V new, V *out)
     }
 
     if (_self_->count == 0)
-        _self_->buffer[_self_->count++] = new;
-    else
     {
-        if (out)
-            *out = _self_->buffer[0];
-
-        _self_->buffer[0] = new;
+        FUNC(_push_front)(_col_, new);
+        return;
     }
+
+    if (out)
+        *out = _self_->buffer[0];
+
+    _self_->buffer[0] = new;
+    _col_->flag = CVX_FLAG_OK;
 }
 
 void FUNC(_replace_back)(cvx_container *_col_, V new, V *out)
@@ -330,14 +386,16 @@ void FUNC(_replace_back)(cvx_container *_col_, V new, V *out)
     }
 
     if (_self_->count == 0)
-        _self_->buffer[_self_->count++] = new;
-    else
     {
-        if (out)
-            *out = _self_->buffer[_self_->count - 1];
-
-        _self_->buffer[_self_->count - 1] = new;
+        FUNC(_push_back)(_col_, new);
+        return;
     }
+
+    if (out)
+        *out = _self_->buffer[_self_->count - 1];
+
+    _self_->buffer[_self_->count - 1] = new;
+    _col_->flag = CVX_FLAG_OK;
 }
 
 size_t FUNC(_count)(cvx_container *_col_)
@@ -431,7 +489,7 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
         return true;
 
     if (_self_->capacity == 0)
-        _self_->capacity = 16; // TODO: is this default good enough?
+        _self_->capacity = 16;
 
     if (!_self_->buffer)
     {
