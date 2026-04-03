@@ -13,9 +13,9 @@ run file:
 	mkdir -p ./bin
 	clang -I . -Wall -Wextra -fsanitize=address -g -o ./bin/{{file}} {{file}}.c && ./bin/{{file}}
 
-valgrind:
+valgrind path_to_file:
 	mkdir -p ./bin
-	docker build -t cvx-valgrind -f Dockerfile.valgrind .
+	docker build -t cvx-valgrind -f Dockerfile.valgrind --build-arg SOURCE_FILE={{path_to_file}} .
 	docker run --rm cvx-valgrind
 
 coverage:

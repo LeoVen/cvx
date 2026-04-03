@@ -9,11 +9,13 @@ WORKDIR /cvx
 
 COPY . .
 
-RUN mkdir -p bin && gcc -Wall -Wextra -g -O0 -I . tests.c -o bin/tests
+ARG SOURCE_FILE=tests.c
+
+RUN mkdir -p bin && gcc -Wall -Wextra -g -O0 -I . "${SOURCE_FILE}" -o bin/program
 
 CMD ["valgrind", \
      "--leak-check=full", \
      "--show-leak-kinds=all", \
      "--track-origins=yes", \
      "--error-exitcode=1", \
-     "bin/tests"]
+     "bin/program"]
