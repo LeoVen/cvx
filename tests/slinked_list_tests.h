@@ -303,6 +303,25 @@ static void test_sll_pop_at_empty(struct cvxtest *t)
     sll_drop(col);
 }
 
+/* ---- pop_at null-out for middle element ---- */
+
+static void test_sll_pop_at_null_out(struct cvxtest *t)
+{
+    cvx_container *col = sll_new();
+
+    sll_push_back(col, 1);
+    sll_push_back(col, 2);
+    sll_push_back(col, 3);
+
+    sll_pop_at(col, NULL, 1);
+
+    CHECK_COUNT(t, col, 2);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, sll_get(col, 0) == 1);
+    CVXCHECK(t, sll_get(col, 1) == 3);
+
+    sll_drop(col);
+}
 /* ---- front / back ---- */
 
 static void test_sll_front_empty(struct cvxtest *t)
@@ -489,6 +508,48 @@ static void test_sll_clear(struct cvxtest *t)
     sll_drop(col);
 }
 
+/* ---- clone (int / direct-assignment branch) ---- */
+
+static void test_sll_clone_empty(struct cvxtest *t)
+{
+    cvx_container *col = sll_new();
+    CVXCHECK(t, col != NULL);
+    if (!col)
+        return;
+
+    cvx_container *clone = sll_clone(col);
+    CVXCHECK(t, clone != NULL);
+    if (!clone) { sll_drop(col); return; }
+
+    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CHECK_COUNT(t, clone, 0);
+
+    sll_drop(col);
+    sll_drop(clone);
+}
+
+static void test_sll_clone_values(struct cvxtest *t)
+{
+    cvx_container *col = sll_new();
+    sll_push_back(col, 10);
+    sll_push_back(col, 20);
+    sll_push_back(col, 30);
+
+    cvx_container *clone = sll_clone(col);
+    CVXCHECK(t, clone != NULL);
+    if (!clone) { sll_drop(col); return; }
+
+    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CHECK_COUNT(t, clone, 3);
+    CVXCHECK(t, sll_get(clone, 0) == 10);
+    CVXCHECK(t, sll_get(clone, 1) == 20);
+    CVXCHECK(t, sll_get(clone, 2) == 30);
+
+    sll_drop(col);
+    sll_drop(clone);
+}
+
+
 /* ---- wrong tag guard ---- */
 
 static void test_sll_wrong_tag(struct cvxtest *t)
@@ -552,6 +613,11 @@ static int run_slinked_list_tests(void)
 
     CVXRUN(&t, test_sll_clear);
     CVXRUN(&t, test_sll_wrong_tag);
+
+    CVXRUN(&t, test_sll_clone_empty);
+    CVXRUN(&t, test_sll_clone_values);
+
+    CVXRUN(&t, test_sll_pop_at_null_out);
 
     return CVXSUMMARY(&t);
 }

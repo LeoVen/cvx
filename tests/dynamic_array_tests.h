@@ -501,6 +501,116 @@ static void test_da_wrong_tag(struct cvxtest *t)
     da_drop(col);
 }
 
+/* ---- copy (int / memcpy branch) ---- */
+
+static void test_da_copy_empty(struct cvxtest *t)
+{
+    struct da_int orig = da_init();
+    struct da_int copy = da_copy(&orig);
+
+    CVXCHECK(t, copy.count == 0);
+    CVXCHECK(t, copy.buffer == NULL);
+    CVXCHECK(t, ((cvx_container *)&copy)->flag == CVX_FLAG_OK);
+}
+
+static void test_da_copy_values(struct cvxtest *t)
+{
+    struct da_int orig = da_init_with(4);
+    cvx_container *col = (cvx_container *)&orig;
+
+    da_push_back(col, 1);
+    da_push_back(col, 2);
+    da_push_back(col, 3);
+
+    struct da_int copy = da_copy(&orig);
+
+    CVXCHECK(t, copy.count == 3);
+    CVXCHECK(t, copy.buffer[0] == 1);
+    CVXCHECK(t, copy.buffer[1] == 2);
+    CVXCHECK(t, copy.buffer[2] == 3);
+    /* Buffers must be distinct allocations */
+    CVXCHECK(t, copy.buffer != orig.buffer);
+
+    free(orig.buffer);
+    free(copy.buffer);
+}
+
+/* ---- clone (int / memcpy branch) ---- */
+
+static void test_da_clone_empty(struct cvxtest *t)
+{
+    cvx_container *col = da_new();
+    CVXCHECK(t, col != NULL);
+    if (!col)
+        return;
+
+    cvx_container *clone = da_clone(col);
+    CVXCHECK(t, clone != NULL);
+    if (!clone) { da_drop(col); return; }
+
+    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CHECK_COUNT(t, clone, 0);
+
+    da_drop(col);
+    da_drop(clone);
+}
+
+static void test_da_clone_values(struct cvxtest *t)
+{
+    cvx_container *col = da_new_with(4);
+    da_push_back(col, 10);
+    da_push_back(col, 20);
+    da_push_back(col, 30);
+
+    cvx_container *clone = da_clone(col);
+    CVXCHECK(t, clone != NULL);
+    if (!clone) { da_drop(col); return; }
+
+    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CVXCHECK(t, da_get(clone, 0) == 10);
+    CVXCHECK(t, da_get(clone, 1) == 20);
+    CVXCHECK(t, da_get(clone, 2) == 30);
+    /* Distinct allocation */
+    CVXCHECK(t, ((struct da_int *)clone)->buffer != ((struct da_int *)col)->buffer);
+
+    da_drop(col);
+    da_drop(clone);
+}
+
+/* ---- pop_front / pop_at null-out while non-empty ---- */
+
+static void test_da_pop_front_null_out(struct cvxtest *t)
+{
+    cvx_container *col = da_new_with(4);
+    da_push_back(col, 10);
+    da_push_back(col, 20);
+
+    da_pop_front(col, NULL);
+
+    CHECK_COUNT(t, col, 1);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, da_front(col) == 20);
+
+    da_drop(col);
+}
+
+static void test_da_pop_at_null_out(struct cvxtest *t)
+{
+    cvx_container *col = da_new_with(4);
+    da_push_back(col, 1);
+    da_push_back(col, 2);
+    da_push_back(col, 3);
+
+    da_pop_at(col, NULL, 1);
+
+    CHECK_COUNT(t, col, 2);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, da_get(col, 0) == 1);
+    CVXCHECK(t, da_get(col, 1) == 3);
+
+    da_drop(col);
+}
+
 /* ---- runner ---- */
 
 static int run_dynamic_array_tests(void)
@@ -552,6 +662,15 @@ static int run_dynamic_array_tests(void)
 
     CVXRUN(&t, test_da_clear);
     CVXRUN(&t, test_da_wrong_tag);
+
+    CVXRUN(&t, test_da_copy_empty);
+    CVXRUN(&t, test_da_copy_values);
+
+    CVXRUN(&t, test_da_clone_empty);
+    CVXRUN(&t, test_da_clone_values);
+
+    CVXRUN(&t, test_da_pop_front_null_out);
+    CVXRUN(&t, test_da_pop_at_null_out);
 
     return CVXSUMMARY(&t);
 }
