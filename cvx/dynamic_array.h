@@ -290,8 +290,7 @@ void FUNC(_pop_front)(cvx_container *_col_, V *out)
     if (out)
         *out = _self_->buffer[0];
 
-    memmove(_self_->buffer, _self_->buffer + 1,
-            (_self_->count - 1) * sizeof(V));
+    memmove(_self_->buffer, _self_->buffer + 1, (_self_->count - 1) * sizeof(V));
 
     _self_->buffer[_self_->count - 1] = (V){ 0 };
     _self_->count--;
@@ -527,7 +526,7 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 #define IMPL_COUNT FUNC(_count)
 #define IMPL_PEEK FUNC(_back)
 #define IMPL_REPLACE FUNC(_replace_back)
-#include "istack_cast.h"
+#include "cvx/istack_cast.h"
 #undef IMPL_STACK
 #undef IMPL_NEW
 #undef IMPL_DROP
@@ -541,4 +540,6 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 
 #undef VTABLE
 #undef FUNC
-#include "undef.h"
+#undef ITERATOR
+#undef ITER_TAG
+#include "cvx/undef.h"

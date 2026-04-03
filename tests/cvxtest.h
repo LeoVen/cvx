@@ -22,8 +22,7 @@ struct cvxtest
     { \
         if (!(cond)) \
         { \
-            fprintf(stderr, "    FAIL  %s:%d  (%s)\n", __FILE__, __LINE__, \
-                    #cond); \
+            fprintf(stderr, "    FAIL  %s:%d  (%s)\n", __FILE__, __LINE__, #cond); \
             (t)->checks_failed++; \
         } \
     } while (0)
@@ -43,8 +42,7 @@ struct cvxtest
         } \
         else \
         { \
-            printf("  FAIL  %s  (%d check(s) failed)\n", #fn, \
-                   (t)->checks_failed); \
+            printf("  FAIL  %s  (%d check(s) failed)\n", #fn, (t)->checks_failed); \
             (t)->failed++; \
         } \
     } while (0)
@@ -52,7 +50,6 @@ struct cvxtest
 /* Print a summary line and return the number of failures. */
 #define CVXSUMMARY(t) \
     (printf("\n%d/%d passed", (t)->passed, (t)->total), \
-     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), \
-     (t)->failed)
+     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), (t)->failed)
 
 #endif /* CVXTEST_H */

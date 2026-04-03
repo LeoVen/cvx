@@ -63,7 +63,8 @@ static void test_da_str_new(struct cvxtest *t)
     cvx_container *col = da_str_new();
 
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     CVXCHECK(t, col->tag == 91);
     CVXCHECK(t, col->flag == CVX_FLAG_OK);
@@ -80,7 +81,8 @@ static void test_da_str_new_push_drop(struct cvxtest *t)
 {
     cvx_container *col = da_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     da_str_push_back(col, mkstr("one"));
     da_str_push_back(col, mkstr("two"));
@@ -100,7 +102,8 @@ static void test_da_str_new_with(struct cvxtest *t)
     cvx_container *col = da_str_new_with(8);
 
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     CVXCHECK(t, col->tag == 91);
     CVXCHECK(t, col->flag == CVX_FLAG_OK);
@@ -116,7 +119,8 @@ static void test_da_str_new_with_push_drop(struct cvxtest *t)
 {
     cvx_container *col = da_str_new_with(2);
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     /* Push beyond initial capacity to trigger grow */
     da_str_push_back(col, mkstr("a"));
@@ -190,11 +194,16 @@ static void test_da_str_clone_empty(struct cvxtest *t)
 {
     cvx_container *col = da_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     cvx_container *clone = da_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { da_str_drop(col); return; }
+    if (!clone)
+    {
+        da_str_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CVXCHECK(t, da_str_count(clone) == 0);
@@ -207,7 +216,8 @@ static void test_da_str_clone_deep(struct cvxtest *t)
 {
     cvx_container *col = da_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     da_str_push_back(col, mkstr("x"));
     da_str_push_back(col, mkstr("y"));
@@ -215,7 +225,11 @@ static void test_da_str_clone_deep(struct cvxtest *t)
 
     cvx_container *clone = da_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { da_str_drop(col); return; }
+    if (!clone)
+    {
+        da_str_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CVXCHECK(t, da_str_count(clone) == 3);
@@ -241,13 +255,18 @@ static void test_da_str_clone_independence(struct cvxtest *t)
 {
     cvx_container *col = da_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     da_str_push_back(col, mkstr("original"));
 
     cvx_container *clone = da_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { da_str_drop(col); return; }
+    if (!clone)
+    {
+        da_str_drop(col);
+        return;
+    }
 
     /* Drop the original; clone must still be valid */
     da_str_drop(col);
@@ -264,7 +283,8 @@ static void test_da_str_clear_drops_elements(struct cvxtest *t)
 {
     cvx_container *col = da_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     da_str_push_back(col, mkstr("p"));
     da_str_push_back(col, mkstr("q"));

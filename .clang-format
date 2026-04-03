@@ -7,7 +7,7 @@ AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 BreakBeforeBraces: Allman
 BreakStringLiterals: false
-ColumnLimit: 80
+ColumnLimit: 100
 Cpp11BracedListStyle: false
 ForEachMacros: ["CMC_FOREACH", "CMC_FOREACH_REV"]
 IndentCaseLabels: true

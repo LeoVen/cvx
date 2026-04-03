@@ -1,8 +1,7 @@
 #define VTABLE CVX_(IMPL_STACK, _vtable)
 #define FUNC(X) CVX_(PFX, X)
 
-#define GLOBAL_VTABLE(SNAME, IMPL_STACK) \
-    CVX_(CVX_(CVX_(cvx_vtables_, SNAME), _as_), IMPL_STACK)
+#define GLOBAL_VTABLE(SNAME, IMPL_STACK) CVX_(CVX_(CVX_(cvx_vtables_, SNAME), _as_), IMPL_STACK)
 
 struct VTABLE GLOBAL_VTABLE(SNAME, IMPL_STACK) = {
     .new = IMPL_NEW,

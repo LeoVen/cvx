@@ -519,7 +519,11 @@ static void test_sll_clone_empty(struct cvxtest *t)
 
     cvx_container *clone = sll_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { sll_drop(col); return; }
+    if (!clone)
+    {
+        sll_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CHECK_COUNT(t, clone, 0);
@@ -537,7 +541,11 @@ static void test_sll_clone_values(struct cvxtest *t)
 
     cvx_container *clone = sll_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { sll_drop(col); return; }
+    if (!clone)
+    {
+        sll_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CHECK_COUNT(t, clone, 3);
@@ -548,7 +556,6 @@ static void test_sll_clone_values(struct cvxtest *t)
     sll_drop(col);
     sll_drop(clone);
 }
-
 
 /* ---- wrong tag guard ---- */
 

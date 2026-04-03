@@ -30,8 +30,7 @@ struct
 } print_aux = { 0 };
 
 #define list_nth(s, i) ((struct list *)(s->instance))->buffer[i]
-#define linked_nth(s, i) \
-    (ll_get((struct cvx_container *)(s)->instance, cvx_count(s) - i - 1))
+#define linked_nth(s, i) (ll_get((struct cvx_container *)(s)->instance, cvx_count(s) - i - 1))
 
 void print_stacks()
 {
@@ -42,8 +41,8 @@ void print_stacks()
         int ib = list_nth(print_aux.aux, i);
         int ic = linked_nth(print_aux.to, i);
 
-        printf("| %c | %c | %c |\n", ia == 0 ? 32 : ia + 48,
-               ib == 0 ? 32 : ib + 48, ic == 0 ? 32 : ic + 48);
+        printf("| %c | %c | %c |\n", ia == 0 ? 32 : ia + 48, ib == 0 ? 32 : ib + 48,
+               ic == 0 ? 32 : ic + 48);
     }
 
     printf("+---+---+---+\n\n");

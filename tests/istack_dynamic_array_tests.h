@@ -14,8 +14,7 @@
 #include "cvx/dynamic_array.h"
 
 #undef MAKE_STACK
-#define MAKE_STACK(name, capacity) \
-    struct stack name = da_ist_as_stack(da_ist_new_with(capacity))
+#define MAKE_STACK(name, capacity) struct stack name = da_ist_as_stack(da_ist_new_with(capacity))
 
 /* ---- push / count ---- */
 

@@ -12,8 +12,7 @@
 /* ---- da-specific check helpers ---- */
 
 #undef CHECK_FLAG
-#define CHECK_FLAG(t, col, expected_flag) \
-    CVXCHECK(t, (col)->flag == (expected_flag))
+#define CHECK_FLAG(t, col, expected_flag) CVXCHECK(t, (col)->flag == (expected_flag))
 
 #undef CHECK_COUNT
 #define CHECK_COUNT(t, col, n) CVXCHECK(t, da_count(col) == (size_t)(n))
@@ -546,7 +545,11 @@ static void test_da_clone_empty(struct cvxtest *t)
 
     cvx_container *clone = da_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { da_drop(col); return; }
+    if (!clone)
+    {
+        da_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CHECK_COUNT(t, clone, 0);
@@ -564,7 +567,11 @@ static void test_da_clone_values(struct cvxtest *t)
 
     cvx_container *clone = da_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { da_drop(col); return; }
+    if (!clone)
+    {
+        da_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CVXCHECK(t, da_get(clone, 0) == 10);

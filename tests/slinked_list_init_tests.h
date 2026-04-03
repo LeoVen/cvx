@@ -54,7 +54,8 @@ static void test_sll_str_new(struct cvxtest *t)
     cvx_container *col = sll_str_new();
 
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     CVXCHECK(t, col->tag == 92);
     CVXCHECK(t, col->flag == CVX_FLAG_OK);
@@ -71,7 +72,8 @@ static void test_sll_str_new_push_drop(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     sll_str_push_back(col, mkstr("one"));
     sll_str_push_back(col, mkstr("two"));
@@ -87,7 +89,8 @@ static void test_sll_str_new_front_back_drop(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     sll_str_push_front(col, mkstr("front"));
     sll_str_push_back(col, mkstr("middle"));
@@ -104,11 +107,16 @@ static void test_sll_str_clone_empty(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     cvx_container *clone = sll_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { sll_str_drop(col); return; }
+    if (!clone)
+    {
+        sll_str_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_str_count(clone) == 0);
@@ -121,7 +129,8 @@ static void test_sll_str_clone_deep(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     sll_str_push_back(col, mkstr("a"));
     sll_str_push_back(col, mkstr("b"));
@@ -129,7 +138,11 @@ static void test_sll_str_clone_deep(struct cvxtest *t)
 
     cvx_container *clone = sll_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { sll_str_drop(col); return; }
+    if (!clone)
+    {
+        sll_str_drop(col);
+        return;
+    }
 
     CVXCHECK(t, clone->flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_str_count(clone) == 3);
@@ -150,13 +163,18 @@ static void test_sll_str_clone_independence(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     sll_str_push_back(col, mkstr("original"));
 
     cvx_container *clone = sll_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { sll_str_drop(col); return; }
+    if (!clone)
+    {
+        sll_str_drop(col);
+        return;
+    }
 
     sll_str_drop(col);
 
@@ -170,7 +188,8 @@ static void test_sll_str_clone_order(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     sll_str_push_back(col, mkstr("first"));
     sll_str_push_back(col, mkstr("second"));
@@ -178,7 +197,11 @@ static void test_sll_str_clone_order(struct cvxtest *t)
 
     cvx_container *clone = sll_str_clone(col);
     CVXCHECK(t, clone != NULL);
-    if (!clone) { sll_str_drop(col); return; }
+    if (!clone)
+    {
+        sll_str_drop(col);
+        return;
+    }
 
     CVXCHECK(t, strcmp(sll_str_get(clone, 0), "first") == 0);
     CVXCHECK(t, strcmp(sll_str_get(clone, 1), "second") == 0);
@@ -194,7 +217,8 @@ static void test_sll_str_clear_drops_elements(struct cvxtest *t)
 {
     cvx_container *col = sll_str_new();
     CVXCHECK(t, col != NULL);
-    if (!col) return;
+    if (!col)
+        return;
 
     sll_str_push_back(col, mkstr("p"));
     sll_str_push_back(col, mkstr("q"));

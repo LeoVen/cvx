@@ -10,6 +10,7 @@ static char *mkstr(const char *s)
 
 #define cvx_col(ds) ((cvx_container *)(&(ds)))
 
-#define MAKE_INVALID_CONTAINER(name) cvx_container *name = &(cvx_container){ .flag = 0, .tag = 999999 };
+#define MAKE_INVALID_CONTAINER(name) \
+    cvx_container *name = &(cvx_container){ .flag = 0, .tag = 999999 };
 
 #endif /* CVX_TEST_UTILS_H */
