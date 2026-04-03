@@ -9,6 +9,8 @@
 #define CVX__(A, B) A##B
 #define CVX_(A, B) CVX__(A, B)
 
+#define CVX_ITER_TAG_MULT 100
+
 typedef struct cvx_container
 {
     size_t tag;

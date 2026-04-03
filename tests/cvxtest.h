@@ -50,6 +50,6 @@ struct cvxtest
 /* Print a summary line and return the number of failures. */
 #define CVXSUMMARY(t) \
     (printf("\n%d/%d passed", (t)->passed, (t)->total), \
-     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), (t)->failed)
+     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), (t)->passed)
 
 #endif /* CVXTEST_H */

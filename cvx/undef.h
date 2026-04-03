@@ -2,11 +2,15 @@
 
 #undef VTABLE
 #undef INTERFACE
+#undef GLOBAL_VTABLE
 
 #undef FUNC
 #undef PFX
 #undef SNAME
 #undef TAG
+
+#undef ITERATOR
+#undef ITER_TAG
 
 #undef V
 #undef V_COMP
