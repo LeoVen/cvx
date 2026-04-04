@@ -4,6 +4,12 @@
 #include "cvxtest.h"
 #include "cvxtestutils.h"
 
+#define V int
+#define SNAME da_guard_int
+#define PFX da_guard
+#define TAG 94
+#include "cvx/dynamic_array.h"
+
 /*
  * Guard tests for dynamic_array.h
  *
@@ -11,15 +17,12 @@
  * CVX_FLAG_WRONG_TAG and return its error value when the container tag does
  * not match.  Each test below creates an invalid container via
  * MAKE_INVALID_CONTAINER and verifies that contract.
- *
- * The da_int / da_* symbols are defined in dynamic_array_tests.h, which is
- * included earlier in tests.c.
  */
 
 static void test_da_guard_clone(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    cvx_container *result = da_clone(col);
+    cvx_container *result = da_guard_clone(col);
     CVXCHECK(t, result == NULL);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -27,21 +30,21 @@ static void test_da_guard_clone(struct cvxtest *t)
 static void test_da_guard_drop(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_drop(col);
+    da_guard_drop(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_clear(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_clear(col);
+    da_guard_clear(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_count(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    size_t result = da_count(col);
+    size_t result = da_guard_count(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -49,7 +52,7 @@ static void test_da_guard_count(struct cvxtest *t)
 static void test_da_guard_capacity(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    size_t result = da_capacity(col);
+    size_t result = da_guard_capacity(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -57,7 +60,7 @@ static void test_da_guard_capacity(struct cvxtest *t)
 static void test_da_guard_full(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    bool result = da_full(col);
+    bool result = da_guard_full(col);
     CVXCHECK(t, result == false);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -65,7 +68,7 @@ static void test_da_guard_full(struct cvxtest *t)
 static void test_da_guard_empty(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    bool result = da_empty(col);
+    bool result = da_guard_empty(col);
     CVXCHECK(t, result == false);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -73,7 +76,7 @@ static void test_da_guard_empty(struct cvxtest *t)
 static void test_da_guard_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    int result = da_front(col);
+    int result = da_guard_front(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -81,7 +84,7 @@ static void test_da_guard_front(struct cvxtest *t)
 static void test_da_guard_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    int result = da_back(col);
+    int result = da_guard_back(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -89,7 +92,7 @@ static void test_da_guard_back(struct cvxtest *t)
 static void test_da_guard_get(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    int result = da_get(col, 0);
+    int result = da_guard_get(col, 0);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -97,56 +100,56 @@ static void test_da_guard_get(struct cvxtest *t)
 static void test_da_guard_push_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_push_front(col, 1);
+    da_guard_push_front(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_push_at(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_push_at(col, 1, 0);
+    da_guard_push_at(col, 1, 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_push_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_push_back(col, 1);
+    da_guard_push_back(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_pop_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_pop_front(col, NULL);
+    da_guard_pop_front(col, NULL);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_pop_at(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_pop_at(col, NULL, 0);
+    da_guard_pop_at(col, NULL, 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_pop_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_pop_back(col, NULL);
+    da_guard_pop_back(col, NULL);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_replace_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_replace_front(col, 1, NULL);
+    da_guard_replace_front(col, 1, NULL);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_da_guard_replace_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    da_replace_back(col, 1, NULL);
+    da_guard_replace_back(col, 1, NULL);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
