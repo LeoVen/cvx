@@ -23,12 +23,12 @@ struct ITERATOR
 };
 
 // Non-allocating initializers
-struct SNAME FUNC(_init)();
+struct SNAME FUNC(_init)(void);
 struct SNAME FUNC(_init_with)(size_t capacity);
 struct SNAME FUNC(_copy)(struct SNAME *_self_);
 
 // Allocating initializers
-cvx_container *FUNC(_new)();
+cvx_container *FUNC(_new)(void);
 cvx_container *FUNC(_new_with)(size_t capacity);
 cvx_container *FUNC(_clone)(cvx_container *_col_);
 
@@ -86,7 +86,7 @@ void FUNC(_iter_go_to)(cvx_container *_iter_, size_t index);
 V FUNC(_iter_value)(cvx_container *_iter_);
 size_t FUNC(_iter_index)(cvx_container *_iter_);
 
-struct SNAME FUNC(_init)()
+struct SNAME FUNC(_init)(void)
 {
     struct SNAME _res_ = (struct SNAME){ 0 };
     _res_.super.tag = TAG;

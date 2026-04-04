@@ -20,10 +20,10 @@ struct SNAME
 };
 
 // Non-allocating initializer
-struct SNAME FUNC(_init)();
+struct SNAME FUNC(_init)(void);
 
 // Allocating initializers
-cvx_container *FUNC(_new)();
+cvx_container *FUNC(_new)(void);
 cvx_container *FUNC(_clone)(cvx_container *_col_);
 
 // Destructors
@@ -47,7 +47,7 @@ void FUNC(_pop_at)(cvx_container *_col_, V *out, size_t index);
 void FUNC(_replace_front)(cvx_container *_col_, V new, V *out);
 void FUNC(_replace_back)(cvx_container *_col_, V new, V *out);
 
-struct SNAME FUNC(_init)()
+struct SNAME FUNC(_init)(void)
 {
     struct SNAME _res_ = (struct SNAME){ 0 };
     _res_.super.tag = TAG;

@@ -10,7 +10,7 @@ struct cvxtest
     int total;
     int passed;
     int failed;
-    int checks_failed; /* resets each test */
+    int checks_failed;
     const char *current;
 };
 
