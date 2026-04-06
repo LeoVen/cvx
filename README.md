@@ -34,7 +34,7 @@ Check out the examples folder to see more examples.
 
 int main(void)
 {
-    struct stack s = ml_as_stack(ml_new_with(8));
+    struct stack s = ml_as_stack(ml_new_with(NULL, 8));
 
     cvx_push(&s, 10);
     cvx_push(&s, 20);
@@ -53,16 +53,25 @@ int main(void)
 
 ### Available implementations
 
-| Header | Description |
-|---|---|
-| `cvx/dynamic_array.h` | Growable contiguous array. O(1) amortized push/pop at back, O(n) at front. |
-| `cvx/slinked_list.h` | Singly linked list with head and tail pointers. O(1) push/pop at front; O(n) at back. |
+| Header | Description | Interfaces | Iterators |
+|---|---|---|---|
+| `cvx/dynamic_array.h` | Growable contiguous array. O(1) amortized push/pop at back, O(n) at front. | `stack` | `random_access_iterator` |
+| `cvx/slinked_list.h` | Singly linked list with head and tail pointers. O(1) push/pop at front; O(n) at back. | `stack`, `queue` | `forward_iterator` |
 
 ### Available interfaces
 
-| Header | Interface operations |
+| Header | Operations |
 |---|---|
 | `cvx/interface/stack.h` | `push`, `pop`, `peek`, `replace`, `count`, `new`, `clone`, `drop` |
+| `cvx/interface/queue.h` | `enqueue`, `dequeue`, `count`, `new`, `clone`, `drop` |
+
+### Available iterators
+
+| Header | Operations |
+|---|---|
+| `cvx/iter/forward_iterator.h` | `start`, `drop`, `at_start`, `at_end`, `count`, `to_start`, `next`, `forward`, `value`, `index` |
+| `cvx/iter/bidirectional_iterator.h` | `start`, `end`, `drop`, `at_start`, `at_end`, `count`, `to_start`, `to_end`, `next`, `prev`, `forward`, `backward`, `value`, `index` |
+| `cvx/iter/random_access_iterator.h` | `start`, `end`, `drop`, `at_start`, `at_end`, `count`, `to_start`, `to_end`, `next`, `prev`, `forward`, `backward`, `go_to`, `value`, `index` |
 
 ---
 
@@ -82,27 +91,58 @@ An implementation is instantiated by defining a set of macros and then including
 
 All macros are automatically undefined after the `#include` via `undef.h`, so there is no risk of them leaking into subsequent templates.
 
-### User type functions
+### User type virtual tables
 
-For data structures that need to compare, copy, hash, or free elements, define the relevant macros before the `#include`. Which macros are required depends on the data structure.
-
-```c
-#define V_COMP my_comp // int    (*comp)(V, V) — required for ordered structures
-#define V_COPY my_copy // V      (*copy)(V)    — optional for deep clone
-#define V_DROP my_drop // void   (*drop)(V)    — required when elements own heap memory
-#define V_HASH my_hash // size_t (*hash)(V)    — required for hash-based structures
-#define V_PRIO my_prio // int    (*prio)(V, V) — required for priority queues
-```
-
-For key-value structures, the same set applies to the key type under `K_`:
+Each instantiated container generates a `struct <SNAME>_vtabv` type that holds optional (some times mandatory) function pointers for element operations. You create one and pass it to the constructor. A `NULL` value is allowed when no callbacks are needed.
 
 ```c
-#define K_COMP my_key_comp
-#define K_COPY my_key_copy
-#define K_DROP my_key_drop
-#define K_HASH my_key_hash
-#define K_PRIO my_key_prio
+// The generated vtabv struct has these fields
+struct my_list_vtabv {
+    int    (*comp)(V, V);   // compare two elements - required for ordered structures
+    V      (*copy)(V);      // deep-copy an element - optionally called by clone()
+    void   (*drop)(V);      // free an element      - optionally called by drop() and clear()
+    size_t (*hash)(V);      // hash an element      - required for hash-based structures
+    int    (*prio)(V, V);   // compare priorities   - required for priority queues
+};
 ```
+
+**Example - dynamic array of heap-allocated strings:**
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define V         char *
+#define SNAME     str_array
+#define PFX       sa
+#define TAG       1
+#include "cvx/dynamic_array.h"
+
+char *str_copy(char *s) { return strdup(s); }
+void  str_drop(char *s) { free(s); }
+
+int main(void)
+{
+    // Build a vtabv with copy and drop - no comp/hash/prio needed here
+    struct str_array_vtabv cbs = { .copy = str_copy, .drop = str_drop };
+
+    cvx_container *col = sa_new_with(&cbs, 8);
+
+    sa_push_back(col, strdup("hello"));
+    sa_push_back(col, strdup("world"));
+
+    // clone() calls str_copy on each element - original and clone are independent
+    cvx_container *clone = sa_clone(col);
+
+    printf("%s %s\n", sa_get(col, 0), sa_get(clone, 1));
+
+    sa_drop(col);   // calls str_drop on each element, then frees the array
+    sa_drop(clone);
+}
+```
+
+For key-value structures a matching `struct <SNAME>_vtabk` is generated for the key type, with the same set of fields.
 
 ## Interfaces
 
@@ -144,7 +184,7 @@ The same interface can back different implementations simultaneously:
 ```c
 struct stack array_stack  = ml_as_stack(ml_new_with(8));
 struct stack linked_stack = sl_as_stack(sl_new());
-// both satisfy `struct stack` — pass either to the same function
+// both satisfy `struct stack` - pass either to the same function
 ```
 
 ### Interface macros

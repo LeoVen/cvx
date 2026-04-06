@@ -69,9 +69,9 @@ void hanoi(int n, struct stack *from, struct stack *aux, struct stack *to)
 
 int main()
 {
-    struct stack from = l_as_stack(l_new_with(10));
+    struct stack from = l_as_stack(l_new_with(NULL, 10));
     struct stack to = ll_as_stack(ll_new());
-    struct stack aux = l_as_stack(l_new_with(10));
+    struct stack aux = l_as_stack(l_new_with(NULL, 10));
 
     for (int i = disks; i >= 1; i--)
         cvx_push(&from, i);

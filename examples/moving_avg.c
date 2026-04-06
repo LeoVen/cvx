@@ -41,7 +41,7 @@ int main(void)
 {
     srand(time(NULL));
 
-    struct slist list = sl_init();
+    struct slist list = sl_init(NULL);
     cvx_container *data = (cvx_container *)&list;
     struct queue queue = sl_as_queue(data);
 
