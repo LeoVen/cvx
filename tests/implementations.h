@@ -1,6 +1,8 @@
 #ifndef CVX_IMPLEMENTATIONS_TEST_H
 #define CVX_IMPLEMENTATIONS_TEST_H
 
+#include "tests/vtabs.h"
+
 ///
 /// INTERFACES
 ///
@@ -33,6 +35,10 @@
 #define IMPL_STACK stack_int
 #include "cvx/dynamic_array.h"
 #define DA_ITER_TAG (99 * CVX_ITER_TAG_MULT)
+static struct dynamic_array_int_vtabv *da_int_vtabv_full = &(struct dynamic_array_int_vtabv){
+    .copy = int_copy,
+    .drop = int_drop,
+};
 
 #define V int
 #define SNAME slinked_int
@@ -43,5 +49,9 @@
 #define IMPL_QUEUE queue_int
 #include "cvx/slinked_list.h"
 #define SLL_ITER_TAG (77 * CVX_ITER_TAG_MULT)
+static struct slinked_int_vtabv *sll_int_vtabv_full = &(struct slinked_int_vtabv){
+    .copy = int_copy,
+    .drop = int_drop,
+};
 
 #endif /* CVX_IMPLEMENTATIONS_TEST_H */

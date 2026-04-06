@@ -3,11 +3,6 @@
 
 #include <string.h>
 
-static char *mkstr(const char *s)
-{
-    return strdup(s);
-}
-
 #define cvx_col(ds) ((cvx_container *)(&(ds)))
 
 #define MAKE_INVALID_CONTAINER(name) \

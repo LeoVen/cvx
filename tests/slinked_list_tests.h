@@ -9,13 +9,14 @@
 
 static void test_sll_int_init(struct cvxtest *t)
 {
-    struct slinked_int l = sll_int_init();
+    struct slinked_int l = sll_int_init(NULL);
     cvx_container *col = (cvx_container *)(&l);
 
     CVXCHECK(t, col->tag == 77);
     CVXCHECK(t, l.head == NULL);
     CVXCHECK(t, l.tail == NULL);
     CVXCHECK(t, l.count == 0);
+    CVXCHECK(t, l.vtabv == NULL);
 }
 
 static void test_sll_int_new(struct cvxtest *t)

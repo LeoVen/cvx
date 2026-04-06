@@ -6,13 +6,20 @@
 #define FUNC(X) CVX_(PFX, X)
 #define ITERATOR CVX_(SNAME, _iter)
 #define ITER_TAG (TAG * CVX_ITER_TAG_MULT)
+#define VTAB_V CVX_(SNAME, _vtabv)
+
+struct VTAB_V
+{
+    CVX_VTAB_DEFINITION(V)
+};
 
 struct SNAME
 {
     cvx_container super;
-    V *buffer;
     size_t capacity;
     size_t count;
+    struct VTAB_V *vtabv;
+    V *buffer;
 };
 
 struct ITERATOR
@@ -23,13 +30,13 @@ struct ITERATOR
 };
 
 // Non-allocating initializers
-struct SNAME FUNC(_init)(void);
-struct SNAME FUNC(_init_with)(size_t capacity);
+struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
+struct SNAME FUNC(_init_with)(struct VTAB_V *_vtabv_, size_t capacity);
 struct SNAME FUNC(_copy)(struct SNAME *_self_);
 
 // Allocating initializers
 cvx_container *FUNC(_new)(void);
-cvx_container *FUNC(_new_with)(size_t capacity);
+cvx_container *FUNC(_new_with)(struct VTAB_V *_vtabv_, size_t capacity);
 cvx_container *FUNC(_clone)(cvx_container *_col_);
 
 // Destructors
@@ -86,15 +93,16 @@ void FUNC(_iter_go_to)(cvx_container *_iter_, size_t index);
 V FUNC(_iter_value)(cvx_container *_iter_);
 size_t FUNC(_iter_index)(cvx_container *_iter_);
 
-struct SNAME FUNC(_init)(void)
+struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
 {
     struct SNAME _res_ = (struct SNAME){ 0 };
     _res_.super.tag = TAG;
+    _res_.vtabv = _vtabv_;
 
     return _res_;
 }
 
-struct SNAME FUNC(_init_with)(size_t capacity)
+struct SNAME FUNC(_init_with)(struct VTAB_V *_vtabv_, size_t capacity)
 {
     struct SNAME _res_ = (struct SNAME){ 0 };
     _res_.super.tag = TAG;
@@ -108,13 +116,14 @@ struct SNAME FUNC(_init_with)(size_t capacity)
     }
 
     _res_.capacity = capacity;
+    _res_.vtabv = _vtabv_;
 
     return _res_;
 }
 
 struct SNAME FUNC(_copy)(struct SNAME *_self_)
 {
-    struct SNAME _res_ = FUNC(_init)();
+    struct SNAME _res_ = FUNC(_init)(_self_->vtabv);
     _res_.super.flag = CVX_FLAG_OK;
 
     if (_self_->count == 0)
@@ -130,12 +139,15 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
     _res_.capacity = _self_->capacity;
     _res_.count = _self_->count;
 
-#ifdef V_COPY
-    for (size_t i = 0; i < _self_->count; i++)
-        _res_.buffer[i] = V_COPY(_self_->buffer[i]);
-#else
-    memcpy(_res_.buffer, _self_->buffer, _self_->count * sizeof(V));
-#endif
+    if (_self_->vtabv && _self_->vtabv->copy)
+    {
+        for (size_t i = 0; i < _self_->count; i++)
+            _res_.buffer[i] = _self_->vtabv->copy(_self_->buffer[i]);
+    }
+    else
+    {
+        memcpy(_res_.buffer, _self_->buffer, _self_->count * sizeof(V));
+    }
 
     return _res_;
 }
@@ -152,11 +164,12 @@ cvx_container *FUNC(_new)(void)
     _res_->capacity = 0;
     _res_->count = 0;
     _res_->buffer = NULL;
+    _res_->vtabv = NULL;
 
     return (cvx_container *)_res_;
 }
 
-cvx_container *FUNC(_new_with)(size_t capacity)
+cvx_container *FUNC(_new_with)(struct VTAB_V *_vtabv_, size_t capacity)
 {
     if (capacity == 0)
         return NULL;
@@ -178,6 +191,7 @@ cvx_container *FUNC(_new_with)(size_t capacity)
     _res_->super.flag = CVX_FLAG_OK;
     _res_->count = 0;
     _res_->capacity = capacity;
+    _res_->vtabv = _vtabv_;
 
     return (cvx_container *)_res_;
 }
@@ -193,6 +207,7 @@ cvx_container *FUNC(_clone)(cvx_container *_col_)
         return NULL;
 
     struct SNAME *_copy_ = (struct SNAME *)_res_;
+    _copy_->vtabv = _orig_->vtabv;
 
     if (_orig_->count == 0)
     {
@@ -210,12 +225,15 @@ cvx_container *FUNC(_clone)(cvx_container *_col_)
     _copy_->capacity = _orig_->capacity;
     _copy_->count = _orig_->count;
 
-#ifdef V_COPY
-    for (size_t i = 0; i < _orig_->count; i++)
-        _copy_->buffer[i] = V_COPY(_orig_->buffer[i]);
-#else
-    memcpy(_copy_->buffer, _orig_->buffer, _orig_->count * sizeof(V));
-#endif
+    if (_copy_->vtabv && _copy_->vtabv->copy)
+    {
+        for (size_t i = 0; i < _orig_->count; i++)
+            _copy_->buffer[i] = _copy_->vtabv->copy(_orig_->buffer[i]);
+    }
+    else
+    {
+        memcpy(_copy_->buffer, _orig_->buffer, _orig_->count * sizeof(V));
+    }
 
     _res_->flag = CVX_FLAG_OK;
     return _res_;
@@ -227,10 +245,11 @@ void FUNC(_drop)(cvx_container *_col_)
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-#ifdef V_DROP
-    for (size_t i = 0; i < _self_->count; i++)
-        V_DROP(_self_->buffer[i]);
-#endif
+    if (_self_->vtabv && _self_->vtabv->drop)
+    {
+        for (size_t i = 0; i < _self_->count; i++)
+            _self_->vtabv->drop(_self_->buffer[i]);
+    }
 
     free(_self_->buffer);
     free(_self_);
@@ -242,12 +261,13 @@ void FUNC(_clear)(cvx_container *_col_)
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-#ifdef V_DROP
-    for (size_t i = 0; i < _self_->count; i++)
+    if (_self_->vtabv && _self_->vtabv->drop)
     {
-        V_DROP(_self_->buffer[i]);
+        for (size_t i = 0; i < _self_->count; i++)
+        {
+            _self_->vtabv->drop(_self_->buffer[i]);
+        }
     }
-#endif
 
     free(_self_->buffer);
     _self_->buffer = NULL;

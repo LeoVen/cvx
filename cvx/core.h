@@ -13,7 +13,23 @@
 #define GLOBAL_VTABLE(SNAME, X, NAME) \
     CVX_(CVX_(CVX_(cvx_vtables_, SNAME), X), NAME)
 
+#define CVX_VTAB_COMP(T) int (*comp)(T, T)
+#define CVX_VTAB_COPY(T) T (*copy)(T)
+#define CVX_VTAB_DROP(T) void (*drop)(T)
+#define CVX_VTAB_HASH(T) size_t (*hash)(T)
+#define CVX_VTAB_PRIO(T) int (*prio)(T, T)
+
+#define CVX_VTAB_DEFINITION(T) \
+    CVX_VTAB_COMP(T); \
+    CVX_VTAB_COPY(T); \
+    CVX_VTAB_DROP(T); \
+    CVX_VTAB_HASH(T); \
+    CVX_VTAB_PRIO(T);
+
+#ifndef CVX_ITER_TAG_MULT
+// Iterator tag equals to the user-provided tag times this value
 #define CVX_ITER_TAG_MULT 100
+#endif
 
 typedef struct cvx_container
 {

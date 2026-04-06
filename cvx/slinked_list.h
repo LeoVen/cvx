@@ -6,6 +6,12 @@
 #define NODE CVX_(SNAME, _node)
 #define ITERATOR CVX_(SNAME, _iter)
 #define ITER_TAG (TAG * CVX_ITER_TAG_MULT)
+#define VTAB_V CVX_(SNAME, _vtabv)
+
+struct VTAB_V
+{
+    CVX_VTAB_DEFINITION(V)
+};
 
 struct NODE
 {
@@ -19,6 +25,7 @@ struct SNAME
     struct NODE *head;
     struct NODE *tail;
     size_t count;
+    struct VTAB_V *vtabv;
 };
 
 struct ITERATOR
@@ -30,10 +37,11 @@ struct ITERATOR
 };
 
 // Non-allocating initializer
-struct SNAME FUNC(_init)(void);
+struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
 
 // Allocating initializers
 cvx_container *FUNC(_new)(void);
+cvx_container *FUNC(_new_with)(struct VTAB_V *_vtabv_);
 cvx_container *FUNC(_clone)(cvx_container *_col_);
 
 // Destructors
@@ -74,10 +82,11 @@ void FUNC(_iter_forward)(cvx_container *_iter_, size_t steps);
 V FUNC(_iter_value)(cvx_container *_iter_);
 size_t FUNC(_iter_index)(cvx_container *_iter_);
 
-struct SNAME FUNC(_init)(void)
+struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
 {
     struct SNAME _res_ = (struct SNAME){ 0 };
     _res_.super.tag = TAG;
+    _res_.vtabv = _vtabv_;
     return _res_;
 }
 
@@ -90,6 +99,21 @@ cvx_container *FUNC(_new)(void)
 
     _res_->super.tag = TAG;
     _res_->super.flag = CVX_FLAG_OK;
+    _res_->vtabv = NULL;
+
+    return (cvx_container *)_res_;
+}
+
+cvx_container *FUNC(_new_with)(struct VTAB_V *_vtabv_)
+{
+    struct SNAME *_res_ = calloc(1, sizeof(struct SNAME));
+
+    if (!_res_)
+        return NULL;
+
+    _res_->super.tag = TAG;
+    _res_->super.flag = CVX_FLAG_OK;
+    _res_->vtabv = _vtabv_;
 
     return (cvx_container *)_res_;
 }
@@ -98,12 +122,14 @@ cvx_container *FUNC(_clone)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, NULL);
 
+    struct SNAME *_orig_ = (struct SNAME *)_col_;
+
     cvx_container *_res_ = FUNC(_new)();
     if (!_res_)
         return NULL;
 
-    struct SNAME *_orig_ = (struct SNAME *)_col_;
     struct SNAME *_copy_ = (struct SNAME *)_res_;
+    _copy_->vtabv = _orig_->vtabv;
 
     struct NODE *_curr_ = _orig_->head;
     while (_curr_)
@@ -117,11 +143,10 @@ cvx_container *FUNC(_clone)(cvx_container *_col_)
 
         _new_node_->next = NULL;
 
-#ifdef V_COPY
-        _new_node_->value = V_COPY(_curr_->value);
-#else
-        _new_node_->value = _curr_->value;
-#endif
+        if (_copy_->vtabv && _copy_->vtabv->copy)
+            _new_node_->value = _copy_->vtabv->copy(_curr_->value);
+        else
+            _new_node_->value = _curr_->value;
 
         if (!_copy_->head)
         {
@@ -152,9 +177,8 @@ void FUNC(_drop)(cvx_container *_col_)
     while (curr)
     {
         struct NODE *next = curr->next;
-#ifdef V_DROP
-        V_DROP(curr->value);
-#endif
+        if (_self_->vtabv && _self_->vtabv->drop)
+            _self_->vtabv->drop(curr->value);
         free(curr);
         curr = next;
     }
@@ -172,9 +196,8 @@ void FUNC(_clear)(cvx_container *_col_)
     while (curr)
     {
         struct NODE *next = curr->next;
-#ifdef V_DROP
-        V_DROP(curr->value);
-#endif
+        if (_self_->vtabv && _self_->vtabv->drop)
+            _self_->vtabv->drop(curr->value);
         free(curr);
         curr = next;
     }
