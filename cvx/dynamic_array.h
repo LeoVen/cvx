@@ -760,6 +760,8 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 }
 
 #ifdef IMPL_STACK
+#define INTERFACE IMPL_STACK
+
 #define IMPL_NEW FUNC(_new)
 #define IMPL_DROP FUNC(_drop)
 #define IMPL_CLONE FUNC(_clone)
@@ -768,8 +770,10 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 #define IMPL_COUNT FUNC(_count)
 #define IMPL_PEEK FUNC(_back)
 #define IMPL_REPLACE FUNC(_replace_back)
+
 #include "cvx/istack_cast.h"
 #undef IMPL_STACK
+
 #undef IMPL_NEW
 #undef IMPL_DROP
 #undef IMPL_CLONE
@@ -781,6 +785,8 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 #endif
 
 #ifdef IMPL_RANDOM_ACCESS_ITER
+#define INTERFACE IMPL_RANDOM_ACCESS_ITER
+
 #define IMPL_START FUNC(_iter_start)
 #define IMPL_END FUNC(_iter_end)
 #define IMPL_DROP FUNC(_iter_drop)
@@ -796,7 +802,10 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 #define IMPL_GO_TO FUNC(_iter_go_to)
 #define IMPL_VALUE FUNC(_iter_value)
 #define IMPL_INDEX FUNC(_iter_index)
+
 #include "cvx/iter/random_access_iterator_cast.h"
+#undef IMPL_RANDOM_ACCESS_ITER
+
 #undef IMPL_START
 #undef IMPL_END
 #undef IMPL_DROP

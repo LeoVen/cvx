@@ -650,9 +650,9 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
     return ((struct ITERATOR *)_iter_)->index;
 }
 
-
-
 #ifdef IMPL_STACK
+#define INTERFACE IMPL_STACK
+
 #define IMPL_NEW FUNC(_new)
 #define IMPL_DROP FUNC(_drop)
 #define IMPL_CLONE FUNC(_clone)
@@ -661,8 +661,10 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #define IMPL_COUNT FUNC(_count)
 #define IMPL_PEEK FUNC(_front)
 #define IMPL_REPLACE FUNC(_replace_front)
+
 #include "istack_cast.h"
 #undef IMPL_STACK
+
 #undef IMPL_NEW
 #undef IMPL_DROP
 #undef IMPL_CLONE
@@ -674,6 +676,8 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #endif
 
 #ifdef IMPL_FORWARD_ITER
+#define INTERFACE IMPL_FORWARD_ITER
+
 #define IMPL_START FUNC(_iter_start)
 #define IMPL_DROP FUNC(_iter_drop)
 #define IMPL_AT_START FUNC(_iter_at_start)
@@ -684,7 +688,10 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #define IMPL_FORWARD FUNC(_iter_forward)
 #define IMPL_VALUE FUNC(_iter_value)
 #define IMPL_INDEX FUNC(_iter_index)
+
 #include "cvx/iter/forward_iterator_cast.h"
+#undef IMPL_FORWARD_ITER
+
 #undef IMPL_START
 #undef IMPL_DROP
 #undef IMPL_AT_START
@@ -697,6 +704,4 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #undef IMPL_INDEX
 #endif
 
-#undef NODE
-#undef FUNC
-#include "undef.h"
+#include "cvx/undef.h"

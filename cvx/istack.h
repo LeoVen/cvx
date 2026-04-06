@@ -1,8 +1,5 @@
 #include "core.h"
-
-#define VTABLE CVX_(INTERFACE, _vtable)
-
-struct VTABLE
+struct VTABLE(INTERFACE)
 {
     // constructors and destructors
     cvx_container *(*new)(void);
@@ -20,7 +17,7 @@ struct VTABLE
 struct INTERFACE
 {
     cvx_container *instance;
-    struct VTABLE *vtable;
+    struct VTABLE(INTERFACE) *vtable;
 };
 
-#include "cvx/undef.h"
+#undef INTERFACE

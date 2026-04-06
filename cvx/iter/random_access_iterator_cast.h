@@ -1,10 +1,6 @@
-#define VTABLE CVX_(IMPL_RANDOM_ACCESS_ITER, _vtable)
-#define FUNC(X) CVX_(PFX, X)
+#include "cvx/core.h"
 
-#define GLOBAL_VTABLE(SNAME, IMPL_RANDOM_ACCESS_ITER) \
-    CVX_(CVX_(CVX_(cvx_vtables_, SNAME), _iter_as_), IMPL_RANDOM_ACCESS_ITER)
-
-struct VTABLE GLOBAL_VTABLE(SNAME, IMPL_RANDOM_ACCESS_ITER) = {
+struct VTABLE(INTERFACE) GLOBAL_VTABLE(SNAME, _iter_as_, INTERFACE) = {
     .start = IMPL_START,
     .end = IMPL_END,
     .drop = IMPL_DROP,
@@ -22,14 +18,13 @@ struct VTABLE GLOBAL_VTABLE(SNAME, IMPL_RANDOM_ACCESS_ITER) = {
     .index = IMPL_INDEX,
 };
 
-struct IMPL_RANDOM_ACCESS_ITER FUNC(CVX_(_iter_as_,
-                                         IMPL_RANDOM_ACCESS_ITER))(cvx_container *instance)
+struct INTERFACE FUNC(CVX_(_iter_as_,
+                                         INTERFACE))(cvx_container *instance)
 {
-    return (struct IMPL_RANDOM_ACCESS_ITER){
-        .vtable = &GLOBAL_VTABLE(SNAME, IMPL_RANDOM_ACCESS_ITER),
+    return (struct INTERFACE){
+        .vtable = &GLOBAL_VTABLE(SNAME, _iter_as_, INTERFACE),
         .instance = instance,
     };
 }
 
-#undef IMPL_RANDOM_ACCESS_ITER
-#include "cvx/undef.h"
+#undef INTERFACE

@@ -4,136 +4,123 @@
 #include "cvxtest.h"
 #include "cvxtestutils.h"
 
-#define V int
-#define SNAME sll_guard_int
-#define PFX sll_guard
-#define TAG 95
-#include "cvx/slinked_list.h"
+#include "implementations.h"
 
-/*
- * Guard tests for slinked_list.h
- *
- * Every function that opens with CVX_CONTAINER_GUARDS must set
- * CVX_FLAG_WRONG_TAG and return its error value when the container tag does
- * not match.  Each test below creates an invalid container via
- * MAKE_INVALID_CONTAINER and verifies that contract.
- */
-
-static void test_sll_guard_clone(struct cvxtest *t)
+static void test_sll_int_guard_clone(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    cvx_container *result = sll_guard_clone(col);
+    cvx_container *result = sll_int_clone(col);
     CVXCHECK(t, result == NULL);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_drop(struct cvxtest *t)
+static void test_sll_int_guard_drop(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_drop(col);
+    sll_int_drop(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_clear(struct cvxtest *t)
+static void test_sll_int_guard_clear(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_clear(col);
+    sll_int_clear(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_count(struct cvxtest *t)
+static void test_sll_int_guard_count(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    size_t result = sll_guard_count(col);
+    size_t result = sll_int_count(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_empty(struct cvxtest *t)
+static void test_sll_int_guard_empty(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    bool result = sll_guard_empty(col);
+    bool result = sll_int_empty(col);
     CVXCHECK(t, result == false);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_front(struct cvxtest *t)
+static void test_sll_int_guard_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    int result = sll_guard_front(col);
+    int result = sll_int_front(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_back(struct cvxtest *t)
+static void test_sll_int_guard_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    int result = sll_guard_back(col);
+    int result = sll_int_back(col);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_get(struct cvxtest *t)
+static void test_sll_int_guard_get(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    int result = sll_guard_get(col, 0);
+    int result = sll_int_get(col, 0);
     CVXCHECK(t, result == 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_push_front(struct cvxtest *t)
+static void test_sll_int_guard_push_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_push_front(col, 1);
+    sll_int_push_front(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_push_back(struct cvxtest *t)
+static void test_sll_int_guard_push_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_push_back(col, 1);
+    sll_int_push_back(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_push_at(struct cvxtest *t)
+static void test_sll_int_guard_push_at(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_push_at(col, 1, 0);
+    sll_int_push_at(col, 1, 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_pop_front(struct cvxtest *t)
+static void test_sll_int_guard_pop_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_pop_front(col);
+    sll_int_pop_front(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_pop_back(struct cvxtest *t)
+static void test_sll_int_guard_pop_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_pop_back(col);
+    sll_int_pop_back(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_pop_at(struct cvxtest *t)
+static void test_sll_int_guard_pop_at(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_pop_at(col, 0);
+    sll_int_pop_at(col, 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_replace_front(struct cvxtest *t)
+static void test_sll_int_guard_replace_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_replace_front(col, 1);
+    sll_int_replace_front(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_sll_guard_replace_back(struct cvxtest *t)
+static void test_sll_int_guard_replace_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_replace_back(col, 1);
+    sll_int_replace_back(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
@@ -145,22 +132,22 @@ static int run_slinked_list_guard_tests(void)
 
     printf("slinked_list (guards)\n");
 
-    CVXRUN(&t, test_sll_guard_clone);
-    CVXRUN(&t, test_sll_guard_drop);
-    CVXRUN(&t, test_sll_guard_clear);
-    CVXRUN(&t, test_sll_guard_count);
-    CVXRUN(&t, test_sll_guard_empty);
-    CVXRUN(&t, test_sll_guard_front);
-    CVXRUN(&t, test_sll_guard_back);
-    CVXRUN(&t, test_sll_guard_get);
-    CVXRUN(&t, test_sll_guard_push_front);
-    CVXRUN(&t, test_sll_guard_push_back);
-    CVXRUN(&t, test_sll_guard_push_at);
-    CVXRUN(&t, test_sll_guard_pop_front);
-    CVXRUN(&t, test_sll_guard_pop_back);
-    CVXRUN(&t, test_sll_guard_pop_at);
-    CVXRUN(&t, test_sll_guard_replace_front);
-    CVXRUN(&t, test_sll_guard_replace_back);
+    CVXRUN(&t, test_sll_int_guard_clone);
+    CVXRUN(&t, test_sll_int_guard_drop);
+    CVXRUN(&t, test_sll_int_guard_clear);
+    CVXRUN(&t, test_sll_int_guard_count);
+    CVXRUN(&t, test_sll_int_guard_empty);
+    CVXRUN(&t, test_sll_int_guard_front);
+    CVXRUN(&t, test_sll_int_guard_back);
+    CVXRUN(&t, test_sll_int_guard_get);
+    CVXRUN(&t, test_sll_int_guard_push_front);
+    CVXRUN(&t, test_sll_int_guard_push_back);
+    CVXRUN(&t, test_sll_int_guard_push_at);
+    CVXRUN(&t, test_sll_int_guard_pop_front);
+    CVXRUN(&t, test_sll_int_guard_pop_back);
+    CVXRUN(&t, test_sll_int_guard_pop_at);
+    CVXRUN(&t, test_sll_int_guard_replace_front);
+    CVXRUN(&t, test_sll_int_guard_replace_back);
 
     return CVXSUMMARY(&t);
 }

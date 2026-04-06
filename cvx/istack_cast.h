@@ -1,9 +1,6 @@
-#define VTABLE CVX_(IMPL_STACK, _vtable)
-#define FUNC(X) CVX_(PFX, X)
+#include "cvx/core.h"
 
-#define GLOBAL_VTABLE(SNAME, IMPL_STACK) CVX_(CVX_(CVX_(cvx_vtables_, SNAME), _as_), IMPL_STACK)
-
-struct VTABLE GLOBAL_VTABLE(SNAME, IMPL_STACK) = {
+struct VTABLE(INTERFACE) GLOBAL_VTABLE(SNAME, _as_, INTERFACE) = {
     .new = IMPL_NEW,
     .drop = IMPL_DROP,
     .clone = IMPL_CLONE,
@@ -14,13 +11,12 @@ struct VTABLE GLOBAL_VTABLE(SNAME, IMPL_STACK) = {
     .replace = IMPL_REPLACE,
 };
 
-struct IMPL_STACK FUNC(CVX_(_as_, IMPL_STACK))(cvx_container *instance)
+struct INTERFACE FUNC(CVX_(_as_, INTERFACE))(cvx_container *instance)
 {
-    return (struct IMPL_STACK){
-        .vtable = &GLOBAL_VTABLE(SNAME, IMPL_STACK),
+    return (struct INTERFACE){
+        .vtable = &GLOBAL_VTABLE(SNAME, _as_, INTERFACE),
         .instance = instance,
     };
 }
 
-#undef IMPL_STACK
-#include "cvx/undef.h"
+#undef INTERFACE

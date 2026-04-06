@@ -4,17 +4,10 @@
 #include "cvx/interface_macros.h"
 #include "cvxtest.h"
 
-#include "interfaces.h"
-
-#define V int
-#define SNAME da_ist_int
-#define PFX da_ist
-#define TAG 55
-#define IMPL_STACK stack
-#include "cvx/dynamic_array.h"
+#include "implementations.h"
 
 #undef MAKE_STACK
-#define MAKE_STACK(name, capacity) struct stack name = da_ist_as_stack(da_ist_new_with(capacity))
+#define MAKE_STACK(name, capacity) struct stack_int name = da_int_as_stack_int(da_int_new_with(capacity))
 
 /* ---- push / count ---- */
 

@@ -12,6 +12,7 @@
 #include "tests/slinked_list_tests.h"
 #include "tests/slinked_list_guard_tests.h"
 #include "tests/slinked_list_init_tests.h"
+#include "tests/slinked_list_iter_tests.h"
 // clang-format on
 
 int main(void)
@@ -30,6 +31,7 @@ int main(void)
         run_slinked_list_tests,
         run_slinked_list_guard_tests,
         run_slinked_list_init_tests,
+        run_slinked_list_iter_tests,
     };
     // clang-format on
 

@@ -4,21 +4,14 @@
 #include "cvx/interface_macros.h"
 #include "cvxtest.h"
 
-#include "interfaces.h"
-
-#define V int
-#define SNAME sll_ist_int
-#define PFX sll_ist
-#define TAG 88
-#define IMPL_STACK stack
-#include "cvx/slinked_list.h"
+#include "implementations.h"
 
 #undef MAKE_STACK
-#define MAKE_STACK(name) struct stack name = sll_ist_as_stack(sll_ist_new())
+#define MAKE_STACK(name) struct stack_int name = sll_int_as_stack_int(sll_int_new())
 
 /* ---- push / count ---- */
 
-static void test_sll_ist_push_count(struct cvxtest *t)
+static void test_sll_int_push_count(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -32,7 +25,7 @@ static void test_sll_ist_push_count(struct cvxtest *t)
     cvx_drop(&s);
 }
 
-static void test_sll_ist_push_many(struct cvxtest *t)
+static void test_sll_int_push_many(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -47,7 +40,7 @@ static void test_sll_ist_push_many(struct cvxtest *t)
 
 /* ---- pop ---- */
 
-static void test_sll_ist_pop_lifo_order(struct cvxtest *t)
+static void test_sll_int_pop_lifo_order(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -63,7 +56,7 @@ static void test_sll_ist_pop_lifo_order(struct cvxtest *t)
     cvx_drop(&s);
 }
 
-static void test_sll_ist_pop_empty(struct cvxtest *t)
+static void test_sll_int_pop_empty(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -73,7 +66,7 @@ static void test_sll_ist_pop_empty(struct cvxtest *t)
     cvx_drop(&s);
 }
 
-static void test_sll_ist_pop_to_empty(struct cvxtest *t)
+static void test_sll_int_pop_to_empty(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -82,15 +75,15 @@ static void test_sll_ist_pop_to_empty(struct cvxtest *t)
 
     CVXCHECK(t, cvx_count(&s) == 0);
     /* underlying list must have cleaned up both head and tail */
-    CVXCHECK(t, ((struct sll_ist_int *)s.instance)->head == NULL);
-    CVXCHECK(t, ((struct sll_ist_int *)s.instance)->tail == NULL);
+    CVXCHECK(t, ((struct slinked_int *)s.instance)->head == NULL);
+    CVXCHECK(t, ((struct slinked_int *)s.instance)->tail == NULL);
 
     cvx_drop(&s);
 }
 
 /* ---- peek ---- */
 
-static void test_sll_ist_peek(struct cvxtest *t)
+static void test_sll_int_peek(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -105,7 +98,7 @@ static void test_sll_ist_peek(struct cvxtest *t)
     cvx_drop(&s);
 }
 
-static void test_sll_ist_peek_empty(struct cvxtest *t)
+static void test_sll_int_peek_empty(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -117,7 +110,7 @@ static void test_sll_ist_peek_empty(struct cvxtest *t)
 
 /* ---- replace ---- */
 
-static void test_sll_ist_replace(struct cvxtest *t)
+static void test_sll_int_replace(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -133,7 +126,7 @@ static void test_sll_ist_replace(struct cvxtest *t)
     cvx_drop(&s);
 }
 
-static void test_sll_ist_replace_on_empty(struct cvxtest *t)
+static void test_sll_int_replace_on_empty(struct cvxtest *t)
 {
     MAKE_STACK(s);
 
@@ -153,18 +146,18 @@ static int run_istack_slinked_list_tests(void)
 
     printf("istack (slinked_list)\n");
 
-    CVXRUN(&t, test_sll_ist_push_count);
-    CVXRUN(&t, test_sll_ist_push_many);
+    CVXRUN(&t, test_sll_int_push_count);
+    CVXRUN(&t, test_sll_int_push_many);
 
-    CVXRUN(&t, test_sll_ist_pop_lifo_order);
-    CVXRUN(&t, test_sll_ist_pop_empty);
-    CVXRUN(&t, test_sll_ist_pop_to_empty);
+    CVXRUN(&t, test_sll_int_pop_lifo_order);
+    CVXRUN(&t, test_sll_int_pop_empty);
+    CVXRUN(&t, test_sll_int_pop_to_empty);
 
-    CVXRUN(&t, test_sll_ist_peek);
-    CVXRUN(&t, test_sll_ist_peek_empty);
+    CVXRUN(&t, test_sll_int_peek);
+    CVXRUN(&t, test_sll_int_peek_empty);
 
-    CVXRUN(&t, test_sll_ist_replace);
-    CVXRUN(&t, test_sll_ist_replace_on_empty);
+    CVXRUN(&t, test_sll_int_replace);
+    CVXRUN(&t, test_sll_int_replace_on_empty);
 
     return CVXSUMMARY(&t);
 }

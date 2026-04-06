@@ -1,12 +1,11 @@
 // Prevent macros leaking to other templates
 
-#undef VTABLE
 #undef INTERFACE
-#undef GLOBAL_VTABLE
 
 #undef FUNC
 #undef PFX
 #undef SNAME
+#undef NODE
 #undef TAG
 
 #undef ITERATOR
