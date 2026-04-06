@@ -1,4 +1,5 @@
-#include "core.h"
+#include "cvx/core.h"
+
 struct VTABLE(INTERFACE)
 {
     // constructors and destructors

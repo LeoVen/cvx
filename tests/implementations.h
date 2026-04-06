@@ -7,7 +7,7 @@
 
 #define V int
 #define INTERFACE stack_int
-#include "cvx/istack.h"
+#include "cvx/interface/stack.h"
 
 #define V int
 #define INTERFACE raccess_iter

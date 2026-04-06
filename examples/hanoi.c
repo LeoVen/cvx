@@ -2,7 +2,7 @@
 
 #define V int
 #define INTERFACE stack
-#include "cvx/istack.h"
+#include "cvx/interface/stack.h"
 
 #define V int
 #define SNAME list

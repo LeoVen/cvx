@@ -662,7 +662,7 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #define IMPL_PEEK FUNC(_front)
 #define IMPL_REPLACE FUNC(_replace_front)
 
-#include "istack_cast.h"
+#include "cvx/interface/stack_cast.h"
 #undef IMPL_STACK
 
 #undef IMPL_NEW

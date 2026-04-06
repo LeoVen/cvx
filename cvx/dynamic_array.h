@@ -771,7 +771,7 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
 #define IMPL_PEEK FUNC(_back)
 #define IMPL_REPLACE FUNC(_replace_back)
 
-#include "cvx/istack_cast.h"
+#include "cvx/interface/stack_cast.h"
 #undef IMPL_STACK
 
 #undef IMPL_NEW
