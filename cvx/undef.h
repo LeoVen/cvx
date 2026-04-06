@@ -1,13 +1,16 @@
 // Prevent macros leaking to other templates
 
+// interface files
 #undef INTERFACE
 
-#undef FUNC
+// user-defined macros
 #undef PFX
 #undef SNAME
-#undef NODE
 #undef TAG
 
+// implementation files
+#undef FUNC
+#undef NODE
 #undef ITERATOR
 #undef ITER_TAG
 

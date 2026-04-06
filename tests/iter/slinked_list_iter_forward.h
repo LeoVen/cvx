@@ -39,7 +39,8 @@ static void test_fi_start(struct cvxtest *t)
 static void test_fi_drop(struct cvxtest *t)
 {
     MAKE_FI(iter, col);
-    cvx_drop(&iter); /* must not crash */
+    CVXCHECK(t, col != NULL);
+    cvx_drop(&iter);
     sll_int_drop(col);
 }
 

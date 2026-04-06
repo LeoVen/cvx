@@ -1,4 +1,3 @@
-// The order of imports matter
 // clang-format off
 #include "tests/interface/stack_dynamic_array_tests.h"
 #include "tests/interface/stack_slinked_list_tests.h"
