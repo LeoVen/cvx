@@ -10,8 +10,7 @@
 #define CVX_(A, B) CVX__(A, B)
 
 #define VTABLE(X) CVX_(X, _vtable)
-#define GLOBAL_VTABLE(SNAME, X, NAME) \
-    CVX_(CVX_(CVX_(cvx_vtables_, SNAME), X), NAME)
+#define GLOBAL_VTABLE(SNAME, X, NAME) CVX_(CVX_(CVX_(cvx_vtables_, SNAME), X), NAME)
 
 #define CVX_VTAB_COMP(T) int (*comp)(T, T)
 #define CVX_VTAB_COPY(T) T (*copy)(T)

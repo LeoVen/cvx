@@ -21,7 +21,7 @@ struct VTABLE(INTERFACE)
 struct INTERFACE
 {
     cvx_container *instance;
-    struct VTABLE(INTERFACE) *vtable;
+    struct VTABLE(INTERFACE) * vtable;
 };
 
 #undef INTERFACE

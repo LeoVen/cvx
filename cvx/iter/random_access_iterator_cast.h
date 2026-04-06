@@ -18,8 +18,7 @@ struct VTABLE(INTERFACE) GLOBAL_VTABLE(SNAME, _iter_as_, INTERFACE) = {
     .index = IMPL_INDEX,
 };
 
-struct INTERFACE FUNC(CVX_(_iter_as_,
-                                         INTERFACE))(cvx_container *instance)
+struct INTERFACE FUNC(CVX_(_iter_as_, INTERFACE))(cvx_container *instance)
 {
     return (struct INTERFACE){
         .vtable = &GLOBAL_VTABLE(SNAME, _iter_as_, INTERFACE),

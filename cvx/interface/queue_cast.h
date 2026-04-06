@@ -18,4 +18,3 @@ struct INTERFACE FUNC(CVX_(_as_, INTERFACE))(cvx_container *instance)
 }
 
 #undef INTERFACE
-

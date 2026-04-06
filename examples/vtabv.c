@@ -2,14 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define V         char *
-#define SNAME     str_array
-#define PFX       sa
-#define TAG       1
+#define V char *
+#define SNAME str_array
+#define PFX sa
+#define TAG 1
 #include "cvx/dynamic_array.h"
 
-char *str_copy(char *s) { return strdup(s); }
-void  str_drop(char *s) { free(s); }
+char *str_copy(char *s)
+{
+    return strdup(s);
+}
+void str_drop(char *s)
+{
+    free(s);
+}
 
 int main(void)
 {
@@ -26,6 +32,6 @@ int main(void)
 
     printf("%s %s\n", sa_get(col, 0), sa_get(clone, 1));
 
-    sa_drop(col);   // calls str_drop on each element, then frees the array
+    sa_drop(col); // calls str_drop on each element, then frees the array
     sa_drop(clone);
 }

@@ -516,7 +516,8 @@ static void test_da_int_clone_values(struct cvxtest *t)
     CVXCHECK(t, da_int_get(clone, 1) == 20);
     CVXCHECK(t, da_int_get(clone, 2) == 30);
     /* Distinct allocation */
-    CVXCHECK(t, ((struct dynamic_array_int *)clone)->buffer != ((struct dynamic_array_int *)col)->buffer);
+    CVXCHECK(t, ((struct dynamic_array_int *)clone)->buffer !=
+                    ((struct dynamic_array_int *)col)->buffer);
 
     da_int_drop(col);
     da_int_drop(clone);

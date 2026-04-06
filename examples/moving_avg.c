@@ -1,6 +1,6 @@
+#include <assert.h>
 #include <stdio.h>
 #include <time.h>
-#include <assert.h>
 
 #include "cvx/interface_macros.h"
 
@@ -46,7 +46,7 @@ int main(void)
     struct queue queue = sl_as_queue(data);
 
     // Initial data
-    for (int i = 0; i < 256; i ++)
+    for (int i = 0; i < 256; i++)
     {
         sl_push_back(data, rand() % 256);
     }

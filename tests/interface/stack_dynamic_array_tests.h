@@ -6,7 +6,8 @@
 #include "tests/implementations.h"
 
 #undef MAKE_STACK
-#define MAKE_STACK(name, capacity) struct stack_int name = da_int_as_stack_int(da_int_new_with(NULL, capacity))
+#define MAKE_STACK(name, capacity) \
+    struct stack_int name = da_int_as_stack_int(da_int_new_with(NULL, capacity))
 
 /* ---- push / count ---- */
 
