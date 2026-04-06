@@ -10,7 +10,7 @@
 #include "cvx/istack.h"
 
 #define V int
-#define INTERFACE rai
+#define INTERFACE raccess_iter
 #include "cvx/iter/random_access_iterator.h"
 
 ///
@@ -21,7 +21,7 @@
 #define SNAME dynamic_array_int
 #define PFX da_int
 #define TAG 99
-#define IMPL_RANDOM_ACCESS_ITER rai
+#define IMPL_RANDOM_ACCESS_ITER raccess_iter
 #define IMPL_STACK stack_int
 #include "cvx/dynamic_array.h"
 #define DA_ITER_TAG (99 * CVX_ITER_TAG_MULT)
