@@ -101,7 +101,7 @@ jobs:
         run: ./bin/tests_cov
 
       - name: Generate coverage report
-        run: gcovr --root . --filter 'cvx/' --html-details coverage/index.html --print-summary
+        run: mkdir -p coverage && gcovr --root . --filter 'cvx/' --html-details coverage/index.html --print-summary
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
