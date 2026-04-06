@@ -675,6 +675,27 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #undef IMPL_REPLACE
 #endif
 
+#ifdef IMPL_QUEUE
+#define INTERFACE IMPL_QUEUE
+
+#define IMPL_NEW FUNC(_new)
+#define IMPL_DROP FUNC(_drop)
+#define IMPL_CLONE FUNC(_clone)
+#define IMPL_ENQUEUE FUNC(_push_back)
+#define IMPL_DEQUEUE FUNC(_pop_front)
+#define IMPL_COUNT FUNC(_count)
+
+#include "cvx/interface/queue_cast.h"
+#undef IMPL_QUEUE
+
+#undef IMPL_NEW
+#undef IMPL_DROP
+#undef IMPL_CLONE
+#undef IMPL_ENQUEUE
+#undef IMPL_DEQUEUE
+#undef IMPL_COUNT
+#endif
+
 #ifdef IMPL_FORWARD_ITER
 #define INTERFACE IMPL_FORWARD_ITER
 

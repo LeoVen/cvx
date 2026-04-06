@@ -17,6 +17,10 @@
 #define INTERFACE forward_iter
 #include "cvx/iter/forward_iterator.h"
 
+#define V int
+#define INTERFACE queue_int
+#include "cvx/interface/queue.h"
+
 ///
 /// IMPLEMENTATIONS
 ///
@@ -36,6 +40,7 @@
 #define TAG 77
 #define IMPL_FORWARD_ITER forward_iter
 #define IMPL_STACK stack_int
+#define IMPL_QUEUE queue_int
 #include "cvx/slinked_list.h"
 #define SLL_ITER_TAG (77 * CVX_ITER_TAG_MULT)
 

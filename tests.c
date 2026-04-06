@@ -1,4 +1,5 @@
 // clang-format off
+#include "tests/interface/queue_slinked_list_tests.h"
 #include "tests/interface/stack_dynamic_array_tests.h"
 #include "tests/interface/stack_slinked_list_tests.h"
 
@@ -19,6 +20,8 @@ int main(void)
 {
     // clang-format off
     int (*tests[])(void) = {
+        run_queue_slinked_list_tests,
+
         run_stack_dynamic_array_tests,
         run_stack_slinked_list_tests,
 

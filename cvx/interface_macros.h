@@ -6,8 +6,10 @@
 #define cvx_backward(ds, b) (ds)->vtable->backward((ds)->instance, b)
 #define cvx_clone(ds) (ds)->vtable->clone((ds)->instance)
 #define cvx_count(ds) (ds)->vtable->count((ds)->instance)
+#define cvx_dequeue(ds) (ds)->vtable->dequeue((ds)->instance)
 #define cvx_drop(ds) (ds)->vtable->drop((ds)->instance)
 #define cvx_end(ds) (ds)->vtable->end((ds)->instance)
+#define cvx_enqueue(ds, item) (ds)->vtable->enqueue((ds)->instance, item)
 #define cvx_flag(ds) ((cvx_container *)(ds)->instance)->flag
 #define cvx_forward(ds, f) (ds)->vtable->forward((ds)->instance, f)
 #define cvx_index(ds) (ds)->vtable->index((ds)->instance)
