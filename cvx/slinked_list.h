@@ -4,6 +4,8 @@
 
 #define FUNC(X) CVX_(PFX, X)
 #define NODE CVX_(SNAME, _node)
+#define ITERATOR CVX_(SNAME, _iter)
+#define ITER_TAG (TAG * CVX_ITER_TAG_MULT)
 
 struct NODE
 {
@@ -17,6 +19,14 @@ struct SNAME
     struct NODE *head;
     struct NODE *tail;
     size_t count;
+};
+
+struct ITERATOR
+{
+    cvx_container super;
+    size_t index;
+    struct SNAME *target;
+    struct NODE *cursor;
 };
 
 // Non-allocating initializer
@@ -46,6 +56,23 @@ V FUNC(_pop_back)(cvx_container *_col_);
 V FUNC(_pop_at)(cvx_container *_col_, size_t index);
 V FUNC(_replace_front)(cvx_container *_col_, V new);
 V FUNC(_replace_back)(cvx_container *_col_, V new);
+
+// Iterators
+struct ITERATOR FUNC(_iter_init_start)(cvx_container *_target_);
+cvx_container *FUNC(_iter_start)(cvx_container *_target_);
+void FUNC(_iter_drop)(cvx_container *_iter_);
+// Iterator state
+bool FUNC(_iter_at_start)(cvx_container *_iter_);
+bool FUNC(_iter_at_end)(cvx_container *_iter_);
+size_t FUNC(_iter_count)(cvx_container *_iter_);
+// Iterator movement
+void FUNC(_iter_to_start)(cvx_container *_iter_);
+void FUNC(_iter_to_end)(cvx_container *_iter_);
+void FUNC(_iter_next)(cvx_container *_iter_);
+void FUNC(_iter_forward)(cvx_container *_iter_, size_t steps);
+// Iterator access
+V FUNC(_iter_value)(cvx_container *_iter_);
+size_t FUNC(_iter_index)(cvx_container *_iter_);
 
 struct SNAME FUNC(_init)(void)
 {
@@ -458,6 +485,173 @@ V FUNC(_replace_back)(cvx_container *_col_, V new)
     return _old_;
 }
 
+///
+///
+/// ITERATOR
+///
+///
+
+// Iterators
+struct ITERATOR FUNC(_iter_init_start)(cvx_container *_target_)
+{
+    struct ITERATOR _res_ = { 0 };
+
+    if (_target_->tag != TAG)
+    {
+        _res_.super.flag = CVX_FLAG_WRONG_TAG;
+        return _res_;
+    }
+
+    struct SNAME *_self_ = (struct SNAME *)_target_;
+
+    _res_.super.tag = ITER_TAG;
+    _res_.target = _self_;
+    _res_.index = 0;
+    _res_.cursor = _self_->head;
+    _res_.super.flag = CVX_FLAG_OK;
+
+    return _res_;
+}
+
+cvx_container *FUNC(_iter_start)(cvx_container *_target_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _target_, NULL);
+
+    struct ITERATOR *_res_ = malloc(sizeof(struct ITERATOR));
+
+    if (!_res_)
+        return NULL;
+
+    struct SNAME *_self_ = (struct SNAME *)_target_;
+
+    _res_->super.tag = ITER_TAG;
+    _res_->super.flag = CVX_FLAG_OK;
+    _res_->index = 0;
+    _res_->target = _self_;
+    _res_->cursor = _self_->head;
+
+    return (cvx_container *)_res_;
+}
+
+void FUNC(_iter_drop)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
+
+    free(_iter_);
+}
+
+// Iterator state
+bool FUNC(_iter_at_start)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
+
+    return ((struct ITERATOR *)_iter_)->index == 0;
+}
+
+bool FUNC(_iter_at_end)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    return _self_->index == _self_->target->count;
+}
+
+size_t FUNC(_iter_count)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, 0);
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    return _self_->target->count;
+}
+
+// Iterator movement
+void FUNC(_iter_to_start)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    _self_->index = 0;
+    _self_->cursor = _self_->target->head;
+    _iter_->flag = CVX_FLAG_OK;
+}
+
+void FUNC(_iter_to_end)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    _self_->index = _self_->target->count;
+    _self_->cursor = _self_->target->tail;
+    _iter_->flag = CVX_FLAG_OK;
+}
+
+void FUNC(_iter_next)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    if (_self_->index >= _self_->target->count)
+    {
+        _iter_->flag = CVX_FLAG_RANGE;
+        return;
+    }
+
+    _self_->index++;
+    _self_->cursor = _self_->cursor->next;
+    _iter_->flag = CVX_FLAG_OK;
+}
+
+void FUNC(_iter_forward)(cvx_container *_iter_, size_t steps)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    size_t remaining = _self_->target->count - _self_->index;
+
+    if (remaining < steps)
+    {
+        _iter_->flag = CVX_FLAG_RANGE;
+        return;
+    }
+
+    for (size_t i = 0; i < steps; i++)
+        _self_->cursor = _self_->cursor->next;
+
+    _self_->index += steps;
+    _iter_->flag = CVX_FLAG_OK;
+}
+
+// Iterator access
+V FUNC(_iter_value)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, (V){ 0 });
+
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
+    if (_self_->index >= _self_->target->count)
+    {
+        _iter_->flag = CVX_FLAG_RANGE;
+        return (V){ 0 };
+    }
+
+    return _self_->cursor->value;
+}
+
+size_t FUNC(_iter_index)(cvx_container *_iter_)
+{
+    CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, 0);
+
+    return ((struct ITERATOR *)_iter_)->index;
+}
+
+
+
 #ifdef IMPL_STACK
 #define IMPL_NEW FUNC(_new)
 #define IMPL_DROP FUNC(_drop)
@@ -477,6 +671,30 @@ V FUNC(_replace_back)(cvx_container *_col_, V new)
 #undef IMPL_COUNT
 #undef IMPL_PEEK
 #undef IMPL_REPLACE
+#endif
+
+#ifdef IMPL_FORWARD_ITER
+#define IMPL_START FUNC(_iter_start)
+#define IMPL_DROP FUNC(_iter_drop)
+#define IMPL_AT_START FUNC(_iter_at_start)
+#define IMPL_AT_END FUNC(_iter_at_end)
+#define IMPL_COUNT FUNC(_iter_count)
+#define IMPL_TO_START FUNC(_iter_to_start)
+#define IMPL_NEXT FUNC(_iter_next)
+#define IMPL_FORWARD FUNC(_iter_forward)
+#define IMPL_VALUE FUNC(_iter_value)
+#define IMPL_INDEX FUNC(_iter_index)
+#include "cvx/iter/forward_iterator_cast.h"
+#undef IMPL_START
+#undef IMPL_DROP
+#undef IMPL_AT_START
+#undef IMPL_AT_END
+#undef IMPL_COUNT
+#undef IMPL_TO_START
+#undef IMPL_NEXT
+#undef IMPL_FORWARD
+#undef IMPL_VALUE
+#undef IMPL_INDEX
 #endif
 
 #undef NODE
