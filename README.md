@@ -12,13 +12,15 @@ There are two main types of data structures:
 
 ## Quick start
 
+Check out the examples folder to see more examples.
+
 ```c
 #include <stdio.h>
 
 // 1. Define the interface type
 #define V         int             // data type for the stack interface
 #define INTERFACE stack           // name of the struct
-#include "cvx/istack.h"
+#include "cvx/interface/stack.h"
 
 // 2. Instantiate an implementation
 #define V          int            // data type for my dynamic array implementation
@@ -38,15 +40,12 @@ int main(void)
     cvx_push(&s, 20);
     cvx_push(&s, 30);
 
-    int out;
-    cvx_pop(&s, &out);            // out == 30
-    printf("%d\n", cvx_peek(&s)); // 20
+    int out = cvx_pop(&s);
+    printf("Pop: %d\nPeek: %d\n", out, cvx_peek(&s));
 
     cvx_drop(&s);
 }
 ```
-
-Check out the examples folder to see how to use the library.
 
 ---
 
@@ -63,7 +62,7 @@ Check out the examples folder to see how to use the library.
 
 | Header | Interface operations |
 |---|---|
-| `cvx/istack.h` | `push`, `pop`, `peek`, `replace`, `count`, `new`, `clone`, `drop` |
+| `cvx/interface/stack.h` | `push`, `pop`, `peek`, `replace`, `count`, `new`, `clone`, `drop` |
 
 ---
 
@@ -116,7 +115,7 @@ Usually, when working with this pattern, you have `void *` pointers. This librar
 ```c
 #define V         int
 #define INTERFACE stack
-#include "cvx/istack.h"
+#include "cvx/intf/stack.h"
 // produces: struct stack { cvx_container *instance; struct stack_vtable *vtable; }
 ```
 
