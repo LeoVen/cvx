@@ -105,35 +105,35 @@ static void test_sll_guard_push_at(struct cvxtest *t)
 static void test_sll_guard_pop_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_pop_front(col, NULL);
+    sll_guard_pop_front(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_sll_guard_pop_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_pop_back(col, NULL);
+    sll_guard_pop_back(col);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_sll_guard_pop_at(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_pop_at(col, NULL, 0);
+    sll_guard_pop_at(col, 0);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_sll_guard_replace_front(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_replace_front(col, 1, NULL);
+    sll_guard_replace_front(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
 static void test_sll_guard_replace_back(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
-    sll_guard_replace_back(col, 1, NULL);
+    sll_guard_replace_back(col, 1);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 

@@ -50,9 +50,7 @@ void print_stacks()
 
 void move(struct stack *from, struct stack *to)
 {
-    int res;
-    cvx_pop(from, &res);
-    cvx_push(to, res);
+    cvx_push(to, cvx_pop(from));
 }
 
 void hanoi(int n, struct stack *from, struct stack *aux, struct stack *to)

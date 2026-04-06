@@ -164,8 +164,7 @@ static void test_da_pop_back(struct cvxtest *t)
     da_push_back(col, 42);
     da_push_back(col, 7);
 
-    int out = 0;
-    da_pop_back(col, &out);
+    int out = da_pop_back(col);
 
     CVXCHECK(t, out == 7);
     CHECK_COUNT(t, col, 1);
@@ -174,22 +173,10 @@ static void test_da_pop_back(struct cvxtest *t)
     da_drop(col);
 }
 
-static void test_da_pop_back_null_out(struct cvxtest *t)
-{
-    cvx_container *col = da_new_with(4);
-    da_push_back(col, 5);
-    da_pop_back(col, NULL);
-
-    CHECK_COUNT(t, col, 0);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
-
-    da_drop(col);
-}
-
 static void test_da_pop_back_empty(struct cvxtest *t)
 {
     cvx_container *col = da_new_with(4);
-    da_pop_back(col, NULL);
+    da_pop_back(col);
 
     CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
 
@@ -204,8 +191,7 @@ static void test_da_pop_front(struct cvxtest *t)
     da_push_back(col, 10);
     da_push_back(col, 20);
 
-    int out = 0;
-    da_pop_front(col, &out);
+    int out = da_pop_front(col);
 
     CVXCHECK(t, out == 10);
     CHECK_COUNT(t, col, 1);
@@ -219,7 +205,7 @@ static void test_da_pop_front(struct cvxtest *t)
 static void test_da_pop_front_empty(struct cvxtest *t)
 {
     cvx_container *col = da_new_with(4);
-    da_pop_front(col, NULL);
+    da_pop_front(col);
 
     CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
 
@@ -235,8 +221,7 @@ static void test_da_pop_at_middle(struct cvxtest *t)
     da_push_back(col, 2);
     da_push_back(col, 3);
 
-    int out = 0;
-    da_pop_at(col, &out, 1);
+    int out = da_pop_at(col, 1);
 
     CVXCHECK(t, out == 2);
     CHECK_COUNT(t, col, 2);
@@ -252,7 +237,7 @@ static void test_da_pop_at_out_of_range(struct cvxtest *t)
 {
     cvx_container *col = da_new_with(4);
     da_push_back(col, 1);
-    da_pop_at(col, NULL, 5);
+    da_pop_at(col, 5);
 
     CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
 
@@ -262,7 +247,7 @@ static void test_da_pop_at_out_of_range(struct cvxtest *t)
 static void test_da_pop_at_empty(struct cvxtest *t)
 {
     cvx_container *col = da_new_with(4);
-    da_pop_at(col, NULL, 0);
+    da_pop_at(col, 0);
 
     CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
 
@@ -348,8 +333,7 @@ static void test_da_replace_back(struct cvxtest *t)
     da_push_back(col, 5);
     da_push_back(col, 10);
 
-    int old = 0;
-    da_replace_back(col, 99, &old);
+    int old = da_replace_back(col, 99);
 
     CVXCHECK(t, old == 10);
     CVXCHECK(t, da_back(col) == 99);
@@ -358,27 +342,12 @@ static void test_da_replace_back(struct cvxtest *t)
     da_drop(col);
 }
 
-static void test_da_replace_back_on_empty_with_null_out(struct cvxtest *t)
+static void test_da_replace_back_on_empty(struct cvxtest *t)
 {
     cvx_container *col = da_new_with(4);
 
-    /* When empty and out is NULL, element should be inserted */
-    da_replace_back(col, 42, NULL);
+    da_replace_back(col, 42);
 
-    CHECK_COUNT(t, col, 1);
-    CVXCHECK(t, da_back(col) == 42);
-
-    da_drop(col);
-}
-
-static void test_da_replace_back_on_empty_with_out(struct cvxtest *t)
-{
-    cvx_container *col = da_new_with(4);
-
-    int out = 0;
-    da_replace_back(col, 42, &out);
-
-    /* flag should be EMPTY, nothing inserted */
     CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
     CHECK_COUNT(t, col, 0);
 
@@ -431,8 +400,7 @@ static void test_da_replace_front(struct cvxtest *t)
     da_push_back(col, 10);
     da_push_back(col, 20);
 
-    int old = 0;
-    da_replace_front(col, 99, &old);
+    int old = da_replace_front(col, 99);
 
     CVXCHECK(t, old == 10);
     CVXCHECK(t, da_front(col) == 99);
@@ -441,27 +409,12 @@ static void test_da_replace_front(struct cvxtest *t)
     da_drop(col);
 }
 
-static void test_da_replace_front_on_empty_with_null_out(struct cvxtest *t)
+static void test_da_replace_front_on_empty(struct cvxtest *t)
 {
     cvx_container *col = da_new_with(4);
 
-    /* When empty and out is NULL, element should be inserted */
-    da_replace_front(col, 42, NULL);
+    da_replace_front(col, 42);
 
-    CHECK_COUNT(t, col, 1);
-    CVXCHECK(t, da_front(col) == 42);
-
-    da_drop(col);
-}
-
-static void test_da_replace_front_on_empty_with_out(struct cvxtest *t)
-{
-    cvx_container *col = da_new_with(4);
-
-    int out = 0;
-    da_replace_front(col, 42, &out);
-
-    /* flag should be EMPTY, nothing inserted */
     CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
     CHECK_COUNT(t, col, 0);
 
@@ -584,40 +537,6 @@ static void test_da_clone_values(struct cvxtest *t)
     da_drop(clone);
 }
 
-/* ---- pop_front / pop_at null-out while non-empty ---- */
-
-static void test_da_pop_front_null_out(struct cvxtest *t)
-{
-    cvx_container *col = da_new_with(4);
-    da_push_back(col, 10);
-    da_push_back(col, 20);
-
-    da_pop_front(col, NULL);
-
-    CHECK_COUNT(t, col, 1);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
-    CVXCHECK(t, da_front(col) == 20);
-
-    da_drop(col);
-}
-
-static void test_da_pop_at_null_out(struct cvxtest *t)
-{
-    cvx_container *col = da_new_with(4);
-    da_push_back(col, 1);
-    da_push_back(col, 2);
-    da_push_back(col, 3);
-
-    da_pop_at(col, NULL, 1);
-
-    CHECK_COUNT(t, col, 2);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
-    CVXCHECK(t, da_get(col, 0) == 1);
-    CVXCHECK(t, da_get(col, 1) == 3);
-
-    da_drop(col);
-}
-
 /* ---- runner ---- */
 
 static int run_dynamic_array_tests(void)
@@ -639,7 +558,6 @@ static int run_dynamic_array_tests(void)
     CVXRUN(&t, test_da_push_at_out_of_range);
 
     CVXRUN(&t, test_da_pop_back);
-    CVXRUN(&t, test_da_pop_back_null_out);
     CVXRUN(&t, test_da_pop_back_empty);
     CVXRUN(&t, test_da_pop_front);
     CVXRUN(&t, test_da_pop_front_empty);
@@ -660,12 +578,10 @@ static int run_dynamic_array_tests(void)
     CVXRUN(&t, test_da_get_empty);
 
     CVXRUN(&t, test_da_replace_back);
-    CVXRUN(&t, test_da_replace_back_on_empty_with_null_out);
-    CVXRUN(&t, test_da_replace_back_on_empty_with_out);
+    CVXRUN(&t, test_da_replace_back_on_empty);
 
     CVXRUN(&t, test_da_replace_front);
-    CVXRUN(&t, test_da_replace_front_on_empty_with_null_out);
-    CVXRUN(&t, test_da_replace_front_on_empty_with_out);
+    CVXRUN(&t, test_da_replace_front_on_empty);
 
     CVXRUN(&t, test_da_clear);
     CVXRUN(&t, test_da_wrong_tag);
@@ -675,9 +591,6 @@ static int run_dynamic_array_tests(void)
 
     CVXRUN(&t, test_da_clone_empty);
     CVXRUN(&t, test_da_clone_values);
-
-    CVXRUN(&t, test_da_pop_front_null_out);
-    CVXRUN(&t, test_da_pop_at_null_out);
 
     return CVXSUMMARY(&t);
 }

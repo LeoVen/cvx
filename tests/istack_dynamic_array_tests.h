@@ -55,27 +55,10 @@ static void test_ist_pop_lifo_order(struct cvxtest *t)
     cvx_push(&s, 20);
     cvx_push(&s, 30);
 
-    int out = 0;
-    cvx_pop(&s, &out);
-    CVXCHECK(t, out == 30);
-    cvx_pop(&s, &out);
-    CVXCHECK(t, out == 20);
-    cvx_pop(&s, &out);
-    CVXCHECK(t, out == 10);
+    CVXCHECK(t, cvx_pop(&s) == 30);
+    CVXCHECK(t, cvx_pop(&s) == 20);
+    CVXCHECK(t, cvx_pop(&s) == 10);
     CVXCHECK(t, cvx_count(&s) == 0);
-
-    cvx_drop(&s);
-}
-
-static void test_ist_pop_null_out(struct cvxtest *t)
-{
-    MAKE_STACK(s, 4);
-
-    cvx_push(&s, 99);
-    cvx_pop(&s, NULL);
-
-    CVXCHECK(t, cvx_count(&s) == 0);
-    CVXCHECK(t, cvx_flag(&s) == CVX_FLAG_OK);
 
     cvx_drop(&s);
 }
@@ -84,7 +67,7 @@ static void test_ist_pop_empty(struct cvxtest *t)
 {
     MAKE_STACK(s, 4);
 
-    cvx_pop(&s, NULL);
+    cvx_pop(&s);
     CVXCHECK(t, cvx_flag(&s) == CVX_FLAG_EMPTY);
 
     cvx_drop(&s);
@@ -126,8 +109,7 @@ static void test_ist_replace(struct cvxtest *t)
     cvx_push(&s, 5);
     cvx_push(&s, 10);
 
-    int old = 0;
-    cvx_replace(&s, 99, &old);
+    int old = cvx_replace(&s, 99);
 
     CVXCHECK(t, old == 10);
     CVXCHECK(t, cvx_peek(&s) == 99);
@@ -136,24 +118,11 @@ static void test_ist_replace(struct cvxtest *t)
     cvx_drop(&s);
 }
 
-static void test_ist_replace_on_empty_with_null_out(struct cvxtest *t)
+static void test_ist_replace_on_empty(struct cvxtest *t)
 {
     MAKE_STACK(s, 4);
 
-    cvx_replace(&s, 42, NULL);
-
-    CVXCHECK(t, cvx_count(&s) == 1);
-    CVXCHECK(t, cvx_peek(&s) == 42);
-
-    cvx_drop(&s);
-}
-
-static void test_ist_replace_on_empty_with_out(struct cvxtest *t)
-{
-    MAKE_STACK(s, 4);
-
-    int out = 0;
-    cvx_replace(&s, 42, &out);
+    cvx_replace(&s, 42);
 
     CVXCHECK(t, cvx_flag(&s) == CVX_FLAG_EMPTY);
     CVXCHECK(t, cvx_count(&s) == 0);
@@ -173,15 +142,13 @@ static int run_istack_dynamic_array_tests(void)
     CVXRUN(&t, test_ist_push_grows);
 
     CVXRUN(&t, test_ist_pop_lifo_order);
-    CVXRUN(&t, test_ist_pop_null_out);
     CVXRUN(&t, test_ist_pop_empty);
 
     CVXRUN(&t, test_ist_peek);
     CVXRUN(&t, test_ist_peek_empty);
 
     CVXRUN(&t, test_ist_replace);
-    CVXRUN(&t, test_ist_replace_on_empty_with_null_out);
-    CVXRUN(&t, test_ist_replace_on_empty_with_out);
+    CVXRUN(&t, test_ist_replace_on_empty);
 
     return CVXSUMMARY(&t);
 }

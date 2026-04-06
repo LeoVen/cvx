@@ -10,9 +10,9 @@ struct VTABLE
     void (*drop)(cvx_container *);
     // operations
     void (*push)(cvx_container *, V);
-    void (*pop)(cvx_container *, V *);
+    V (*pop)(cvx_container *);
     V (*peek)(cvx_container *);
-    void (*replace)(cvx_container *, V, V *);
+    V (*replace)(cvx_container *, V);
     // state
     size_t (*count)(cvx_container *);
 };

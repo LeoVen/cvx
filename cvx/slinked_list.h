@@ -41,11 +41,11 @@ V FUNC(_get)(cvx_container *_col_, size_t index);
 void FUNC(_push_front)(cvx_container *_col_, V item);
 void FUNC(_push_back)(cvx_container *_col_, V item);
 void FUNC(_push_at)(cvx_container *_col_, V item, size_t index);
-void FUNC(_pop_front)(cvx_container *_col_, V *out);
-void FUNC(_pop_back)(cvx_container *_col_, V *out);
-void FUNC(_pop_at)(cvx_container *_col_, V *out, size_t index);
-void FUNC(_replace_front)(cvx_container *_col_, V new, V *out);
-void FUNC(_replace_back)(cvx_container *_col_, V new, V *out);
+V FUNC(_pop_front)(cvx_container *_col_);
+V FUNC(_pop_back)(cvx_container *_col_);
+V FUNC(_pop_at)(cvx_container *_col_, size_t index);
+V FUNC(_replace_front)(cvx_container *_col_, V new);
+V FUNC(_replace_back)(cvx_container *_col_, V new);
 
 struct SNAME FUNC(_init)(void)
 {
@@ -322,22 +322,20 @@ void FUNC(_push_at)(cvx_container *_col_, V item, size_t index)
     _col_->flag = CVX_FLAG_OK;
 }
 
-void FUNC(_pop_front)(cvx_container *_col_, V *out)
+V FUNC(_pop_front)(cvx_container *_col_)
 {
-    CVX_CONTAINER_GUARDS(TAG, _col_, );
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
     if (!_self_->head)
     {
         _col_->flag = CVX_FLAG_EMPTY;
-        return;
+        return (V){ 0 };
     }
 
     struct NODE *node = _self_->head;
-
-    if (out)
-        *out = node->value;
+    V _val_ = node->value;
 
     _self_->head = node->next;
     if (!_self_->head)
@@ -346,22 +344,22 @@ void FUNC(_pop_front)(cvx_container *_col_, V *out)
     free(node);
     _self_->count--;
     _col_->flag = CVX_FLAG_OK;
+    return _val_;
 }
 
-void FUNC(_pop_back)(cvx_container *_col_, V *out)
+V FUNC(_pop_back)(cvx_container *_col_)
 {
-    CVX_CONTAINER_GUARDS(TAG, _col_, );
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
     if (!_self_->tail)
     {
         _col_->flag = CVX_FLAG_EMPTY;
-        return;
+        return (V){ 0 };
     }
 
-    if (out)
-        *out = _self_->tail->value;
+    V _val_ = _self_->tail->value;
 
     if (_self_->count == 1)
     {
@@ -382,102 +380,82 @@ void FUNC(_pop_back)(cvx_container *_col_, V *out)
 
     _self_->count--;
     _col_->flag = CVX_FLAG_OK;
+    return _val_;
 }
 
-void FUNC(_pop_at)(cvx_container *_col_, V *out, size_t index)
+V FUNC(_pop_at)(cvx_container *_col_, size_t index)
 {
-    CVX_CONTAINER_GUARDS(TAG, _col_, );
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
     if (_self_->count == 0)
     {
         _col_->flag = CVX_FLAG_EMPTY;
-        return;
+        return (V){ 0 };
     }
 
     if (index >= _self_->count)
     {
         _col_->flag = CVX_FLAG_RANGE;
-        return;
+        return (V){ 0 };
     }
 
     if (index == 0)
-    {
-        FUNC(_pop_front)(_col_, out);
-        return;
-    }
+        return FUNC(_pop_front)(_col_);
 
     if (index == _self_->count - 1)
-    {
-        FUNC(_pop_back)(_col_, out);
-        return;
-    }
+        return FUNC(_pop_back)(_col_);
 
     struct NODE *prev = _self_->head;
     for (size_t i = 0; i < index - 1; i++)
         prev = prev->next;
 
     struct NODE *node = prev->next;
-
-    if (out)
-        *out = node->value;
+    V _val_ = node->value;
 
     prev->next = node->next;
     free(node);
 
     _self_->count--;
     _col_->flag = CVX_FLAG_OK;
+    return _val_;
 }
 
-void FUNC(_replace_front)(cvx_container *_col_, V new, V *out)
+V FUNC(_replace_front)(cvx_container *_col_, V new)
 {
-    CVX_CONTAINER_GUARDS(TAG, _col_, );
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
-
-    if (!_self_->head && out)
-    {
-        _col_->flag = CVX_FLAG_EMPTY;
-        return;
-    }
 
     if (!_self_->head)
     {
-        FUNC(_push_front)(_col_, new);
-        return;
+        _col_->flag = CVX_FLAG_EMPTY;
+        return (V){ 0 };
     }
 
-    if (out)
-        *out = _self_->head->value;
-
+    V _old_ = _self_->head->value;
     _self_->head->value = new;
     _col_->flag = CVX_FLAG_OK;
+    return _old_;
 }
 
-void FUNC(_replace_back)(cvx_container *_col_, V new, V *out)
+V FUNC(_replace_back)(cvx_container *_col_, V new)
 {
-    CVX_CONTAINER_GUARDS(TAG, _col_, );
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-    if (!_self_->tail && out)
-    {
-        _col_->flag = CVX_FLAG_EMPTY;
-        return;
-    }
-
     if (!_self_->tail)
     {
-        FUNC(_push_back)(_col_, new);
-        return;
+        _col_->flag = CVX_FLAG_EMPTY;
+        return (V){ 0 };
     }
 
-    if (out)
-        *out = _self_->tail->value;
-
+    V _old_ = _self_->tail->value;
     _self_->tail->value = new;
     _col_->flag = CVX_FLAG_OK;
+    return _old_;
 }
 
 #ifdef IMPL_STACK
