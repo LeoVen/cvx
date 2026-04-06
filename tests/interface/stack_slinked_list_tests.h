@@ -2,9 +2,8 @@
 #define ISTACK_SLINKED_TESTS_H
 
 #include "cvx/interface_macros.h"
-#include "cvxtest.h"
-
-#include "implementations.h"
+#include "tests/cvxtest.h"
+#include "tests/implementations.h"
 
 #undef MAKE_STACK
 #define MAKE_STACK(name) struct stack_int name = sll_int_as_stack_int(sll_int_new())

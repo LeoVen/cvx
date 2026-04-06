@@ -2,9 +2,8 @@
 #define DYNAMIC_ARRAY_ITER_RANDOM_ACCESS_H
 
 #include "cvx/interface_macros.h"
-#include "cvxtest.h"
-
-#include "implementations.h"
+#include "tests/cvxtest.h"
+#include "tests/implementations.h"
 
 /* Helper: allocate a filled collection and return a raccess_iter wrapping its heap iterator */
 #define MAKE_RAI(name, col) \

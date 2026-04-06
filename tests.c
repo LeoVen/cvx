@@ -1,13 +1,13 @@
 // The order of imports matter
 // clang-format off
-#include "tests/istack_dynamic_array_tests.h"
-#include "tests/istack_slinked_list_tests.h"
+#include "tests/interface/stack_dynamic_array_tests.h"
+#include "tests/interface/stack_slinked_list_tests.h"
 
 #include "tests/dynamic_array_tests.h"
 #include "tests/dynamic_array_guard_tests.h"
 #include "tests/dynamic_array_init_tests.h"
 #include "tests/dynamic_array_iter_tests.h"
-#include "tests/dynamic_array_iter_random_access.h"
+#include "tests/iter/dynamic_array_iter_random_access.h"
 
 #include "tests/slinked_list_tests.h"
 #include "tests/slinked_list_guard_tests.h"
