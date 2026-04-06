@@ -139,11 +139,11 @@ static void test_sll_int_replace_on_empty(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_istack_slinked_list_tests(void)
+static int run_stack_slinked_list_tests(void)
 {
     struct cvxtest t = { 0 };
 
-    printf("istack (slinked_list)\n");
+    printf("stack (slinked_list)\n");
 
     CVXRUN(&t, test_sll_int_push_count);
     CVXRUN(&t, test_sll_int_push_many);

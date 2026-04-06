@@ -13,6 +13,10 @@
 #define INTERFACE raccess_iter
 #include "cvx/iter/random_access_iterator.h"
 
+#define V int
+#define INTERFACE forward_iter
+#include "cvx/iter/forward_iterator.h"
+
 ///
 /// IMPLEMENTATIONS
 ///
@@ -30,6 +34,7 @@
 #define SNAME slinked_int
 #define PFX sll_int
 #define TAG 77
+#define IMPL_FORWARD_ITER forward_iter
 #define IMPL_STACK stack_int
 #include "cvx/slinked_list.h"
 #define SLL_ITER_TAG (77 * CVX_ITER_TAG_MULT)

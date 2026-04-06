@@ -124,11 +124,11 @@ static void test_ist_replace_on_empty(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_istack_dynamic_array_tests(void)
+static int run_stack_dynamic_array_tests(void)
 {
     struct cvxtest t = { 0 };
 
-    printf("istack (dynamic_array)\n");
+    printf("stack (dynamic_array)\n");
 
     CVXRUN(&t, test_ist_push_count);
     CVXRUN(&t, test_ist_push_grows);
