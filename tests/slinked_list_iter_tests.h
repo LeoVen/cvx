@@ -107,6 +107,19 @@ static void test_sll_int_at_start(struct cvxtest *t)
     sll_int_drop(col);
 }
 
+static void test_sll_int_at_start_fallse(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_fill3(col);
+
+    cvx_container *iter = sll_int_iter_start(col);
+    sll_int_iter_next(iter);
+    CVXCHECK(t, sll_int_iter_at_start(iter) == false);
+
+    sll_int_iter_drop(iter);
+    sll_int_drop(col);
+}
+
 static void test_sll_int_at_start_wrong_tag(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
@@ -126,8 +139,17 @@ static void test_sll_int_at_end(struct cvxtest *t)
     sll_int_iter_to_end(iter);
     CVXCHECK(t, sll_int_iter_at_end(iter) == true);
 
-    sll_int_iter_to_start(iter);
-    CVXCHECK(t, sll_int_iter_at_start(iter) == true);
+    sll_int_iter_drop(iter);
+    sll_int_drop(col);
+}
+
+static void test_sll_int_at_end_fallse(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_fill3(col);
+
+    cvx_container *iter = sll_int_iter_start(col);
+    CVXCHECK(t, sll_int_iter_at_end(iter) == false);
 
     sll_int_iter_drop(iter);
     sll_int_drop(col);
@@ -139,6 +161,18 @@ static void test_sll_int_at_end_wrong_tag(struct cvxtest *t)
     bool result = sll_int_iter_at_end(col);
     CVXCHECK(t, result == false);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
+}
+
+static void test_sll_int_empty_at_start_and_end(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+
+    cvx_container *iter = sll_int_iter_start(col);
+    CVXCHECK(t, sll_int_iter_at_start(iter) == true);
+    CVXCHECK(t, sll_int_iter_at_end(iter) == true);
+
+    sll_int_iter_drop(iter);
+    sll_int_drop(col);
 }
 
 /* ---- iter_count ---- */
@@ -164,6 +198,33 @@ static void test_sll_int_count_wrong_tag(struct cvxtest *t)
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
+/* ---- iter_to_start ---- */
+
+static void test_sll_int_to_start(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_fill3(col);
+
+    cvx_container *iter = sll_int_iter_start(col);
+    sll_int_iter_next(iter);
+    sll_int_iter_next(iter);
+    sll_int_iter_to_start(iter);
+
+    CVXCHECK(t, sll_int_iter_index(iter) == 0);
+    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, sll_int_iter_value(iter) == 10);
+
+    sll_int_iter_drop(iter);
+    sll_int_drop(col);
+}
+
+static void test_sll_int_to_start_wrong_tag(struct cvxtest *t)
+{
+    MAKE_INVALID_CONTAINER(col);
+    sll_int_iter_to_start(col);
+    CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
+}
+
 /* ---- iter_to_end ---- */
 
 static void test_sll_int_to_end(struct cvxtest *t)
@@ -175,6 +236,7 @@ static void test_sll_int_to_end(struct cvxtest *t)
     sll_int_iter_to_end(iter);
 
     CVXCHECK(t, sll_int_iter_at_end(iter) == true);
+    CVXCHECK(t, sll_int_iter_index(iter) == 3);
     CVXCHECK(t, iter->flag == CVX_FLAG_OK);
 
     sll_int_iter_drop(iter);
@@ -243,6 +305,7 @@ static void test_sll_int_forward(struct cvxtest *t)
 
     CVXCHECK(t, sll_int_iter_index(iter) == 2);
     CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, sll_int_iter_value(iter) == 30);
 
     sll_int_iter_drop(iter);
     sll_int_drop(col);
@@ -359,13 +422,19 @@ static int run_slinked_list_iter_tests(void)
     CVXRUN(&t, test_sll_int_drop_wrong_tag);
 
     CVXRUN(&t, test_sll_int_at_start);
+    CVXRUN(&t, test_sll_int_at_start_fallse);
     CVXRUN(&t, test_sll_int_at_start_wrong_tag);
 
     CVXRUN(&t, test_sll_int_at_end);
+    CVXRUN(&t, test_sll_int_at_end_fallse);
     CVXRUN(&t, test_sll_int_at_end_wrong_tag);
+    CVXRUN(&t, test_sll_int_empty_at_start_and_end);
 
     CVXRUN(&t, test_sll_int_count);
     CVXRUN(&t, test_sll_int_count_wrong_tag);
+
+    CVXRUN(&t, test_sll_int_to_start);
+    CVXRUN(&t, test_sll_int_to_start_wrong_tag);
 
     CVXRUN(&t, test_sll_int_to_end);
     CVXRUN(&t, test_sll_int_to_end_wrong_tag);
