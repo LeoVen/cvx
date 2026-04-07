@@ -1,3 +1,16 @@
+#ifndef V
+#error "cvx/slinked_list.h requires V to be defined (the element type, e.g. #define V int)"
+#endif
+#ifndef SNAME
+#error "cvx/slinked_list.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_list)"
+#endif
+#ifndef PFX
+#error "cvx/slinked_list.h requires PFX to be defined (the function prefix, e.g. #define PFX ml)"
+#endif
+#ifndef TAG
+#error "cvx/slinked_list.h requires TAG to be defined (a unique integer tag, e.g. #define TAG 1)"
+#endif
+
 #include <stdlib.h>
 
 #include "cvx/core.h"

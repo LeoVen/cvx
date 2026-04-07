@@ -1,3 +1,10 @@
+#ifndef V
+#error "cvx/iter/forward_iterator.h requires V to be defined (the element type, e.g. #define V int)"
+#endif
+#ifndef INTERFACE
+#error "cvx/iter/forward_iterator.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_iter)"
+#endif
+
 #include "cvx/core.h"
 
 struct VTABLE(INTERFACE)

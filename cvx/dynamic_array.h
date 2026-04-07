@@ -1,3 +1,16 @@
+#ifndef V
+#error "cvx/dynamic_array.h requires V to be defined (the element type, e.g. #define V int)"
+#endif
+#ifndef SNAME
+#error "cvx/dynamic_array.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_array)"
+#endif
+#ifndef PFX
+#error "cvx/dynamic_array.h requires PFX to be defined (the function prefix, e.g. #define PFX ma)"
+#endif
+#ifndef TAG
+#error "cvx/dynamic_array.h requires TAG to be defined (a unique integer tag, e.g. #define TAG 1)"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
