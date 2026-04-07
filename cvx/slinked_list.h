@@ -49,8 +49,9 @@ struct ITERATOR
     struct NODE *cursor;
 };
 
-// Non-allocating initializer
+// Non-allocating initializers
 struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
+struct SNAME FUNC(_copy)(struct SNAME *_self_);
 
 // Allocating initializers
 cvx_container *FUNC(_new)(void);
@@ -100,6 +101,58 @@ struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
     struct SNAME _res_ = (struct SNAME){ 0 };
     _res_.super.tag = TAG;
     _res_.vtabv = _vtabv_;
+    return _res_;
+}
+
+struct SNAME FUNC(_copy)(struct SNAME *_self_)
+{
+    struct SNAME _res_ = FUNC(_init)(_self_->vtabv);
+    _res_.super.flag = CVX_FLAG_OK;
+
+    struct NODE *_curr_ = _self_->head;
+    while (_curr_)
+    {
+        struct NODE *_new_node_ = malloc(sizeof(struct NODE));
+        if (!_new_node_)
+        {
+            struct NODE *curr = _res_.head;
+            while (curr)
+            {
+                struct NODE *next = curr->next;
+                if (_res_.vtabv && _res_.vtabv->drop)
+                    _res_.vtabv->drop(curr->value);
+                free(curr);
+                curr = next;
+            }
+            _res_.head = NULL;
+            _res_.tail = NULL;
+            _res_.count = 0;
+            _res_.super.flag = CVX_FLAG_ALLOC;
+            return _res_;
+        }
+
+        _new_node_->next = NULL;
+
+        if (_self_->vtabv && _self_->vtabv->copy)
+            _new_node_->value = _self_->vtabv->copy(_curr_->value);
+        else
+            _new_node_->value = _curr_->value;
+
+        if (!_res_.head)
+        {
+            _res_.head = _new_node_;
+            _res_.tail = _new_node_;
+        }
+        else
+        {
+            _res_.tail->next = _new_node_;
+            _res_.tail = _new_node_;
+        }
+
+        _res_.count++;
+        _curr_ = _curr_->next;
+    }
+
     return _res_;
 }
 
@@ -225,6 +278,7 @@ size_t FUNC(_count)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, 0);
 
+    _col_->flag = CVX_FLAG_OK;
     return ((struct SNAME *)_col_)->count;
 }
 
@@ -232,6 +286,7 @@ bool FUNC(_empty)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, false);
 
+    _col_->flag = CVX_FLAG_OK;
     return ((struct SNAME *)_col_)->count == 0;
 }
 
@@ -581,6 +636,7 @@ bool FUNC(_iter_at_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
 
+    _iter_->flag = CVX_FLAG_OK;
     return ((struct ITERATOR *)_iter_)->index == 0;
 }
 
@@ -590,6 +646,7 @@ bool FUNC(_iter_at_end)(cvx_container *_iter_)
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
+    _iter_->flag = CVX_FLAG_OK;
     return _self_->index == _self_->target->count;
 }
 
@@ -599,6 +656,7 @@ size_t FUNC(_iter_count)(cvx_container *_iter_)
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
+    _iter_->flag = CVX_FLAG_OK;
     return _self_->target->count;
 }
 
@@ -676,6 +734,7 @@ V FUNC(_iter_value)(cvx_container *_iter_)
         return (V){ 0 };
     }
 
+    _iter_->flag = CVX_FLAG_OK;
     return _self_->cursor->value;
 }
 
@@ -683,6 +742,7 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, 0);
 
+    _iter_->flag = CVX_FLAG_OK;
     return ((struct ITERATOR *)_iter_)->index;
 }
 

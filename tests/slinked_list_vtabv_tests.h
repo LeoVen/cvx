@@ -2,7 +2,29 @@
 #define SLINKED_LIST_VTABV_TESTS_H
 
 #include "cvxtest.h"
+#include "cvxtestutils.h"
 #include "implementations.h"
+
+static void test_sll_vtabv_copy_called_on_copy(struct cvxtest *t)
+{
+    CVX_TEST_COUNTER_COPY_RESET();
+
+    struct slinked_int self = sll_int_init(sll_int_vtabv_full);
+    sll_int_push_back(cvx_col(self), 1);
+    sll_int_push_back(cvx_col(self), 2);
+    sll_int_push_back(cvx_col(self), 3);
+
+    struct slinked_int copy = sll_int_copy(&self);
+
+    CVX_TEST_COUNTER_COPY(t, 3);
+    CVXCHECK(t, copy.count == 3);
+    CVXCHECK(t, sll_int_get(cvx_col(copy), 0) == 1);
+    CVXCHECK(t, sll_int_get(cvx_col(copy), 1) == 2);
+    CVXCHECK(t, sll_int_get(cvx_col(copy), 2) == 3);
+
+    sll_int_clear(cvx_col(self));
+    sll_int_clear(cvx_col(copy));
+}
 
 static void test_sll_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
@@ -92,6 +114,7 @@ static int run_slinked_list_vtabv_tests(void)
 
     printf("slinked_list vtabv\n");
 
+    CVXRUN(&t, test_sll_vtabv_copy_called_on_copy);
     CVXRUN(&t, test_sll_vtabv_copy_called_on_clone);
     CVXRUN(&t, test_sll_vtabv_drop_called_on_drop);
     CVXRUN(&t, test_sll_vtabv_drop_called_on_clear);

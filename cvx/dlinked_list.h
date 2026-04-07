@@ -939,10 +939,4 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #undef IMPL_INDEX
 #endif
 
-#undef VTAB_V
-#undef NODE
-#undef FUNC
-#undef ITERATOR
-#undef ITER_TAG
-
 #include "cvx/undef.h"

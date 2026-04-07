@@ -2,6 +2,7 @@
 #define SLINKED_LIST_TESTS_H
 
 #include "cvxtest.h"
+#include "cvxtestutils.h"
 
 #include "implementations.h"
 
@@ -31,6 +32,57 @@ static void test_sll_int_new(struct cvxtest *t)
     CVXCHECK(t, sll_int_count(col) == 0);
 
     sll_int_drop(col);
+}
+
+static void test_sll_int_new_with(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    CVXCHECK(t, col != NULL);
+    if (!col)
+        return;
+
+    CVXCHECK(t, col->tag == 77);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, sll_int_count(col) == 0);
+    CVXCHECK(t, ((struct slinked_int *)col)->vtabv == sll_int_vtabv_full);
+
+    sll_int_drop(col);
+}
+
+/* ---- copy ---- */
+
+static void test_sll_int_copy_empty(struct cvxtest *t)
+{
+    struct slinked_int orig = sll_int_init(NULL);
+    struct slinked_int copy = sll_int_copy(&orig);
+
+    CVXCHECK(t, copy.count == 0);
+    CVXCHECK(t, copy.head == NULL);
+    CVXCHECK(t, copy.tail == NULL);
+    CVXCHECK(t, ((cvx_container *)&copy)->flag == CVX_FLAG_OK);
+}
+
+static void test_sll_int_copy_values(struct cvxtest *t)
+{
+    struct slinked_int orig = sll_int_init(NULL);
+    cvx_container *col = cvx_col(orig);
+
+    sll_int_push_back(col, 10);
+    sll_int_push_back(col, 20);
+    sll_int_push_back(col, 30);
+
+    struct slinked_int copy = sll_int_copy(&orig);
+    cvx_container *ccol = cvx_col(copy);
+
+    CVXCHECK(t, copy.count == 3);
+    CVXCHECK(t, sll_int_get(ccol, 0) == 10);
+    CVXCHECK(t, sll_int_get(ccol, 1) == 20);
+    CVXCHECK(t, sll_int_get(ccol, 2) == 30);
+    /* Nodes must be distinct allocations */
+    CVXCHECK(t, copy.head != orig.head);
+
+    sll_int_clear(col);
+    sll_int_clear(ccol);
 }
 
 /* ---- push_back / count ---- */
@@ -497,6 +549,9 @@ static int run_slinked_list_tests(void)
 
     CVXRUN(&t, test_sll_int_init);
     CVXRUN(&t, test_sll_int_new);
+    CVXRUN(&t, test_sll_int_new_with);
+    CVXRUN(&t, test_sll_int_copy_empty);
+    CVXRUN(&t, test_sll_int_copy_values);
 
     CVXRUN(&t, test_sll_int_push_back);
     CVXRUN(&t, test_sll_int_push_back_many);
