@@ -14,6 +14,12 @@
 #include "tests/slinked_list_iter_tests.h"
 #include "tests/slinked_list_vtabv_tests.h"
 #include "tests/iter/slinked_list_iter_forward.h"
+
+#include "tests/dlinked_list_tests.h"
+#include "tests/dlinked_list_guard_tests.h"
+#include "tests/dlinked_list_iter_tests.h"
+#include "tests/dlinked_list_vtabv_tests.h"
+#include "tests/iter/dlinked_list_iter_bidirectional.h"
 // clang-format on
 
 int main(void)
@@ -36,6 +42,12 @@ int main(void)
         run_slinked_list_iter_tests,
         run_slinked_list_vtabv_tests,
         run_slinked_list_iter_forward_tests,
+
+        run_dlinked_list_tests,
+        run_dlinked_list_guard_tests,
+        run_dlinked_list_iter_tests,
+        run_dlinked_list_vtabv_tests,
+        run_dlinked_list_iter_bidirectional_tests,
     };
     // clang-format on
 

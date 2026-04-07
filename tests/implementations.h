@@ -8,6 +8,10 @@
 ///
 
 #define V int
+#define INTERFACE bidirectional_iter
+#include "cvx/iter/bidirectional_iterator.h"
+
+#define V int
 #define INTERFACE stack_int
 #include "cvx/interface/stack.h"
 
@@ -50,6 +54,21 @@ static struct dynamic_array_int_vtabv *da_int_vtabv_full = &(struct dynamic_arra
 #include "cvx/slinked_list.h"
 #define SLL_ITER_TAG (77 * CVX_ITER_TAG_MULT)
 static struct slinked_int_vtabv *sll_int_vtabv_full = &(struct slinked_int_vtabv){
+    .copy = int_copy,
+    .drop = int_drop,
+};
+
+#define V int
+#define SNAME dlinked_int
+#define PFX dll_int
+#define TAG 88
+#define IMPL_FORWARD_ITER forward_iter
+#define IMPL_STACK stack_int
+#define IMPL_QUEUE queue_int
+#define IMPL_BIDIRECTIONAL_ITER bidirectional_iter
+#include "cvx/dlinked_list.h"
+#define DLL_ITER_TAG (88 * CVX_ITER_TAG_MULT)
+static struct dlinked_int_vtabv *dll_int_vtabv_full = &(struct dlinked_int_vtabv){
     .copy = int_copy,
     .drop = int_drop,
 };
