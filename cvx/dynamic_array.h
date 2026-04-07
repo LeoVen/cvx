@@ -2,7 +2,8 @@
 #error "cvx/dynamic_array.h requires V to be defined (the element type, e.g. #define V int)"
 #endif
 #ifndef SNAME
-#error "cvx/dynamic_array.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_array)"
+#error \
+    "cvx/dynamic_array.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_array)"
 #endif
 #ifndef PFX
 #error "cvx/dynamic_array.h requires PFX to be defined (the function prefix, e.g. #define PFX ma)"
@@ -59,13 +60,13 @@ void FUNC(_clear)(cvx_container *_col_);
 // Getters
 size_t FUNC(_count)(cvx_container *_col_);
 size_t FUNC(_capacity)(cvx_container *_col_);
-bool FUNC(_full)(cvx_container *_col_);
 bool FUNC(_empty)(cvx_container *_col_);
+bool FUNC(_full)(cvx_container *_col_);
 V FUNC(_front)(cvx_container *_col_);
 V FUNC(_back)(cvx_container *_col_);
 V FUNC(_get)(cvx_container *_col_, size_t index);
 
-// Implementation
+// Mutators
 void FUNC(_push_front)(cvx_container *_col_, V item);
 void FUNC(_push_at)(cvx_container *_col_, V item, size_t index);
 void FUNC(_push_back)(cvx_container *_col_, V item);
@@ -74,15 +75,13 @@ V FUNC(_pop_at)(cvx_container *_col_, size_t index);
 V FUNC(_pop_back)(cvx_container *_col_);
 V FUNC(_replace_front)(cvx_container *_col_, V new);
 V FUNC(_replace_back)(cvx_container *_col_, V new);
+
 // TODO:
 // void FUNC(_seq_push_front)(cvx_container *_col_, V *values, size_t size);
 // void FUNC(_seq_push_back)(cvx_container *_col_, V *values, size_t size);
 // cvx_contaier *FUNC(_sublist)(cvx_container *_col_, size_t from, size_t to);
 // bool FUNC(_contains)(cvx_container *_col_, V item);
 // void FUNC(_index_of)(cvx_container *_col_, V item, size_t *out);
-
-// Private functions
-bool FUNC(__assert_capacity)(cvx_container *_col_);
 
 // Iterators
 struct ITERATOR FUNC(_iter_init_start)(cvx_container *_target_);
@@ -105,6 +104,9 @@ void FUNC(_iter_go_to)(cvx_container *_iter_, size_t index);
 // Iterator access
 V FUNC(_iter_value)(cvx_container *_iter_);
 size_t FUNC(_iter_index)(cvx_container *_iter_);
+
+// Private functions
+bool FUNC(__assert_capacity)(cvx_container *_col_);
 
 struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
 {
@@ -289,6 +291,90 @@ void FUNC(_clear)(cvx_container *_col_)
     _col_->flag = CVX_FLAG_OK;
 }
 
+size_t FUNC(_count)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, 0);
+
+    _col_->flag = CVX_FLAG_OK;
+    return ((struct SNAME *)_col_)->count;
+}
+
+size_t FUNC(_capacity)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, 0);
+
+    _col_->flag = CVX_FLAG_OK;
+    return ((struct SNAME *)_col_)->capacity;
+}
+
+bool FUNC(_empty)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, false);
+
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
+    _col_->flag = CVX_FLAG_OK;
+    return _self_->count == 0;
+}
+
+bool FUNC(_full)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, false);
+
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
+    _col_->flag = CVX_FLAG_OK;
+    return _self_->count >= _self_->capacity;
+}
+
+V FUNC(_front)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
+
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
+    if (_self_->count == 0 || _self_->buffer == NULL)
+    {
+        _col_->flag = CVX_FLAG_EMPTY;
+        return (V){ 0 };
+    }
+
+    _col_->flag = CVX_FLAG_OK;
+    return _self_->buffer[0];
+}
+
+V FUNC(_back)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
+
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
+    if (_self_->count == 0 || _self_->buffer == NULL)
+    {
+        _col_->flag = CVX_FLAG_EMPTY;
+        return (V){ 0 };
+    }
+
+    _col_->flag = CVX_FLAG_OK;
+    return _self_->buffer[_self_->count - 1];
+}
+
+V FUNC(_get)(cvx_container *_col_, size_t index)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
+
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
+    if (index >= _self_->count)
+    {
+        _col_->flag = CVX_FLAG_RANGE;
+        return (V){ 0 };
+    }
+
+    _col_->flag = CVX_FLAG_OK;
+    return _self_->buffer[index];
+}
+
 void FUNC(_push_front)(cvx_container *_col_, V item)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, );
@@ -452,83 +538,6 @@ V FUNC(_replace_back)(cvx_container *_col_, V new)
     return _old_;
 }
 
-size_t FUNC(_count)(cvx_container *_col_)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, 0);
-
-    return ((struct SNAME *)_col_)->count;
-}
-
-size_t FUNC(_capacity)(cvx_container *_col_)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, 0);
-
-    return ((struct SNAME *)_col_)->capacity;
-}
-
-bool FUNC(_full)(cvx_container *_col_)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, false);
-
-    struct SNAME *_self_ = (struct SNAME *)_col_;
-
-    return _self_->count >= _self_->capacity;
-}
-
-bool FUNC(_empty)(cvx_container *_col_)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, false);
-
-    struct SNAME *_self_ = (struct SNAME *)_col_;
-
-    return _self_->count == 0;
-}
-
-V FUNC(_front)(cvx_container *_col_)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
-
-    struct SNAME *_self_ = (struct SNAME *)_col_;
-
-    if (_self_->count == 0 || _self_->buffer == NULL)
-    {
-        _col_->flag = CVX_FLAG_EMPTY;
-        return (V){ 0 };
-    }
-
-    return _self_->buffer[0];
-}
-
-V FUNC(_back)(cvx_container *_col_)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
-
-    struct SNAME *_self_ = (struct SNAME *)_col_;
-
-    if (_self_->count == 0 || _self_->buffer == NULL)
-    {
-        _col_->flag = CVX_FLAG_EMPTY;
-        return (V){ 0 };
-    }
-
-    return _self_->buffer[_self_->count - 1];
-}
-
-V FUNC(_get)(cvx_container *_col_, size_t index)
-{
-    CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
-
-    struct SNAME *_self_ = (struct SNAME *)_col_;
-
-    if (index >= _self_->count)
-    {
-        _col_->flag = CVX_FLAG_RANGE;
-        return (V){ 0 };
-    }
-
-    return _self_->buffer[index];
-}
-
 ///
 ///
 /// ITERATOR
@@ -616,6 +625,7 @@ bool FUNC(_iter_at_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
 
+    _iter_->flag = CVX_FLAG_OK;
     return ((struct ITERATOR *)_iter_)->index == 0;
 }
 
@@ -625,6 +635,7 @@ bool FUNC(_iter_at_end)(cvx_container *_iter_)
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
+    _iter_->flag = CVX_FLAG_OK;
     return _self_->index == _self_->target->count;
 }
 
@@ -634,6 +645,7 @@ size_t FUNC(_iter_count)(cvx_container *_iter_)
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
+    _iter_->flag = CVX_FLAG_OK;
     return _self_->target->count;
 }
 
@@ -738,6 +750,7 @@ V FUNC(_iter_value)(cvx_container *_iter_)
         return (V){ 0 };
     }
 
+    _iter_->flag = CVX_FLAG_OK;
     return _self_->target->buffer[_self_->index];
 }
 
@@ -745,6 +758,7 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, 0);
 
+    _iter_->flag = CVX_FLAG_OK;
     return ((struct ITERATOR *)_iter_)->index;
 }
 
