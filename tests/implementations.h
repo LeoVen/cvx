@@ -27,6 +27,10 @@
 #define INTERFACE queue_int
 #include "cvx/interface/queue.h"
 
+#define V int
+#define INTERFACE deque_int
+#include "cvx/interface/deque.h"
+
 ///
 /// IMPLEMENTATIONS
 ///
@@ -63,8 +67,9 @@ static struct slinked_int_vtabv *sll_int_vtabv_full = &(struct slinked_int_vtabv
 #define PFX dll_int
 #define TAG 88
 #define IMPL_FORWARD_ITER forward_iter
-#define IMPL_STACK stack_int
-#define IMPL_QUEUE queue_int
+// #define IMPL_STACK stack_int
+// #define IMPL_QUEUE queue_int
+#define IMPL_DEQUE deque_int
 #define IMPL_BIDIRECTIONAL_ITER bidirectional_iter
 #include "cvx/dlinked_list.h"
 #define DLL_ITER_TAG (88 * CVX_ITER_TAG_MULT)

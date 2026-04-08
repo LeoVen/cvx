@@ -875,6 +875,35 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 #undef IMPL_COUNT
 #endif
 
+#ifdef IMPL_DEQUE
+#define INTERFACE IMPL_DEQUE
+
+#define IMPL_NEW FUNC(_new)
+#define IMPL_CLONE FUNC(_clone)
+#define IMPL_DROP FUNC(_drop)
+#define IMPL_PUSH_FRONT FUNC(_push_front)
+#define IMPL_PUSH_BACK FUNC(_push_back)
+#define IMPL_POP_FRONT FUNC(_pop_front)
+#define IMPL_POP_BACK FUNC(_pop_back)
+#define IMPL_PEEK_FRONT FUNC(_front)
+#define IMPL_PEEK_BACK FUNC(_back)
+#define IMPL_COUNT FUNC(_count)
+
+#include "cvx/interface/deque_cast.h"
+#undef IMPL_DEQUE
+
+#undef IMPL_NEW
+#undef IMPL_CLONE
+#undef IMPL_DROP
+#undef IMPL_PUSH_FRONT
+#undef IMPL_PUSH_BACK
+#undef IMPL_POP_FRONT
+#undef IMPL_POP_BACK
+#undef IMPL_PEEK_FRONT
+#undef IMPL_PEEK_BACK
+#undef IMPL_COUNT
+#endif
+
 #ifdef IMPL_FORWARD_ITER
 #define INTERFACE IMPL_FORWARD_ITER
 
