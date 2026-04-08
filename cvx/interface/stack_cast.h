@@ -1,3 +1,4 @@
+// clang-format off
 #ifndef INTERFACE
 #error "cvx/interface/stack_cast.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_stack)"
 #endif
@@ -25,6 +26,7 @@
 #ifndef IMPL_REPLACE
 #error "cvx/interface/stack_cast.h requires IMPL_REPLACE to be defined"
 #endif
+// clang-format on
 
 #include "cvx/core.h"
 

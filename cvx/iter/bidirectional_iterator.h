@@ -1,9 +1,11 @@
+// clang-format off
 #ifndef V
 #error "cvx/iter/bidirectional_iterator.h requires V to be defined (the element type, e.g. #define V int)"
 #endif
 #ifndef INTERFACE
 #error "cvx/iter/bidirectional_iterator.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_iter)"
 #endif
+// clang-format on
 
 #include "cvx/core.h"
 
@@ -32,7 +34,7 @@ struct VTABLE(INTERFACE)
 struct INTERFACE
 {
     cvx_container *instance;
-    struct VTABLE(INTERFACE) *vtable;
+    struct VTABLE(INTERFACE) * vtable;
 };
 
 #undef INTERFACE

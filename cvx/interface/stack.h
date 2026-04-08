@@ -1,9 +1,11 @@
+// clang-format off
 #ifndef V
 #error "cvx/interface/stack.h requires V to be defined (the element type, e.g. #define V int)"
 #endif
 #ifndef INTERFACE
 #error "cvx/interface/stack.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_stack)"
 #endif
+// clang-format on
 
 #include "cvx/core.h"
 

@@ -1,3 +1,4 @@
+// clang-format off
 #ifndef INTERFACE
 #error "cvx/iter/bidirectional_iterator_cast.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_iter)"
 #endif
@@ -43,6 +44,7 @@
 #ifndef IMPL_INDEX
 #error "cvx/iter/bidirectional_iterator_cast.h requires IMPL_INDEX to be defined"
 #endif
+// clang-format on
 
 #include "cvx/core.h"
 

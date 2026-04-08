@@ -1,3 +1,4 @@
+// clang-format off
 #ifndef INTERFACE
 #error "cvx/interface/queue_cast.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_queue)"
 #endif
@@ -19,6 +20,7 @@
 #ifndef IMPL_COUNT
 #error "cvx/interface/queue_cast.h requires IMPL_COUNT to be defined"
 #endif
+// clang-format on
 
 #include "cvx/core.h"
 
