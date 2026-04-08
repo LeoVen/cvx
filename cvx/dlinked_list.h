@@ -604,13 +604,9 @@ V FUNC(_replace_back)(cvx_container *_col_, V _new_)
 
 struct ITERATOR FUNC(_iter_init_start)(cvx_container *_target_)
 {
-    struct ITERATOR _res_ = { 0 };
+    CVX_CONTAINER_GUARDS(TAG, _target_, (struct ITERATOR){ 0 });
 
-    if (_target_->tag != TAG)
-    {
-        _res_.super.flag = CVX_FLAG_WRONG_TAG;
-        return _res_;
-    }
+    struct ITERATOR _res_ = { 0 };
 
     struct SNAME *_self_ = (struct SNAME *)_target_;
 
@@ -625,13 +621,9 @@ struct ITERATOR FUNC(_iter_init_start)(cvx_container *_target_)
 
 struct ITERATOR FUNC(_iter_init_end)(cvx_container *_target_)
 {
-    struct ITERATOR _res_ = { 0 };
+    CVX_CONTAINER_GUARDS(TAG, _target_, (struct ITERATOR){ 0 });
 
-    if (_target_->tag != TAG)
-    {
-        _res_.super.flag = CVX_FLAG_WRONG_TAG;
-        return _res_;
-    }
+    struct ITERATOR _res_ = { 0 };
 
     struct SNAME *_self_ = (struct SNAME *)_target_;
 

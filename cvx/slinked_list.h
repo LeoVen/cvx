@@ -594,17 +594,11 @@ V FUNC(_replace_back)(cvx_container *_col_, V _new_)
 ///
 ///
 
-// Iterators
 struct ITERATOR FUNC(_iter_init_start)(cvx_container *_target_)
 {
+    CVX_CONTAINER_GUARDS(TAG, _target_, (struct ITERATOR){ 0 });
+
     struct ITERATOR _res_ = { 0 };
-
-    if (_target_->tag != TAG)
-    {
-        _res_.super.flag = CVX_FLAG_WRONG_TAG;
-        return _res_;
-    }
-
     struct SNAME *_self_ = (struct SNAME *)_target_;
 
     _res_.super.tag = ITER_TAG;
@@ -643,7 +637,6 @@ void FUNC(_iter_drop)(cvx_container *_iter_)
     free(_iter_);
 }
 
-// Iterator state
 bool FUNC(_iter_at_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
@@ -674,7 +667,6 @@ size_t FUNC(_iter_count)(cvx_container *_iter_)
     return _self_->target->count;
 }
 
-// Iterator movement
 void FUNC(_iter_to_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
@@ -735,7 +727,6 @@ void FUNC(_iter_forward)(cvx_container *_iter_, size_t _steps_)
     _iter_->flag = CVX_FLAG_OK;
 }
 
-// Iterator access
 V FUNC(_iter_value)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, (V){ 0 });

@@ -124,6 +124,15 @@ static void test_sll_int_guard_replace_back(struct cvxtest *t)
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
+/* ---- iter_init_start wrong tag ---- */
+
+static void test_sll_int_guard_iter_init_start(struct cvxtest *t)
+{
+    MAKE_INVALID_CONTAINER(col);
+    struct slinked_int_iter it = sll_int_iter_init_start(col);
+    CVXCHECK(t, it.super.flag == CVX_FLAG_WRONG_TAG);
+}
+
 /* ---- runner ---- */
 
 static int run_slinked_list_guard_tests(void)
@@ -148,6 +157,8 @@ static int run_slinked_list_guard_tests(void)
     CVXRUN(&t, test_sll_int_guard_pop_at);
     CVXRUN(&t, test_sll_int_guard_replace_front);
     CVXRUN(&t, test_sll_int_guard_replace_back);
+
+    CVXRUN(&t, test_sll_int_guard_iter_init_start);
 
     return CVXSUMMARY(&t);
 }
