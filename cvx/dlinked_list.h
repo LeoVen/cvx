@@ -166,13 +166,16 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
 
 cvx_container *FUNC(_new)(void)
 {
-    struct SNAME *_res_ = calloc(1, sizeof(struct SNAME));
+    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
 
     if (!_res_)
         return NULL;
 
     _res_->super.tag = TAG;
     _res_->super.flag = CVX_FLAG_OK;
+    _res_->head = NULL;
+    _res_->tail = NULL;
+    _res_->count = 0;
     _res_->vtabv = NULL;
 
     return (cvx_container *)_res_;
@@ -180,13 +183,16 @@ cvx_container *FUNC(_new)(void)
 
 cvx_container *FUNC(_new_with)(struct VTAB_V *_vtabv_)
 {
-    struct SNAME *_res_ = calloc(1, sizeof(struct SNAME));
+    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
 
     if (!_res_)
         return NULL;
 
     _res_->super.tag = TAG;
     _res_->super.flag = CVX_FLAG_OK;
+    _res_->head = NULL;
+    _res_->tail = NULL;
+    _res_->count = 0;
     _res_->vtabv = _vtabv_;
 
     return (cvx_container *)_res_;

@@ -108,7 +108,7 @@ static void test_da_vtabv_null_drop_no_crash(struct cvxtest *t)
     CVXCHECK(t, true);
 }
 
-static int run_dynamic_array_vtabv_tests(void)
+static int run_dynamic_array_vtab_tests(void)
 {
     struct cvxtest t = { 0 };
 

@@ -1,4 +1,9 @@
 // clang-format off
+
+// intercept malloc implementation
+// this must come before everything
+#include "tests/alloc.h"
+
 #include "tests/interface/deque_dlinked_list_tests.h"
 #include "tests/interface/queue_slinked_list_tests.h"
 #include "tests/interface/stack_dynamic_array_tests.h"
@@ -7,19 +12,22 @@
 #include "tests/dynamic_array_tests.h"
 #include "tests/dynamic_array_guard_tests.h"
 #include "tests/dynamic_array_iter_tests.h"
-#include "tests/dynamic_array_vtabv_tests.h"
+#include "tests/dynamic_array_vtab_tests.h"
+#include "tests/dynamic_array_alloc_tests.h"
 #include "tests/iter/dynamic_array_iter_random_access.h"
 
 #include "tests/slinked_list_tests.h"
 #include "tests/slinked_list_guard_tests.h"
 #include "tests/slinked_list_iter_tests.h"
-#include "tests/slinked_list_vtabv_tests.h"
+#include "tests/slinked_list_vtab_tests.h"
+#include "tests/slinked_list_alloc_tests.h"
 #include "tests/iter/slinked_list_iter_forward.h"
 
 #include "tests/dlinked_list_tests.h"
 #include "tests/dlinked_list_guard_tests.h"
 #include "tests/dlinked_list_iter_tests.h"
-#include "tests/dlinked_list_vtabv_tests.h"
+#include "tests/dlinked_list_vtab_tests.h"
+#include "tests/dlinked_list_alloc_tests.h"
 #include "tests/iter/dlinked_list_iter_bidirectional.h"
 // clang-format on
 
@@ -36,19 +44,22 @@ int main(void)
         run_dynamic_array_tests,
         run_dynamic_array_guard_tests,
         run_dynamic_array_iter_tests,
-        run_dynamic_array_vtabv_tests,
+        run_dynamic_array_vtab_tests,
+        run_dynamic_array_alloc_tests,
         run_dynamic_array_iter_random_access_tests,
 
         run_slinked_list_tests,
         run_slinked_list_guard_tests,
         run_slinked_list_iter_tests,
-        run_slinked_list_vtabv_tests,
+        run_slinked_list_vtab_tests,
+        run_slinked_list_alloc_tests,
         run_slinked_list_iter_forward_tests,
 
         run_dlinked_list_tests,
         run_dlinked_list_guard_tests,
         run_dlinked_list_iter_tests,
-        run_dlinked_list_vtabv_tests,
+        run_dlinked_list_vtab_tests,
+        run_dlinked_list_alloc_tests,
         run_dlinked_list_iter_bidirectional_tests,
     };
     // clang-format on

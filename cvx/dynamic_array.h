@@ -805,11 +805,13 @@ bool FUNC(__assert_capacity)(cvx_container *_col_)
     else
     {
         // Reallocation
+        size_t _old_capacity_ = _self_->capacity;
         _self_->capacity *= 2;
         V *new_buffer = realloc(_self_->buffer, sizeof(V) * _self_->capacity);
 
         if (!new_buffer)
         {
+            _self_->capacity = _old_capacity_;
             _col_->flag = CVX_FLAG_ALLOC;
             return false;
         }

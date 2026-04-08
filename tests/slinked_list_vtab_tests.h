@@ -108,7 +108,7 @@ static void test_sll_vtabv_null_drop_no_crash(struct cvxtest *t)
     CVXCHECK(t, true);
 }
 
-static int run_slinked_list_vtabv_tests(void)
+static int run_slinked_list_vtab_tests(void)
 {
     struct cvxtest t = { 0 };
 

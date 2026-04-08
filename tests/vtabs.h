@@ -1,8 +1,6 @@
 #ifndef CVX_VTABS_TEST_H
 #define CVX_VTABS_TEST_H
 
-#include <stdlib.h>
-
 #include "cvxtest.h"
 
 static size_t cvx_counter_vtab_comp = 0;

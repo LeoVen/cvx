@@ -1,5 +1,5 @@
-#ifndef CVX_IMPLEMENTATIONS_TEST_H
-#define CVX_IMPLEMENTATIONS_TEST_H
+#ifndef CVX_IMPLEMENTATIONS_TESTS_H
+#define CVX_IMPLEMENTATIONS_TESTS_H
 
 #include "tests/vtabs.h"
 
@@ -66,7 +66,7 @@ static struct slinked_int_vtabv *sll_int_vtabv_full = &(struct slinked_int_vtabv
 #define SNAME dlinked_int
 #define PFX dll_int
 #define TAG 88
-#define IMPL_FORWARD_ITER forward_iter
+// #define IMPL_FORWARD_ITER forward_iter
 // #define IMPL_STACK stack_int
 // #define IMPL_QUEUE queue_int
 #define IMPL_DEQUE deque_int

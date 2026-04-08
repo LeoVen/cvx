@@ -476,6 +476,97 @@ static void test_sll_int_clear(struct cvxtest *t)
     sll_int_drop(col);
 }
 
+/* ---- pop_back (3-element list exercises the traversal loop) ---- */
+
+static void test_sll_int_pop_back_many(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_push_back(col, 10);
+    sll_int_push_back(col, 20);
+    sll_int_push_back(col, 30);
+
+    int v = sll_int_pop_back(col);
+    CVXCHECK(t, v == 30);
+    CVXCHECK(t, sll_int_count(col) == 2);
+    CVXCHECK(t, sll_int_back(col) == 20);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+
+    sll_int_drop(col);
+}
+
+/* ---- pop_at edge cases ---- */
+
+// pop_at(col, 0) must delegate to pop_front.
+static void test_sll_int_pop_at_front(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_push_back(col, 10);
+    sll_int_push_back(col, 20);
+    sll_int_push_back(col, 30);
+
+    int v = sll_int_pop_at(col, 0);
+    CVXCHECK(t, v == 10);
+    CVXCHECK(t, sll_int_count(col) == 2);
+    CVXCHECK(t, sll_int_front(col) == 20);
+
+    sll_int_drop(col);
+}
+
+// pop_at(col, count-1) must delegate to pop_back.
+static void test_sll_int_pop_at_back(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_push_back(col, 10);
+    sll_int_push_back(col, 20);
+    sll_int_push_back(col, 30);
+
+    int v = sll_int_pop_at(col, 2); // count-1 == 2
+    CVXCHECK(t, v == 30);
+    CVXCHECK(t, sll_int_count(col) == 2);
+    CVXCHECK(t, sll_int_back(col) == 20);
+
+    sll_int_drop(col);
+}
+
+// pop_at with index > 1 exercises the traversal loop.
+static void test_sll_int_pop_at_deep(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_push_back(col, 10);
+    sll_int_push_back(col, 20);
+    sll_int_push_back(col, 30);
+    sll_int_push_back(col, 40);
+
+    int v = sll_int_pop_at(col, 2); // middle, index > 1
+    CVXCHECK(t, v == 30);
+    CVXCHECK(t, sll_int_count(col) == 3);
+    CVXCHECK(t, sll_int_get(col, 0) == 10);
+    CVXCHECK(t, sll_int_get(col, 1) == 20);
+    CVXCHECK(t, sll_int_get(col, 2) == 40);
+
+    sll_int_drop(col);
+}
+
+/* ---- push_at deep traversal ---- */
+
+// push_at with index > 1 exercises the traversal loop (index-1 iterations).
+static void test_sll_int_push_at_deep(struct cvxtest *t)
+{
+    cvx_container *col = sll_int_new();
+    sll_int_push_back(col, 10);
+    sll_int_push_back(col, 20);
+    sll_int_push_back(col, 30);
+
+    sll_int_push_at(col, 99, 2); // index > 1 → loop runs at least once
+    CVXCHECK(t, sll_int_count(col) == 4);
+    CVXCHECK(t, sll_int_get(col, 0) == 10);
+    CVXCHECK(t, sll_int_get(col, 1) == 20);
+    CVXCHECK(t, sll_int_get(col, 2) == 99);
+    CVXCHECK(t, sll_int_get(col, 3) == 30);
+
+    sll_int_drop(col);
+}
+
 /* ---- clone (int / direct-assignment branch) ---- */
 
 static void test_sll_int_clone_empty(struct cvxtest *t)
@@ -567,9 +658,16 @@ static int run_slinked_list_tests(void)
     CVXRUN(&t, test_sll_int_pop_back);
     CVXRUN(&t, test_sll_int_pop_back_to_empty);
     CVXRUN(&t, test_sll_int_pop_back_empty);
+    CVXRUN(&t, test_sll_int_pop_back_many);
+
     CVXRUN(&t, test_sll_int_pop_at_middle);
+    CVXRUN(&t, test_sll_int_pop_at_front);
+    CVXRUN(&t, test_sll_int_pop_at_back);
+    CVXRUN(&t, test_sll_int_pop_at_deep);
     CVXRUN(&t, test_sll_int_pop_at_out_of_range);
     CVXRUN(&t, test_sll_int_pop_at_empty);
+
+    CVXRUN(&t, test_sll_int_push_at_deep);
 
     CVXRUN(&t, test_sll_int_front_empty);
     CVXRUN(&t, test_sll_int_back_empty);

@@ -7,7 +7,7 @@ watch file:
 
 example file:
 	mkdir -p ./bin
-	watchexec -f "*.c" -f "*.h" -d 500ms -r -c -- "{{cc}} -Wall -Wextra -I . examples/{{file}}.c -o ./bin/{{file}} && ./bin/{{file}}"
+	watchexec -f "*.c" -f "*.h" -d 500ms -r -c -- "{{cc}} {{cflags}} examples/{{file}}.c -o ./bin/{{file}} && ./bin/{{file}}"
 
 format:
 	find . -name "*.h" -o -name "*.c" -type f | xargs clang-format --style=file --verbose -i
@@ -23,7 +23,10 @@ valgrind path_to_file:
 
 coverage:
 	mkdir -p bin coverage
+	mkdir -p coverage/gcov
 	find bin -name "*.gcda" -delete
-	{{cc}} -g -O0 --coverage -Wall -Wextra -I . tests.c -o bin/tests_cov
-	./bin/tests_cov
+	{{cc}} -g -O0 --coverage -Wall -Wextra -I . tests.c -o bin/tests
+	./bin/tests
 	gcovr --root . --filter 'cvx/' --html-details coverage/index.html --print-summary
+	gcov -o bin/tests-tests.gcno tests.c && mv *.gcov coverage/gcov/
+

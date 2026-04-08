@@ -570,6 +570,42 @@ static void test_dll_int_clone_values(struct cvxtest *t)
     dll_int_drop(clone);
 }
 
+/* ---- pop_at edge cases ---- */
+
+// pop_at(col, 0) must delegate to pop_front.
+static void test_dll_int_pop_at_front(struct cvxtest *t)
+{
+    cvx_container *col = dll_int_new();
+    dll_int_push_back(col, 10);
+    dll_int_push_back(col, 20);
+    dll_int_push_back(col, 30);
+
+    int v = dll_int_pop_at(col, 0);
+    CVXCHECK(t, v == 10);
+    CVXCHECK(t, dll_int_count(col) == 2);
+    CVXCHECK(t, dll_int_front(col) == 20);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+
+    dll_int_drop(col);
+}
+
+// pop_at(col, count-1) must delegate to pop_back.
+static void test_dll_int_pop_at_back(struct cvxtest *t)
+{
+    cvx_container *col = dll_int_new();
+    dll_int_push_back(col, 10);
+    dll_int_push_back(col, 20);
+    dll_int_push_back(col, 30);
+
+    int v = dll_int_pop_at(col, 2); // count-1 == 2
+    CVXCHECK(t, v == 30);
+    CVXCHECK(t, dll_int_count(col) == 2);
+    CVXCHECK(t, dll_int_back(col) == 20);
+    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+
+    dll_int_drop(col);
+}
+
 /* ---- wrong tag guard (smoke) ---- */
 
 static void test_dll_int_wrong_tag(struct cvxtest *t)
@@ -617,6 +653,8 @@ static int run_dlinked_list_tests(void)
     CVXRUN(&t, test_dll_int_pop_back_empty);
 
     CVXRUN(&t, test_dll_int_pop_at_middle);
+    CVXRUN(&t, test_dll_int_pop_at_front);
+    CVXRUN(&t, test_dll_int_pop_at_back);
     CVXRUN(&t, test_dll_int_pop_at_out_of_range);
     CVXRUN(&t, test_dll_int_pop_at_empty);
 
