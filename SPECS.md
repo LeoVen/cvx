@@ -1,4 +1,4 @@
-TODO: clean this up a bit more
+TODO: iterators
 
 # cvx - Library Specifications
 
@@ -35,7 +35,6 @@ This document describes the conventions, patterns, and structural rules of the c
     - [Test suite runner naming](#test-suite-runner-naming)
     - [Shared test infrastructure](#shared-test-infrastructure)
     - [Test categories and what to cover](#test-categories-and-what-to-cover)
-  - [Adding a new implementation - checklist](#adding-a-new-implementation---checklist)
 
 ---
 
@@ -429,81 +428,41 @@ Tests are `.h` files in `tests/`. They are included by `tests.c`, which is the s
 | File | Contents |
 |---|---|
 | `tests/<impl>_tests.h` | Core functional tests for an implementation |
-| `tests/<impl>_guard_tests.h` | Wrong-tag guard tests for every function |
 | `tests/<impl>_iter_tests.h` | Direct iterator function tests |
-| `tests/<impl>_vtabv_tests.h` | Callback invocation count tests |
+| `tests/<impl>_guard_tests.h` | Wrong-tag guard tests for every function that has a `CVX_CONTAINER_GUARDS` guard |
+| `tests/<impl>_vtab_tests.h` | Callback invocation count tests for both `V` and `K` (if applicable) functions |
 | `tests/interface/<intf>_<impl>_tests.h` | Tests via an interface |
 | `tests/iter/<impl>_iter_<kind>.h` | Tests via an iterator interface |
 
 ### Test function naming
 
 ```
-test_<pfx>_<function>_<scenario>
+test_<group>_<pfx>_<function>_<scenario>
 ```
 
-Examples: `test_da_int_push_back`, `test_sll_int_clone_values`, `test_da_vtabv_drop_called_on_clear`.
-
-Guard test names: `test_<pfx>_guard_<function>` (e.g. `test_da_int_guard_clone`).
+- `group` - for example, `iter`, `guard`, `alloc`, `vtab` or empty if this is the core functionality test
+- `pfx` - the `PFX` macro used to generate the function namespaces
+- `function` - the main function being tested
+- `scenario` - a specific scenario that is being tested for the function
 
 ### Test suite runner naming
 
 ```
-run_<subject>_tests
+run_<group>_<subject>_tests
 ```
-
-Examples: `run_dynamic_array_tests`, `run_slinked_list_vtabv_tests`, `run_stack_dynamic_array_tests`.
 
 ### Shared test infrastructure
 
 **`tests/implementations.h`** - the single header that instantiates all concrete types used across tests. All test files include this rather than instantiating their own types. New types must be added here.
-
-**`tests/vtabs.h`** - defines shared vtabv callback functions and their invocation counters:
-
-```c
-static size_t cvx_counter_vtab_comp = 0;
-static size_t cvx_counter_vtab_copy = 0;
-static size_t cvx_counter_vtab_drop = 0;
-
-int   int_comp(int a, int b);  // increments cvx_counter_vtab_comp
-int   int_copy(int a);         // increments cvx_counter_vtab_copy
-void  int_drop(int a);         // increments cvx_counter_vtab_drop
-
-#define CVX_TEST_COUNTER_COMP(t, n)  CVXCHECK(t, n == cvx_counter_vtab_comp)
-#define CVX_TEST_COUNTER_COPY(t, n)  CVXCHECK(t, n == cvx_counter_vtab_copy)
-#define CVX_TEST_COUNTER_DROP(t, n)  CVXCHECK(t, n == cvx_counter_vtab_drop)
-#define CVX_TEST_COUNTER_COMP_RESET() cvx_counter_vtab_comp = 0
-#define CVX_TEST_COUNTER_COPY_RESET() cvx_counter_vtab_copy = 0
-#define CVX_TEST_COUNTER_DROP_RESET() cvx_counter_vtab_drop = 0
-```
-
-vtabv callback tests must reset the relevant counter at the start of each test.
-
-**`tests/cvxtestutils.h`** - small helpers:
-
-```c
-#define cvx_col(ds) ((cvx_container *)(&(ds)))   // convert stack-alloc struct to cvx_container *
-#define MAKE_INVALID_CONTAINER(name) \
-    cvx_container *name = &(cvx_container){ .flag = 0, .tag = 999999 };
-```
+**`tests/vtabs.h`** - defines shared vtabv and vtabk callback functions and their invocation counters. vtabv callback tests must reset the relevant counter at the start of each test.
+**`tests/alloc.h`** - overrides malloc and calloc for testing allocation error paths.
+**`tests/cvxtestutils.h`** - shared utility functions:
 
 ### Test categories and what to cover
 
-For every new implementation, add tests in this order:
+For every new implementation, add the following tests:
 
-1. **Core tests** - init/new constructors, every mutator and getter, clone, clear, error paths (empty, range, alloc)
-2. **Guard tests** - one test per public function that takes `cvx_container *`, using `MAKE_INVALID_CONTAINER`; verify `CVX_FLAG_WRONG_TAG` is set and the error return is correct
-3. **Iterator tests** - direct iterator function tests (stack-allocated and heap-allocated constructors, all movement and access functions, wrong-tag guard on each)
-4. **vtabv tests** - verify copy/drop counters increment the correct number of times for clone, drop, and clear; verify NULL vtabv paths do not crash
-
----
-
-## Adding a new implementation - checklist
-
-1. Create `cvx/<name>.h` following the function ordering and naming conventions above.
-2. Define `VTAB_V`, the container struct (with `vtabv` field), any node struct, and the iterator struct.
-3. Implement all mandatory constructors, destructors, and operations.
-4. Add `#ifdef IMPL_*` blocks for each interface/iterator the implementation supports.
-5. End with `#undef VTAB_V` and `#include "cvx/undef.h"`.
-6. Add the instantiation to `tests/implementations.h`.
-7. Create the four test files (core, guard, iterator, vtabv) and register their runners in `tests.c`.
-8. Update the tables in `README.md`.
+1. **Core tests** - all constructors and destructors, every getter, every operation, error paths that might produce an `enum cvx_flag`; must not contain iterator tests.
+2. **Iterator tests** - direct iterator function tests, including all defined iterator-specific functions (like stack-allocated and heap-allocated constructors, all movement and access functions, etc.).
+3. **Guard tests** - one test per public function that takes `cvx_container *`, using `MAKE_INVALID_CONTAINER`; verify `CVX_FLAG_WRONG_TAG` is set and the error return is correct; must be done for both the data structure and its iterator.
+4. **vtab tests** - verify copy/drop counters increment the correct number of times for clone, drop, and clear; verify NULL vtab paths do not crash; add tests for both `V` and `K` vtabs if the latter is present.
