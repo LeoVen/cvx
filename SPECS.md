@@ -25,7 +25,7 @@ This document describes the conventions, patterns, and structural rules of the c
     - [Tags](#tags)
     - [Flag](#flag)
   - [CVX\_CONTAINER\_GUARDS](#cvx_container_guards)
-  - [Function categories and ordering](#function-categories-and-ordering)
+  - [File content ordering](#file-content-ordering)
   - [VTAB\_V and VTAB\_K - per-instance callbacks](#vtab_v-and-vtab_k---per-instance-callbacks)
   - [Error handling](#error-handling)
   - [Test structure](#test-structure)
@@ -53,7 +53,21 @@ There are three kinds of header files:
 
 ## Implementations
 
-TODO: write me
+An implementation is instantiated by defining a set of macros and then including a header. Each `#include` produces a new and independent concrete type. For example:
+
+```c
+// Check out the Macro Conventions section for more information.
+#define V         char *
+#define SNAME     str_array
+#define PFX       sa
+#define TAG       1
+#include "cvx/dynamic_array.h"
+```
+
+All macros are automatically undefined after the `#include` via an `cvx/undef.h` which is included at the very end, so there is no risk of them anything into subsequent templates.
+
+The implementation type provides a wide range of functionality (even if certain operations are slow), and at least one iterator.
+This is a generalist data structure, so there is no well-defined interface. If it could implement a certain operation, then why not.
 
 ## Interfaces
 
@@ -186,19 +200,21 @@ Internal parameters use surrounding underscores to avoid shadowing user-visible 
 
 | Role | Name |
 |---|---|
-| The container | `_col_` or `_self_` |
+| `cvx_container` pointer | `_col_` |
+| The implementing container | `_self_` |
 | Original in clone | `_orig_` |
 | Copy in clone | `_copy_` |
 | Results | `_res_` |
-| Item value | `_val_` |
+| Value | `_val_` |
 | Key | `_key_` |
-| New value (replace) | `new` |
-| Old value (replace return) | `_old_` |
-| Popped value | `_val_` |
+| New key or value (replace) | `_new_` |
+| Old key value (replace return) | `_old_` |
+| Nodes | `_node_`, `_curr_`, etc. |
 | vtabv argument | `_vtabv_` |
 | vtabk argument | `_vtabk_` |
 | Iterator | `_iter_` |
 | Target (iter constructor) | `_target_` |
+| Other parameters and variables | `_steps_`, `_item_`, `_index_`, etc. |
 
 ---
 
@@ -324,22 +340,28 @@ The `<error_return>` values by convention:
 
 ---
 
-## Function categories and ordering
+## File content ordering
 
-Inside each implementation header, declarations and then definitions appear in this fixed order:
+An implementation file can have a multitude of things. To make it easier to navigate, items must be in the following order:
 
-1. **Internal macro definitions** (`FUNC`, `NODE`, `ITERATOR`, `ITER_TAG`, `VTAB_V`)
-2. **Struct definitions** - vtabv, node (if applicable), container, iterator
-3. **Forward declarations** - all functions declared before any are defined
-4. **Non-allocating initializers** - `_init()`, `_init_with()`, `_copy()` (stack-allocated, return by value)
-5. **Allocating initializers** - `_new()`, `_new_with()`, `_clone()` (heap-allocated, return `cvx_container *`)
-6. **Destructors** - `_drop()`, `_clear()`
-7. **Getters** - `_count()`, `_capacity()`, `_empty()`, `_full()`, `_front()`, `_back()`, `_get()`
-8. **Mutators** - `_push_front()`, `_push_back()`, `_push_at()`, `_pop_front()`, `_pop_back()`, `_pop_at()`, `_replace_front()`, `_replace_back()`
-9. **Iterator section** (after a comment block `/// ITERATOR ///`) - `_iter_init_start()`, `_iter_init_end()`, `_iter_start()`, `_iter_end()`, `_iter_drop()`, then state functions, then movement functions, then access functions
-10. **Private functions** (after a comment block `/// PRIVATE FUNCTIONS ///`)
-11. **Interface cast blocks** - one `#ifdef IMPL_<INTERFACE>` block per supported interface, each including the corresponding `_cast.h`
-12. **Cleanup** - `#undef VTAB_V` (and any other local macros), then `#include "cvx/undef.h"`
+1. `#ifndef` guards for each required macro, with an error message following the template:
+  * `#error "path/to/file.h requires <MACRO> to be defined (what it is used for, e.g. #define <MACRO> short_example)`
+  * For example: `#error "cvx/dlinked_list.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_list)"`
+  * This initial block must be surrounded by a comment containing `clang-format off` and then `clang-format on` to prevent weird line breaks from the long error messages
+2. Any necessary includes, from either C's libraries or `cvx/core.h`
+3. Internal macro definitions, like `FUNC`, `NODE`, `ITERATOR`, `ITER_TAG`, `VTAB_V`, `VTAB_K`, `ENTRY`, etc.
+4. All struct definitions, like `struct SNAME`, `struct ITERATOR`, etc.
+5. All function definitions for the data structure, following a specific order:
+  * Initializers and destructors come first (but between them there is no specific order)
+  * Getters come second (accessing specific properties of the struct)
+  * Other operations come last (in no specific order)
+6. All iterator function definitions
+  * They must also follow a similar logic to the data structure, where
+  * Initializers come first, then getters and then the other operations
+7. All implementation-detail function definitions
+8. Implementation of all functions, following the correct order as they are declared in the previous sections
+9. All interface casts that the implementation supports
+10. The very last item must be an `#include "cvx/undef.h"`
 
 ---
 

@@ -1,9 +1,9 @@
+// clang-format off
 #ifndef V
 #error "cvx/dynamic_array.h requires V to be defined (the element type, e.g. #define V int)"
 #endif
 #ifndef SNAME
-#error \
-    "cvx/dynamic_array.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_array)"
+#error "cvx/dynamic_array.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_array)"
 #endif
 #ifndef PFX
 #error "cvx/dynamic_array.h requires PFX to be defined (the function prefix, e.g. #define PFX ma)"
@@ -11,6 +11,7 @@
 #ifndef TAG
 #error "cvx/dynamic_array.h requires TAG to be defined (a unique integer tag, e.g. #define TAG 1)"
 #endif
+// clang-format on
 
 #include <stdlib.h>
 #include <string.h>
@@ -64,17 +65,17 @@ bool FUNC(_empty)(cvx_container *_col_);
 bool FUNC(_full)(cvx_container *_col_);
 V FUNC(_front)(cvx_container *_col_);
 V FUNC(_back)(cvx_container *_col_);
-V FUNC(_get)(cvx_container *_col_, size_t index);
+V FUNC(_get)(cvx_container *_col_, size_t _index_);
 
 // Mutators
-void FUNC(_push_front)(cvx_container *_col_, V item);
-void FUNC(_push_at)(cvx_container *_col_, V item, size_t index);
-void FUNC(_push_back)(cvx_container *_col_, V item);
+void FUNC(_push_front)(cvx_container *_col_, V _item_);
+void FUNC(_push_at)(cvx_container *_col_, V _item_, size_t _index_);
+void FUNC(_push_back)(cvx_container *_col_, V _item_);
 V FUNC(_pop_front)(cvx_container *_col_);
-V FUNC(_pop_at)(cvx_container *_col_, size_t index);
+V FUNC(_pop_at)(cvx_container *_col_, size_t _index_);
 V FUNC(_pop_back)(cvx_container *_col_);
-V FUNC(_replace_front)(cvx_container *_col_, V new);
-V FUNC(_replace_back)(cvx_container *_col_, V new);
+V FUNC(_replace_front)(cvx_container *_col_, V _new_);
+V FUNC(_replace_back)(cvx_container *_col_, V _new_);
 
 // TODO:
 // void FUNC(_seq_push_front)(cvx_container *_col_, V *values, size_t size);
@@ -98,9 +99,9 @@ void FUNC(_iter_to_start)(cvx_container *_iter_);
 void FUNC(_iter_to_end)(cvx_container *_iter_);
 void FUNC(_iter_next)(cvx_container *_iter_);
 void FUNC(_iter_prev)(cvx_container *_iter_);
-void FUNC(_iter_forward)(cvx_container *_iter_, size_t steps);
-void FUNC(_iter_backward)(cvx_container *_iter_, size_t steps);
-void FUNC(_iter_go_to)(cvx_container *_iter_, size_t index);
+void FUNC(_iter_forward)(cvx_container *_iter_, size_t _steps_);
+void FUNC(_iter_backward)(cvx_container *_iter_, size_t _steps_);
+void FUNC(_iter_go_to)(cvx_container *_iter_, size_t _index_);
 // Iterator access
 V FUNC(_iter_value)(cvx_container *_iter_);
 size_t FUNC(_iter_index)(cvx_container *_iter_);
@@ -359,23 +360,23 @@ V FUNC(_back)(cvx_container *_col_)
     return _self_->buffer[_self_->count - 1];
 }
 
-V FUNC(_get)(cvx_container *_col_, size_t index)
+V FUNC(_get)(cvx_container *_col_, size_t _index_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-    if (index >= _self_->count)
+    if (_index_ >= _self_->count)
     {
         _col_->flag = CVX_FLAG_RANGE;
         return (V){ 0 };
     }
 
     _col_->flag = CVX_FLAG_OK;
-    return _self_->buffer[index];
+    return _self_->buffer[_index_];
 }
 
-void FUNC(_push_front)(cvx_container *_col_, V item)
+void FUNC(_push_front)(cvx_container *_col_, V _item_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, );
 
@@ -389,19 +390,19 @@ void FUNC(_push_front)(cvx_container *_col_, V item)
         memmove(_self_->buffer + 1, _self_->buffer, _self_->count * sizeof(V));
     }
 
-    _self_->buffer[0] = item;
+    _self_->buffer[0] = _item_;
 
     _self_->count++;
     _col_->flag = CVX_FLAG_OK;
 }
 
-void FUNC(_push_at)(cvx_container *_col_, V item, size_t index)
+void FUNC(_push_at)(cvx_container *_col_, V _item_, size_t _index_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, );
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-    if (index > _self_->count)
+    if (_index_ > _self_->count)
     {
         _col_->flag = CVX_FLAG_RANGE;
         return;
@@ -410,15 +411,15 @@ void FUNC(_push_at)(cvx_container *_col_, V item, size_t index)
     if (!FUNC(__assert_capacity)(_col_))
         return;
 
-    memmove(_self_->buffer + index + 1, _self_->buffer + index,
-            (_self_->count - index) * sizeof(V));
+    memmove(_self_->buffer + _index_ + 1, _self_->buffer + _index_,
+            (_self_->count - _index_) * sizeof(V));
 
-    _self_->buffer[index] = item;
+    _self_->buffer[_index_] = _item_;
     _self_->count++;
     _col_->flag = CVX_FLAG_OK;
 }
 
-void FUNC(_push_back)(cvx_container *_col_, V item)
+void FUNC(_push_back)(cvx_container *_col_, V _item_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, );
 
@@ -427,7 +428,7 @@ void FUNC(_push_back)(cvx_container *_col_, V item)
 
     struct SNAME *_self_ = (struct SNAME *)_col_;
 
-    _self_->buffer[_self_->count++] = item;
+    _self_->buffer[_self_->count++] = _item_;
     _col_->flag = CVX_FLAG_OK;
 }
 
@@ -453,7 +454,7 @@ V FUNC(_pop_front)(cvx_container *_col_)
     return _val_;
 }
 
-V FUNC(_pop_at)(cvx_container *_col_, size_t index)
+V FUNC(_pop_at)(cvx_container *_col_, size_t _index_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
@@ -465,16 +466,16 @@ V FUNC(_pop_at)(cvx_container *_col_, size_t index)
         return (V){ 0 };
     }
 
-    if (index >= _self_->count)
+    if (_index_ >= _self_->count)
     {
         _col_->flag = CVX_FLAG_RANGE;
         return (V){ 0 };
     }
 
-    V _val_ = _self_->buffer[index];
+    V _val_ = _self_->buffer[_index_];
 
-    memmove(_self_->buffer + index, _self_->buffer + index + 1,
-            (_self_->count - index - 1) * sizeof(V));
+    memmove(_self_->buffer + _index_, _self_->buffer + _index_ + 1,
+            (_self_->count - _index_ - 1) * sizeof(V));
 
     _self_->buffer[_self_->count - 1] = (V){ 0 };
     _self_->count--;
@@ -502,7 +503,7 @@ V FUNC(_pop_back)(cvx_container *_col_)
     return _val_;
 }
 
-V FUNC(_replace_front)(cvx_container *_col_, V new)
+V FUNC(_replace_front)(cvx_container *_col_, V _new_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
@@ -515,12 +516,12 @@ V FUNC(_replace_front)(cvx_container *_col_, V new)
     }
 
     V _old_ = _self_->buffer[0];
-    _self_->buffer[0] = new;
+    _self_->buffer[0] = _new_;
     _col_->flag = CVX_FLAG_OK;
     return _old_;
 }
 
-V FUNC(_replace_back)(cvx_container *_col_, V new)
+V FUNC(_replace_back)(cvx_container *_col_, V _new_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 });
 
@@ -533,7 +534,7 @@ V FUNC(_replace_back)(cvx_container *_col_, V new)
     }
 
     V _old_ = _self_->buffer[_self_->count - 1];
-    _self_->buffer[_self_->count - 1] = new;
+    _self_->buffer[_self_->count - 1] = _new_;
     _col_->flag = CVX_FLAG_OK;
     return _old_;
 }
@@ -700,40 +701,40 @@ void FUNC(_iter_prev)(cvx_container *_iter_)
     _iter_->flag = CVX_FLAG_OK;
 }
 
-void FUNC(_iter_forward)(cvx_container *_iter_, size_t steps)
+void FUNC(_iter_forward)(cvx_container *_iter_, size_t _steps_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
-    size_t remaining = _self_->target->count - _self_->index;
-    _self_->index += (steps < remaining) ? steps : remaining;
+    size_t _remaining_ = _self_->target->count - _self_->index;
+    _self_->index += (_steps_ < _remaining_) ? _steps_ : _remaining_;
     _iter_->flag = CVX_FLAG_OK;
 }
 
-void FUNC(_iter_backward)(cvx_container *_iter_, size_t steps)
+void FUNC(_iter_backward)(cvx_container *_iter_, size_t _steps_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
-    _self_->index -= (steps < _self_->index) ? steps : _self_->index;
+    _self_->index -= (_steps_ < _self_->index) ? _steps_ : _self_->index;
     _iter_->flag = CVX_FLAG_OK;
 }
 
-void FUNC(_iter_go_to)(cvx_container *_iter_, size_t index)
+void FUNC(_iter_go_to)(cvx_container *_iter_, size_t _index_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
 
     struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
-    if (index > _self_->target->count)
+    if (_index_ > _self_->target->count)
     {
         _iter_->flag = CVX_FLAG_RANGE;
         return;
     }
 
-    _self_->index = index;
+    _self_->index = _index_;
     _iter_->flag = CVX_FLAG_OK;
 }
 
