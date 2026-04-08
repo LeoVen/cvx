@@ -296,16 +296,20 @@ size_t FUNC(_count)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, 0);
 
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
     _col_->flag = CVX_FLAG_OK;
-    return ((struct SNAME *)_col_)->count;
+    return _self_->count;
 }
 
 size_t FUNC(_capacity)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, 0);
 
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
     _col_->flag = CVX_FLAG_OK;
-    return ((struct SNAME *)_col_)->capacity;
+    return _self_->capacity;
 }
 
 bool FUNC(_empty)(cvx_container *_col_)
@@ -590,10 +594,12 @@ cvx_container *FUNC(_iter_start)(cvx_container *_target_)
     if (!_res_)
         return NULL;
 
+    struct SNAME *_self_ = (struct SNAME *)_target_;
+
     _res_->super.tag = ITER_TAG;
     _res_->super.flag = CVX_FLAG_OK;
     _res_->index = 0;
-    _res_->target = (struct SNAME *)_target_;
+    _res_->target = _self_;
 
     return (cvx_container *)_res_;
 }
@@ -607,9 +613,11 @@ cvx_container *FUNC(_iter_end)(cvx_container *_target_)
     if (!_res_)
         return NULL;
 
+    struct SNAME *_self_ = (struct SNAME *)_target_;
+
     _res_->super.tag = ITER_TAG;
     _res_->super.flag = CVX_FLAG_OK;
-    _res_->target = (struct SNAME *)_target_;
+    _res_->target = _self_;
     _res_->index = _res_->target->count;
 
     return (cvx_container *)_res_;
@@ -626,8 +634,10 @@ bool FUNC(_iter_at_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
 
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
     _iter_->flag = CVX_FLAG_OK;
-    return ((struct ITERATOR *)_iter_)->index == 0;
+    return _self_->index == 0;
 }
 
 bool FUNC(_iter_at_end)(cvx_container *_iter_)
@@ -654,8 +664,9 @@ void FUNC(_iter_to_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, );
 
-    ((struct ITERATOR *)_iter_)->index = 0;
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
 
+    _self_->index = 0;
     _iter_->flag = CVX_FLAG_OK;
 }
 
@@ -759,8 +770,10 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, 0);
 
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
     _iter_->flag = CVX_FLAG_OK;
-    return ((struct ITERATOR *)_iter_)->index;
+    return _self_->index;
 }
 
 ///

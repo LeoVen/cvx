@@ -280,16 +280,20 @@ size_t FUNC(_count)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, 0);
 
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
     _col_->flag = CVX_FLAG_OK;
-    return ((struct SNAME *)_col_)->count;
+    return _self_->count;
 }
 
 bool FUNC(_empty)(cvx_container *_col_)
 {
     CVX_CONTAINER_GUARDS(TAG, _col_, false);
 
+    struct SNAME *_self_ = (struct SNAME *)_col_;
+
     _col_->flag = CVX_FLAG_OK;
-    return ((struct SNAME *)_col_)->count == 0;
+    return _self_->count == 0;
 }
 
 V FUNC(_front)(cvx_container *_col_)
@@ -638,8 +642,10 @@ bool FUNC(_iter_at_start)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, false);
 
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
     _iter_->flag = CVX_FLAG_OK;
-    return ((struct ITERATOR *)_iter_)->index == 0;
+    return _self_->index == 0;
 }
 
 bool FUNC(_iter_at_end)(cvx_container *_iter_)
@@ -744,8 +750,10 @@ size_t FUNC(_iter_index)(cvx_container *_iter_)
 {
     CVX_CONTAINER_GUARDS(ITER_TAG, _iter_, 0);
 
+    struct ITERATOR *_self_ = (struct ITERATOR *)_iter_;
+
     _iter_->flag = CVX_FLAG_OK;
-    return ((struct ITERATOR *)_iter_)->index;
+    return _self_->index;
 }
 
 #ifdef IMPL_STACK
