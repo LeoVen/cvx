@@ -35,6 +35,7 @@ This document describes the conventions, patterns, and structural rules of the c
     - [Test suite runner naming](#test-suite-runner-naming)
     - [Shared test infrastructure](#shared-test-infrastructure)
     - [Test categories and what to cover](#test-categories-and-what-to-cover)
+    - [Test ordering](#test-ordering)
 
 ---
 
@@ -466,3 +467,10 @@ For every new implementation, add the following tests:
 2. **Iterator tests** - direct iterator function tests, including all defined iterator-specific functions (like stack-allocated and heap-allocated constructors, all movement and access functions, etc.).
 3. **Guard tests** - one test per public function that takes `cvx_container *`, using `MAKE_INVALID_CONTAINER`; verify `CVX_FLAG_WRONG_TAG` is set and the error return is correct; must be done for both the data structure and its iterator.
 4. **vtab tests** - verify copy/drop counters increment the correct number of times for clone, drop, and clear; verify NULL vtab paths do not crash; add tests for both `V` and `K` vtabs if the latter is present.
+
+### Test ordering
+
+- Within the same group (or file), like `alloc`, `iter`, `guard`, etc., tests must be ordered according to the declaration order in the implementation file
+- For example, how `_init` comes before `_init_with` and then other functions follow a declaration order
+- Tests for the same operation or function, must also be grouped together
+- This is to make it easier to find tests, by following the natural order that they appear in the source code
