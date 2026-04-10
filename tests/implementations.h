@@ -78,4 +78,57 @@ static struct dlinked_int_vtabv *dll_int_vtabv_full = &(struct dlinked_int_vtabv
     .drop = int_drop,
 };
 
+// Interval-set iterator interface: V = the entry struct (interval), not int.
+#define V struct iset_int_entry
+#define INTERFACE iset_int_bidi_iter
+#include "cvx/iter/bidirectional_iterator.h"
+#undef V
+
+#define V int
+#define SNAME iset_int
+#define PFX is_int
+#define TAG 55
+#define IMPL_BIDIRECTIONAL_ITER iset_int_bidi_iter
+#include "cvx/interval_set.h"
+#define IS_ITER_TAG (55 * CVX_ITER_TAG_MULT)
+static struct iset_int_vtabv *is_int_vtabv_comp_only = &(struct iset_int_vtabv){
+    .comp = int_comp,
+};
+static struct iset_int_vtabv *is_int_vtabv_full = &(struct iset_int_vtabv){
+    .comp = int_comp,
+    .copy = int_copy,
+    .drop = int_drop,
+};
+
+// Interval-map iterator interface: V = the entry struct.
+#define V struct imap_int_int_entry
+#define INTERFACE imap_int_int_bidi_iter
+#include "cvx/iter/bidirectional_iterator.h"
+#undef V
+
+#define K int
+#define V int
+#define SNAME imap_int_int
+#define PFX im_int
+#define TAG 44
+#define IMPL_BIDIRECTIONAL_ITER imap_int_int_bidi_iter
+#include "cvx/interval_map.h"
+#define IM_ITER_TAG (44 * CVX_ITER_TAG_MULT)
+static struct imap_int_int_vtabk *im_int_vtabk = &(struct imap_int_int_vtabk){
+    .comp = int_comp,
+};
+static struct imap_int_int_vtabk *im_int_vtabk_full = &(struct imap_int_int_vtabk){
+    .comp = int_comp,
+    .copy = int_copy,
+    .drop = int_drop,
+};
+static struct imap_int_int_vtabv *im_int_vtabv_with_comp = &(struct imap_int_int_vtabv){
+    .comp = int_comp,
+};
+static struct imap_int_int_vtabv *im_int_vtabv_full = &(struct imap_int_int_vtabv){
+    .comp = int_comp,
+    .copy = int_copy,
+    .drop = int_drop,
+};
+
 #endif /* CVX_IMPLEMENTATIONS_TEST_H */

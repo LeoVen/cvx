@@ -29,6 +29,18 @@
 #include "tests/dlinked_list_vtab_tests.h"
 #include "tests/dlinked_list_alloc_tests.h"
 #include "tests/iter/dlinked_list_iter_bidirectional.h"
+
+#include "tests/interval_set_tests.h"
+#include "tests/interval_set_guard_tests.h"
+#include "tests/interval_set_iter_tests.h"
+#include "tests/interval_set_vtab_tests.h"
+#include "tests/interval_set_alloc_tests.h"
+
+#include "tests/interval_map_tests.h"
+#include "tests/interval_map_guard_tests.h"
+#include "tests/interval_map_iter_tests.h"
+#include "tests/interval_map_vtab_tests.h"
+#include "tests/interval_map_alloc_tests.h"
 // clang-format on
 
 int main(void)
@@ -61,6 +73,18 @@ int main(void)
         run_dlinked_list_vtab_tests,
         run_dlinked_list_alloc_tests,
         run_dlinked_list_iter_bidirectional_tests,
+
+        run_interval_set_tests,
+        run_interval_set_guard_tests,
+        run_interval_set_iter_tests,
+        run_interval_set_vtab_tests,
+        run_interval_set_alloc_tests,
+
+        run_interval_map_tests,
+        run_interval_map_guard_tests,
+        run_interval_map_iter_tests,
+        run_interval_map_vtab_tests,
+        run_interval_map_alloc_tests,
     };
     // clang-format on
 
