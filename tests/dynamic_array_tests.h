@@ -533,50 +533,49 @@ static int run_dynamic_array_tests(void)
 
     CVXRUN(&t, test_da_int_init);
     CVXRUN(&t, test_da_int_init_with);
+
+    CVXRUN(&t, test_da_int_copy_empty);
+    CVXRUN(&t, test_da_int_copy_values);
+
     CVXRUN(&t, test_da_int_new);
     CVXRUN(&t, test_da_int_new_with);
     CVXRUN(&t, test_da_int_new_with_zero_returns_null);
 
-    CVXRUN(&t, test_da_int_push_back_grows);
-    CVXRUN(&t, test_da_int_push_back_values);
+    CVXRUN(&t, test_da_int_clone_empty);
+    CVXRUN(&t, test_da_int_clone_values);
+
+    CVXRUN(&t, test_da_int_clear);
+
+    CVXRUN(&t, test_da_int_empty);
+    CVXRUN(&t, test_da_int_full);
+    CVXRUN(&t, test_da_int_front);
+    CVXRUN(&t, test_da_int_front_empty);
+    CVXRUN(&t, test_da_int_back);
+    CVXRUN(&t, test_da_int_back_empty);
+    CVXRUN(&t, test_da_int_get);
+    CVXRUN(&t, test_da_int_get_out_of_range);
+    CVXRUN(&t, test_da_int_get_empty);
+
     CVXRUN(&t, test_da_int_push_front);
     CVXRUN(&t, test_da_int_push_at_middle);
     CVXRUN(&t, test_da_int_push_at_out_of_range);
+    CVXRUN(&t, test_da_int_push_back_grows);
+    CVXRUN(&t, test_da_int_push_back_values);
 
-    CVXRUN(&t, test_da_int_pop_back);
-    CVXRUN(&t, test_da_int_pop_back_empty);
     CVXRUN(&t, test_da_int_pop_front);
     CVXRUN(&t, test_da_int_pop_front_empty);
     CVXRUN(&t, test_da_int_pop_at_middle);
     CVXRUN(&t, test_da_int_pop_at_out_of_range);
     CVXRUN(&t, test_da_int_pop_at_empty);
-
-    CVXRUN(&t, test_da_int_front);
-    CVXRUN(&t, test_da_int_back);
-    CVXRUN(&t, test_da_int_front_empty);
-    CVXRUN(&t, test_da_int_back_empty);
-
-    CVXRUN(&t, test_da_int_empty);
-    CVXRUN(&t, test_da_int_full);
-
-    CVXRUN(&t, test_da_int_get);
-    CVXRUN(&t, test_da_int_get_out_of_range);
-    CVXRUN(&t, test_da_int_get_empty);
-
-    CVXRUN(&t, test_da_int_replace_back);
-    CVXRUN(&t, test_da_int_replace_back_on_empty);
+    CVXRUN(&t, test_da_int_pop_back);
+    CVXRUN(&t, test_da_int_pop_back_empty);
 
     CVXRUN(&t, test_da_int_replace_front);
     CVXRUN(&t, test_da_int_replace_front_on_empty);
+    CVXRUN(&t, test_da_int_replace_back);
+    CVXRUN(&t, test_da_int_replace_back_on_empty);
 
-    CVXRUN(&t, test_da_int_clear);
     CVXRUN(&t, test_da_int_wrong_tag);
-
-    CVXRUN(&t, test_da_int_copy_empty);
-    CVXRUN(&t, test_da_int_copy_values);
-
-    CVXRUN(&t, test_da_int_clone_empty);
-    CVXRUN(&t, test_da_int_clone_values);
 
     return CVXSUMMARY(&t);
 }

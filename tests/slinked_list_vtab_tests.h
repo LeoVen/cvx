@@ -47,36 +47,6 @@ static void test_sll_vtabv_copy_called_on_clone(struct cvxtest *t)
     sll_int_drop(clone);
 }
 
-static void test_sll_vtabv_drop_called_on_drop(struct cvxtest *t)
-{
-    CVX_TEST_COUNTER_DROP_RESET();
-
-    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
-    sll_int_push_back(col, 1);
-    sll_int_push_back(col, 2);
-    sll_int_push_back(col, 3);
-
-    sll_int_drop(col);
-
-    CVX_TEST_COUNTER_DROP(t, 3);
-}
-
-static void test_sll_vtabv_drop_called_on_clear(struct cvxtest *t)
-{
-    CVX_TEST_COUNTER_DROP_RESET();
-
-    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
-    sll_int_push_back(col, 1);
-    sll_int_push_back(col, 2);
-    sll_int_push_back(col, 3);
-
-    sll_int_clear(col);
-
-    CVX_TEST_COUNTER_DROP(t, 3);
-
-    sll_int_drop(col);
-}
-
 static void test_sll_vtabv_null_copy_no_crash(struct cvxtest *t)
 {
     cvx_container *col = sll_int_new();
@@ -96,6 +66,20 @@ static void test_sll_vtabv_null_copy_no_crash(struct cvxtest *t)
     sll_int_drop(clone);
 }
 
+static void test_sll_vtabv_drop_called_on_drop(struct cvxtest *t)
+{
+    CVX_TEST_COUNTER_DROP_RESET();
+
+    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    sll_int_push_back(col, 1);
+    sll_int_push_back(col, 2);
+    sll_int_push_back(col, 3);
+
+    sll_int_drop(col);
+
+    CVX_TEST_COUNTER_DROP(t, 3);
+}
+
 static void test_sll_vtabv_null_drop_no_crash(struct cvxtest *t)
 {
     cvx_container *col = sll_int_new();
@@ -108,6 +92,22 @@ static void test_sll_vtabv_null_drop_no_crash(struct cvxtest *t)
     CVXCHECK(t, true);
 }
 
+static void test_sll_vtabv_drop_called_on_clear(struct cvxtest *t)
+{
+    CVX_TEST_COUNTER_DROP_RESET();
+
+    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    sll_int_push_back(col, 1);
+    sll_int_push_back(col, 2);
+    sll_int_push_back(col, 3);
+
+    sll_int_clear(col);
+
+    CVX_TEST_COUNTER_DROP(t, 3);
+
+    sll_int_drop(col);
+}
+
 static int run_slinked_list_vtab_tests(void)
 {
     struct cvxtest t = { 0 };
@@ -116,10 +116,11 @@ static int run_slinked_list_vtab_tests(void)
 
     CVXRUN(&t, test_sll_vtabv_copy_called_on_copy);
     CVXRUN(&t, test_sll_vtabv_copy_called_on_clone);
-    CVXRUN(&t, test_sll_vtabv_drop_called_on_drop);
-    CVXRUN(&t, test_sll_vtabv_drop_called_on_clear);
     CVXRUN(&t, test_sll_vtabv_null_copy_no_crash);
+
+    CVXRUN(&t, test_sll_vtabv_drop_called_on_drop);
     CVXRUN(&t, test_sll_vtabv_null_drop_no_crash);
+    CVXRUN(&t, test_sll_vtabv_drop_called_on_clear);
 
     return CVXSUMMARY(&t);
 }

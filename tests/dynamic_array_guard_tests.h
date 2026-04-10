@@ -44,18 +44,18 @@ static void test_da_int_guard_capacity(struct cvxtest *t)
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_da_int_guard_full(struct cvxtest *t)
-{
-    MAKE_INVALID_CONTAINER(col);
-    bool result = da_int_full(col);
-    CVXCHECK(t, result == false);
-    CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
-}
-
 static void test_da_int_guard_empty(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(col);
     bool result = da_int_empty(col);
+    CVXCHECK(t, result == false);
+    CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
+}
+
+static void test_da_int_guard_full(struct cvxtest *t)
+{
+    MAKE_INVALID_CONTAINER(col);
+    bool result = da_int_full(col);
     CVXCHECK(t, result == false);
     CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -169,8 +169,8 @@ static int run_dynamic_array_guard_tests(void)
     CVXRUN(&t, test_da_int_guard_clear);
     CVXRUN(&t, test_da_int_guard_count);
     CVXRUN(&t, test_da_int_guard_capacity);
-    CVXRUN(&t, test_da_int_guard_full);
     CVXRUN(&t, test_da_int_guard_empty);
+    CVXRUN(&t, test_da_int_guard_full);
     CVXRUN(&t, test_da_int_guard_front);
     CVXRUN(&t, test_da_int_guard_back);
     CVXRUN(&t, test_da_int_guard_get);

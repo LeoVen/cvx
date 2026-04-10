@@ -477,9 +477,10 @@ static int run_dynamic_array_iter_tests(void)
 
     CVXRUN(&t, test_da_int_iter_at_start_true);
     CVXRUN(&t, test_da_int_iter_at_start_false);
+    CVXRUN(&t, test_da_int_iter_at_start_wrong_tag);
+
     CVXRUN(&t, test_da_int_iter_at_end_true);
     CVXRUN(&t, test_da_int_iter_at_end_false);
-    CVXRUN(&t, test_da_int_iter_at_start_wrong_tag);
     CVXRUN(&t, test_da_int_iter_at_end_wrong_tag);
 
     CVXRUN(&t, test_da_int_iter_count);

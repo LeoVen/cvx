@@ -625,6 +625,8 @@ static int run_dlinked_list_iter_tests(void)
     CVXRUN(&t, test_dll_int_iter_prev_at_start);
     CVXRUN(&t, test_dll_int_iter_prev_wrong_tag);
 
+    CVXRUN(&t, test_dll_int_iter_next_prev_roundtrip);
+
     CVXRUN(&t, test_dll_int_iter_forward);
     CVXRUN(&t, test_dll_int_iter_forward_clamp);
     CVXRUN(&t, test_dll_int_iter_forward_wrong_tag);
@@ -632,8 +634,6 @@ static int run_dlinked_list_iter_tests(void)
     CVXRUN(&t, test_dll_int_iter_backward);
     CVXRUN(&t, test_dll_int_iter_backward_clamp);
     CVXRUN(&t, test_dll_int_iter_backward_wrong_tag);
-
-    CVXRUN(&t, test_dll_int_iter_next_prev_roundtrip);
 
     CVXRUN(&t, test_dll_int_iter_value);
     CVXRUN(&t, test_dll_int_iter_value_at_end);
