@@ -72,7 +72,7 @@ V FUNC(_front)(cvx_container *_col_);
 V FUNC(_back)(cvx_container *_col_);
 V FUNC(_get)(cvx_container *_col_, size_t _index_);
 
-// Mutators
+// Operations
 void FUNC(_push_front)(cvx_container *_col_, V _item_);
 void FUNC(_push_back)(cvx_container *_col_, V _item_);
 void FUNC(_push_at)(cvx_container *_col_, V _item_, size_t _index_);

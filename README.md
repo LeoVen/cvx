@@ -1,6 +1,6 @@
 # cvx
 
-A generic C data structure library built on templating header files.
+A modern C library of generic data structures built on templating header files.
 
 There are two main types of data structures:
 

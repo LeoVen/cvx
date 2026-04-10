@@ -5,7 +5,8 @@
 #include "tests/cvxtest.h"
 #include "tests/implementations.h"
 
-/* Helper: allocate a filled collection and return a bidirectional_iter wrapping its heap iterator */
+/* Helper: allocate a filled collection and return a bidirectional_iter wrapping its heap iterator
+ */
 #define MAKE_BI(name, col) \
     cvx_container *col = dll_int_new(); \
     dll_int_push_back(col, 10); \

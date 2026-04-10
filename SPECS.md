@@ -471,6 +471,7 @@ For every new implementation, add the following tests:
 ### Test ordering
 
 - Within the same group (or file), like `alloc`, `iter`, `guard`, etc., tests must be ordered according to the declaration order in the implementation file
+- This means both the test function body and the test function call must be ordered
 - For example, how `_init` comes before `_init_with` and then other functions follow a declaration order
 - Tests for the same operation or function, must also be grouped together
 - This is to make it easier to find tests, by following the natural order that they appear in the source code
