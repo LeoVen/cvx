@@ -19,6 +19,7 @@ enum cvx_flags
     CVX_FLAG_INVALID   =  7, // Invalid argument or operation
     CVX_FLAG_DUPLICATE =  8, // Duplicate key or value
     CVX_FLAG_ERROR     =  9, // Generic error, or unknown error
+    CVX_FLAG_VTAB      = 10, // Required vtab function was not provided
 };
 // clang-format on
 
@@ -28,7 +29,7 @@ enum cvx_flags
  * Maps the error codes to their character representation.
  */
 // clang-format off
-static const char *cvx_flags_str[10] = {
+static const char *cvx_flags_str[] = {
     "OK",          // 0
     "WRONG_TAG",   // 1
     "ALLOC",       // 2
@@ -39,6 +40,7 @@ static const char *cvx_flags_str[10] = {
     "INVALID",     // 7
     "DUPLICATE",   // 8
     "ERROR",       // 9
+    "VTAB",        // 10
 };
 // clang-format on
 
@@ -48,7 +50,7 @@ static const char *cvx_flags_str[10] = {
  * Maps the error codes to their description strings.
  */
 // clang-format off
-static const char *cvx_flags_description[10] = {
+static const char *cvx_flags_description[] = {
     "No error",                                      // 0
     "Wrong container type for this function",        // 1
     "Allocation failed",                             // 2
@@ -59,6 +61,7 @@ static const char *cvx_flags_description[10] = {
     "Invalid argument or operation",                 // 7
     "Duplicate key or value",                        // 8
     "Generic or unknown error",                      // 9
+    "Required VTAB function missing",                // 10
 };
 // clang-format on
 
