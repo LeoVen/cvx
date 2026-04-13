@@ -12,18 +12,18 @@
 #define VTABLE(X) CVX_(X, _vtable)
 #define GLOBAL_VTABLE(SNAME, X, NAME) CVX_(CVX_(CVX_(cvx_vtables_, SNAME), X), NAME)
 
-#define CVX_VTAB_COMP(T) int (*comp)(T, T)
-#define CVX_VTAB_COPY(T) T (*copy)(T)
-#define CVX_VTAB_DROP(T) void (*drop)(T)
-#define CVX_VTAB_HASH(T) size_t (*hash)(T)
-#define CVX_VTAB_PRIO(T) int (*prio)(T, T)
+#define CVX_VTAB_COMP(name, T) int (*name)(T, T)
+#define CVX_VTAB_COPY(name, T) T (*name)(T)
+#define CVX_VTAB_DROP(name, T) void (*name)(T)
+#define CVX_VTAB_HASH(name, T) size_t (*name)(T)
+#define CVX_VTAB_PRIO(name, T) int (*name)(T, T)
 
 #define CVX_VTAB_DEFINITION(T) \
-    CVX_VTAB_COMP(T); \
-    CVX_VTAB_COPY(T); \
-    CVX_VTAB_DROP(T); \
-    CVX_VTAB_HASH(T); \
-    CVX_VTAB_PRIO(T);
+    CVX_VTAB_COMP(comp, T); \
+    CVX_VTAB_COPY(copy, T); \
+    CVX_VTAB_DROP(drop, T); \
+    CVX_VTAB_HASH(hash, T); \
+    CVX_VTAB_PRIO(prio, T);
 
 #ifndef CVX_ITER_TAG_MULT
 // Iterator tag equals to the user-provided tag times this value
