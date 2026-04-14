@@ -1,5 +1,3 @@
-TODO: iterators
-
 # cvx - Library Specifications
 
 This document describes the conventions, patterns, and structural rules of the cvx library. It is intended as a reference for contributors and as context for AI agents generating new code.
@@ -10,6 +8,7 @@ This document describes the conventions, patterns, and structural rules of the c
   - [Interfaces](#interfaces)
     - [Interface casting](#interface-casting)
   - [Iterators](#iterators)
+  - [Proxy functions](#proxy-functions)
   - [Main folders](#main-folders)
   - [Macro conventions](#macro-conventions)
     - [Implementation headers](#implementation-headers)
@@ -125,6 +124,45 @@ Iterator structs always begin with `cvx_container super` as their first member a
 
 ---
 
+## Proxy functions
+
+All implementation functions - both container functions and iterator functions - take typed pointers as their first parameter (`struct SNAME *_self_` or `struct ITERATOR *_iter_`). They contain no `CVX_CONTAINER_GUARDS` check and perform no tag validation.
+
+Interfaces, however, work entirely with `cvx_container *`. To bridge the two, each implementation generates a set of **proxy functions** named with `FUNC_PROXY(X)` (which expands to `<PFX>__proxy_<X>`). A proxy:
+
+There are no proxy functions that either take a `struct SNAME *` or a `struct ITERATOR *` (concrete types) as either input or output. Proxies function solely by using `cvx_container *` and cast inputs to the concrete types after validation, or cast it to `cvx_container *` after initialization.
+
+1. Takes `cvx_container *_col_` as its first parameter (all other parameters are identical to the original)
+2. Begins with `CVX_CONTAINER_GUARDS` to validate the tag
+3. Delegates immediately to the typed implementation function by casting `_col_` to the appropriate type
+
+```c
+// Implementation function - typed, no guard
+void FUNC(_push_back)(struct SNAME *_self_, V _item_) { ... }
+
+// Proxy - untyped, guarded, delegates to implementation
+void FUNC_PROXY(_push_back)(cvx_container *_col_, V _item_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, );
+    FUNC(_push_back)((struct SNAME *)_col_, _item_);
+}
+```
+
+For functions that return a pointer to the implementation struct (e.g. `_new`, `_clone`, `_iter_start`, `_iter_end`), the proxy casts the return value to `cvx_container *`:
+
+```c
+cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_)
+{
+    CVX_CONTAINER_GUARDS(TAG, _col_, NULL);
+    return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_);
+}
+```
+
+Container proxies use `TAG` for the guard. Iterator proxies use `ITER_TAG`.
+All `IMPL_*` macros in the interface cast blocks point to proxy functions, never directly to implementation functions.
+
+---
+
 ## Main folders
 
 - `cvx/` - folder containing all library implementation
@@ -163,6 +201,7 @@ Internal macros (defined inside the header, not by the user):
 | Macro | Expands to |
 |---|---|
 | `FUNC(X)` | `CVX_(PFX, X)` - used to name every generated function |
+| `FUNC_PROXY(X)` | `CVX_(PFX, CVX_(__proxy), X)` - used to name every generated proxy function |
 | `NODE` | `CVX_(SNAME, _node)` - node struct name (linked structures) |
 | `ITERATOR` | `CVX_(SNAME, _iter)` - iterator struct name |
 | `ITER_TAG` | `TAG * CVX_ITER_TAG_MULT` - tag for the iterator of this container |
@@ -200,8 +239,8 @@ Internal parameters use surrounding underscores to avoid shadowing user-visible 
 
 | Role | Name |
 |---|---|
-| `cvx_container` pointer | `_col_` |
-| The implementing container | `_self_` |
+| `cvx_container` pointer (proxy functions only) | `_col_` |
+| The implementing container (`struct SNAME *` parameter) | `_self_` |
 | Original in clone | `_orig_` |
 | Copy in clone | `_copy_` |
 | Results | `_res_` |
@@ -234,23 +273,23 @@ Every implementation provides a consistent set of lifecycle functions. Their nam
   - Only available when a data structure may have additional arguments
   - Similar to `_new_with`
 - **`_new`**
-  - Heap-allocates a container and sets all defauls
-  - Returns a `cvx_container *`
+  - Heap-allocates a container and sets all defaults
+  - Returns a `struct SNAME *`
+  - Its proxy returns `cvx_container *` and is used by interfaces
   - Similar to `_init`
-  - Used by interfaces
 - **`_new_with`**
   - Heap-allocates a container
-  - Returns a `cvx_container *`
+  - Returns a `struct SNAME *`
   - Similar to `_init_with`
 - **`_copy`**
-  - Creates a deep copy of a container and returns it by value
+  - Creates a deep copy of a container and returns it by value as `struct SNAME`
   - Elements are optionally copied using `vtabv->copy`, otherwise a shallow copy is performed
   - The result is independent of the original
 - **`_clone`**
-  - Creates a deep copy of a heap-allocated container and returns a new `cvx_container *`
+  - Creates a deep copy of a heap-allocated container and returns a new `struct SNAME *`
+  - Its proxy returns `cvx_container *` and is used by interfaces
   - Elements are optionally copied using `vtabv->copy`, otherwise a shallow copy is performed
   - Copies the `vtabv` pointer from the original so callbacks remain active on the clone
-  - Used by interfaces
 - **`_drop`**
   - Frees all internal resources (nodes, buffers, etc.)
   - Optionally frees each element if `vtabv->drop` is defined
@@ -274,20 +313,87 @@ When to use each function:
 
 Summary Table:
 
-| Function | Input | Output | Used in interfaces | Paired destructor |
+| Function | Input | Output | Used in interfaces (via proxy) | Paired destructor |
 |---|---|---|---|---|
-| `_init` | - | stack value | No | `_clear` |
-| `_init_with` | - | stack value | No | `_clear` |
-| `_new` | - | heap pointer | Yes | `_drop` |
-| `_new_with` | - | heap pointer | No | `_drop` |
-| `_copy` | either | stack value | No | `_clear` |
-| `_clone` | either | heap pointer | Yes | `_drop` |
-| `_drop` | heap pointer | - | Yes | - |
-| `_clear` | either | - | No | - |
+| `_init` | - | `struct SNAME` (stack) | No | `_clear` |
+| `_init_with` | - | `struct SNAME` (stack) | No | `_clear` |
+| `_new` | - | `struct SNAME *` (heap) | Yes | `_drop` |
+| `_new_with` | - | `struct SNAME *` (heap) | No | `_drop` |
+| `_copy` | `struct SNAME *` | `struct SNAME` (stack) | No | `_clear` |
+| `_clone` | `struct SNAME *` | `struct SNAME *` (heap) | Yes | `_drop` |
+| `_drop` | `struct SNAME *` | - | Yes | - |
+| `_clear` | `struct SNAME *` | - | No | - |
 
 ### Iterators
 
-TODO: Iterators also follow a common interface and inheritance structure.
+Each implementation generates an iterator struct alongside the container struct. The iterator struct is named `ITERATOR` (expanding to `<SNAME>_iter`) and always begins with `cvx_container super` as its first member, followed by an index (or pointer for linked structures) and a pointer back to the target container.
+
+Iterator functions are split into two groups by what their first parameter receives:
+
+**Iterator constructors and destructors**
+
+| Function | Returns | Description |
+|---|---|---|
+| `_iter_init_start` | `struct ITERATOR` (stack) | Stack-allocates an iterator positioned at the start |
+| `_iter_init_end` | `struct ITERATOR` (stack) | Stack-allocates an iterator positioned at the end |
+| `_iter_start` | `struct ITERATOR *` (heap) | Heap-allocates an iterator positioned at the start |
+| `_iter_end` | `struct ITERATOR *` (heap) | Heap-allocates an iterator positioned at the end |
+| `_iter_drop` | - | Frees a heap-allocated iterator |
+
+**Iterator check**
+
+| Function | Description |
+|---|---|
+| `_iter_at_start` | Returns true if the iterator is at the start position |
+| `_iter_at_end` | Returns true if the iterator is past the last element |
+| `_iter_count` | Returns the number of elements in the target container |
+
+**Iterator movement**
+
+| Function | Description |
+|---|---|
+| `_iter_to_start` | Moves the iterator to the start |
+| `_iter_to_end` | Moves the iterator past the last element |
+| `_iter_next` | Advances the iterator by one step |
+| `_iter_prev` | Retreats the iterator by one step |
+| `_iter_forward` | Advances the iterator by `_steps_` steps, clamped to end |
+| `_iter_backward` | Retreats the iterator by `_steps_` steps, clamped to start |
+| `_iter_go_to` | Moves the iterator to a specific index |
+
+**Iterator entry getters**
+
+| Function | Description |
+|---|---|
+| `_iter_key` | Returns the key at the current position |
+| `_iter_value` | Returns the value at the current position |
+| `_iter_entry` | Returns the entry at the current position |
+| `_iter_index` | Returns the current index |
+
+None of these functions contain `CVX_CONTAINER_GUARDS`. Tag validation is handled exclusively by their proxy counterparts, which the interfaces use.
+
+`_iter_start` and `_iter_end` return `struct ITERATOR *`, and their proxies cast the return to `cvx_container *`.
+
+**Availability by iterator interface**
+
+Each iterator interface exposes a subset of the functions above. The table below shows which functions are covered by each interface. Functions marked with `direct` are always available as typed functions but are not part of any interface vtable.
+
+| Function | `forward_iterator` | `bidirectional_iterator` | `random_access_iterator` |
+|---|:---:|:---:|:---:|
+| `_iter_start` | ✓ | ✓ | ✓ |
+| `_iter_end` | — | ✓ | ✓ |
+| `_iter_drop` | ✓ | ✓ | ✓ |
+| `_iter_at_start` | ✓ | ✓ | ✓ |
+| `_iter_at_end` | ✓ | ✓ | ✓ |
+| `_iter_count` | ✓ | ✓ | ✓ |
+| `_iter_to_start` | ✓ | ✓ | ✓ |
+| `_iter_to_end` | — | ✓ | ✓ |
+| `_iter_next` | ✓ | ✓ | ✓ |
+| `_iter_prev` | — | ✓ | ✓ |
+| `_iter_forward` | ✓ | ✓ | ✓ |
+| `_iter_backward` | — | ✓ | ✓ |
+| `_iter_go_to` | — | — | ✓ |
+| `_iter_value` | ✓ | ✓ | ✓ |
+| `_iter_index` | ✓ | ✓ | ✓ |
 
 ---
 
@@ -314,7 +420,7 @@ Iterator tags are always `TAG * CVX_ITER_TAG_MULT` (default multiplier: 100). A 
 
 ## CVX_CONTAINER_GUARDS
 
-Every function that takes a `cvx_container *` begins with this guard:
+Every **proxy function** begins with this guard:
 
 ```c
 CVX_CONTAINER_GUARDS(TAG, _col_, <error_return>);
@@ -328,6 +434,10 @@ if (_col_->tag != TAG) {
     return <error_return>;
 }
 ```
+
+Implementation functions (both container and iterator) take typed pointers and contain no guard. Tag validation is solely used by proxies because they take instead a `cvx_container *`.
+
+Container proxies use `TAG`; iterator proxies use `ITER_TAG`.
 
 The `<error_return>` values by convention:
 
@@ -358,10 +468,12 @@ An implementation file can have a multitude of things. To make it easier to navi
 6. All iterator function definitions
   * They must also follow a similar logic to the data structure, where
   * Initializers come first, then getters and then the other operations
-7. All implementation-detail function definitions
+7. All implementation-detail function definitions (private helpers are prefixed with `__`)
 8. Implementation of all functions, following the correct order as they are declared in the previous sections
-9. All interface casts that the implementation supports
-10. The very last item must be an `#include "cvx/undef.h"`
+9. All proxy functions (`FUNC_PROXY`), in the same order as the implementation functions they wrap:
+  * Container proxies first, then iterator proxies
+10. All interface casts that the implementation supports
+11. The very last item must be an `#include "cvx/undef.h"`
 
 ---
 
@@ -465,7 +577,7 @@ For every new implementation, add the following tests:
 
 1. **Core tests** - all constructors and destructors, every getter, every operation, error paths that might produce an `enum cvx_flag`; must not contain iterator tests.
 2. **Iterator tests** - direct iterator function tests, including all defined iterator-specific functions (like stack-allocated and heap-allocated constructors, all movement and access functions, etc.).
-3. **Guard tests** - one test per public function that takes `cvx_container *`, using `MAKE_INVALID_CONTAINER`; verify `CVX_FLAG_WRONG_TAG` is set and the error return is correct; must be done for both the data structure and its iterator.
+3. **Guard tests** - one test per proxy function (`FUNC_PROXY`), using `MAKE_INVALID_CONTAINER`; verify `CVX_FLAG_WRONG_TAG` is set and the error return is correct; must be done for both container proxies (using `TAG`) and iterator proxies (using `ITER_TAG`).
 4. **vtab tests** - verify copy/drop counters increment the correct number of times for clone, drop, and clear; verify NULL vtab paths do not crash; add tests for both `V` and `K` vtabs if the latter is present.
 
 ### Test ordering
