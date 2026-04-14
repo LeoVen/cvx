@@ -182,15 +182,16 @@ void print_entry(struct entry_list *entry)
         return;
     }
 
-    string_ptr s = l_get(entry, 0);
+    struct entry_list_iter iter = l_iter_init_start(entry);
+
+    string_ptr s = l_iter_value(&iter);
     to_c_string(s, c_str, max_len);
     printf("[%6s]", c_str);
 
-    for (size_t i = 1; i < l_count(entry); i++)
+    for (; !l_iter_at_end(&iter); l_iter_next(&iter))
     {
-        string_ptr s = l_get(entry, i);
+        string_ptr s = l_iter_value(&iter);
         to_c_string(s, c_str, max_len);
-
         printf(" -> [%6s]", c_str);
     }
 
