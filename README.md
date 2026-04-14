@@ -244,6 +244,8 @@ Required tooling
 - watchexec
   - `brew install watchexec`
   - `cargo install watchexec`
+- bear
+  - `brew install bear`
 
 ## Building and running
 

@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-DCVX_ENABLE_FALLBACK]

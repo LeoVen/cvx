@@ -1,3 +1,5 @@
+#include "cvx/fallback.h"
+
 // clang-format off
 #ifndef INTERFACE
 #error "cvx/iter/forward_iterator_cast.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_iter)"

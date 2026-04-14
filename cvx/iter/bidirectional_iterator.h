@@ -1,3 +1,5 @@
+#include "cvx/fallback.h"
+
 // clang-format off
 #ifndef V
 #error "cvx/iter/bidirectional_iterator.h requires V to be defined (the element type, e.g. #define V int)"

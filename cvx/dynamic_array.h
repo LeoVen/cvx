@@ -1,3 +1,5 @@
+#include "cvx/fallback.h"
+
 // clang-format off
 #ifndef V
 #error "cvx/dynamic_array.h requires V to be defined (the element type, e.g. #define V int)"
@@ -115,6 +117,7 @@ size_t FUNC(_iter_index)(cvx_container *_iter_);
 // Private functions
 bool FUNC(__assert_capacity)(struct SNAME *_self_);
 
+/// Initialize a Dynamic Array.
 struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
 {
     struct SNAME _res_ = (struct SNAME){ 0 };

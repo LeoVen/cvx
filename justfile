@@ -30,3 +30,10 @@ coverage:
 	gcovr --root . --filter 'cvx/' --html-details coverage/index.html --print-summary
 	gcov -o bin/tests-tests.gcno tests.c && mv *.gcov coverage/gcov/
 
+# setup clangd and hooks
+setup:
+	mkdir -p build
+	mkdir -p bin
+	mkdir -p bin/examples
+	find . -type f -iname "*.c" | sed -r 's/^\.\/(.+)\.c$/\1/' | xargs -I {} bash -c "bear -a -o build/compile_commands.json -- {{cc}} {{cflags}} {}.c -o bin/{}"
+
