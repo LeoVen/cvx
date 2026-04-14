@@ -19,6 +19,7 @@
 #include "cvx/core.h"
 
 #define FUNC(X) CVX_(PFX, X)
+#define FUNC_PROXY(X) CVX_(PFX, CVX_(__proxy, X))
 #define ITERATOR CVX_(SNAME, _iter)
 #define ITER_TAG (TAG * CVX_ITER_TAG_MULT)
 #define VTAB_V CVX_(SNAME, _vtabv)
@@ -818,17 +819,50 @@ bool FUNC(__assert_capacity)(struct SNAME *_self_)
     return true;
 }
 
+///
+///
+/// PROXIES
+///
+///
+
+// clang-format off
+cvx_container *FUNC_PROXY(_new)(void) { return (cvx_container *)FUNC(_new)(); }
+cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_); }
+void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); }
+void FUNC_PROXY(_clear)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_clear)((struct SNAME *)_col_); }
+enum cvx_flags FUNC_PROXY(_flag)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, CVX_FLAG_WRONG_TAG); return FUNC(_flag)((struct SNAME *)_col_); }
+size_t FUNC_PROXY(_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_count)((struct SNAME *)_col_); }
+size_t FUNC_PROXY(_capacity)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_capacity)((struct SNAME *)_col_); }
+bool FUNC_PROXY(_empty)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_empty)((struct SNAME *)_col_); }
+bool FUNC_PROXY(_full)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_full)((struct SNAME *)_col_); }
+V FUNC_PROXY(_front)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_front)((struct SNAME *)_col_); }
+V FUNC_PROXY(_back)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_back)((struct SNAME *)_col_); }
+V FUNC_PROXY(_get)(cvx_container *_col_, size_t _index_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_get)((struct SNAME *)_col_, _index_); }
+struct SNAME FUNC_PROXY(_copy)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (struct SNAME){ 0 }); return FUNC(_copy)((struct SNAME *)_col_); }
+void FUNC_PROXY(_push_front)(cvx_container *_col_, V _item_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_push_front)((struct SNAME *)_col_, _item_); }
+void FUNC_PROXY(_push_at)(cvx_container *_col_, V _item_, size_t _index_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_push_at)((struct SNAME *)_col_, _item_, _index_); }
+void FUNC_PROXY(_push_back)(cvx_container *_col_, V _item_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_push_back)((struct SNAME *)_col_, _item_); }
+V FUNC_PROXY(_pop_front)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_pop_front)((struct SNAME *)_col_); }
+V FUNC_PROXY(_pop_at)(cvx_container *_col_, size_t _index_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_pop_at)((struct SNAME *)_col_, _index_); }
+V FUNC_PROXY(_pop_back)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_pop_back)((struct SNAME *)_col_); }
+V FUNC_PROXY(_replace_front)(cvx_container *_col_, V _new_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_replace_front)((struct SNAME *)_col_, _new_); }
+V FUNC_PROXY(_replace_back)(cvx_container *_col_, V _new_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_replace_back)((struct SNAME *)_col_, _new_); }
+void FUNC_PROXY(_swap)(cvx_container *_col_, size_t _idx1_, size_t _idx2_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_swap)((struct SNAME *)_col_, _idx1_, _idx2_); }
+int FUNC_PROXY(_compare)(cvx_container *_col_, struct SNAME *_right_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_compare)((struct SNAME *)_col_, _right_); }
+void FUNC_PROXY(_sort)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_sort)((struct SNAME *)_col_); }
+// clang-format on
+
 #ifdef IMPL_STACK
 #define INTERFACE IMPL_STACK
 
-#define IMPL_NEW FUNC(_new)
-#define IMPL_DROP FUNC(_drop)
-#define IMPL_CLONE FUNC(_clone)
-#define IMPL_PUSH FUNC(_push_back)
-#define IMPL_POP FUNC(_pop_back)
-#define IMPL_COUNT FUNC(_count)
-#define IMPL_PEEK FUNC(_back)
-#define IMPL_REPLACE FUNC(_replace_back)
+#define IMPL_NEW FUNC_PROXY(_new)
+#define IMPL_DROP FUNC_PROXY(_drop)
+#define IMPL_CLONE FUNC_PROXY(_clone)
+#define IMPL_PUSH FUNC_PROXY(_push_back)
+#define IMPL_POP FUNC_PROXY(_pop_back)
+#define IMPL_COUNT FUNC_PROXY(_count)
+#define IMPL_PEEK FUNC_PROXY(_back)
+#define IMPL_REPLACE FUNC_PROXY(_replace_back)
 
 #include "cvx/interface/stack_cast.h"
 #undef IMPL_STACK

@@ -17,7 +17,7 @@
 
 int main(void)
 {
-    struct stack s = ml_as_stack(ml_new_with(NULL, 8));
+    struct stack s = ml_as_stack((cvx_container *)ml_new_with(NULL, 8));
 
     cvx_push(&s, 10);
     cvx_push(&s, 20);

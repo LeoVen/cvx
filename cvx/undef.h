@@ -10,6 +10,7 @@
 
 // implementation files
 #undef FUNC
+#undef FUNC_PROXY
 #undef NODE
 #undef ITERATOR
 #undef ITER_TAG
