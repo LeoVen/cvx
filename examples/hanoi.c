@@ -30,9 +30,9 @@ struct
 } print_aux = { 0 };
 
 #define list_nth(s, i) ((struct list *)(s->instance))->buffer[i]
-#define linked_nth(s, i) (ll_get((struct cvx_container *)(s)->instance, cvx_count(s) - i - 1))
+#define linked_nth(s, i) (ll_get((struct llist *)(s)->instance, cvx_count(s) - i - 1))
 
-void print_stacks()
+void print_stacks(void)
 {
     for (int i = 9; i >= 0; i--)
     {
@@ -67,11 +67,11 @@ void hanoi(int n, struct stack *from, struct stack *aux, struct stack *to)
     hanoi(n - 1, aux, from, to);
 }
 
-int main()
+int main(void)
 {
-    struct stack from = l_as_stack(l_new_with(NULL, 10));
-    struct stack to = ll_as_stack(ll_new());
-    struct stack aux = l_as_stack(l_new_with(NULL, 10));
+    struct stack from = l_as_stack((cvx_container *)l_new_with(NULL, 10));
+    struct stack to = ll_as_stack((cvx_container *)ll_new());
+    struct stack aux = l_as_stack((cvx_container *)l_new_with(NULL, 10));
 
     for (int i = disks; i >= 1; i--)
         cvx_push(&from, i);

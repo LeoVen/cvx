@@ -20,12 +20,12 @@ int main(void)
 {
     srand(time(NULL));
 
-    cvx_container *entries = l_new();
+    struct list *entries = l_new();
 
     for (int i = 0; i < 1000; i++)
         l_push_back(entries, rand() % 256);
 
-    struct ra_iter iter = l_iter_as_ra_iter(l_iter_start(entries));
+    struct ra_iter iter = l_iter_as_ra_iter((cvx_container *)l_iter_start(entries));
     double avg = calculate_average(&iter);
 
     if (cvx_flag(&iter) != CVX_FLAG_OK)
