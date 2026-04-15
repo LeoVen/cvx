@@ -17,7 +17,7 @@ static void test_dll_int_alloc_copy_node_fails_with_drop(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *src = dll_int_new_with(dll_int_vtabv_full);
+    struct dlinked_int *src = dll_int_new_with(dll_int_vtabv_full);
     CVXCHECK(t, src != NULL);
     if (!src)
         return;
@@ -25,11 +25,9 @@ static void test_dll_int_alloc_copy_node_fails_with_drop(struct cvxtest *t)
     dll_int_push_back(src, 10);
     dll_int_push_back(src, 20);
 
-    struct dlinked_int *self = (struct dlinked_int *)src;
-
     // 1 node alloc succeeds (first node copied to result), then second fails.
     CVX_MALLOC_FAIL_AFTER(1);
-    struct dlinked_int result = dll_int_copy(self);
+    struct dlinked_int result = dll_int_copy(src);
 
     CVXCHECK(t, result.super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, result.head == NULL);
@@ -49,7 +47,7 @@ static void test_dll_int_alloc_copy_node_fails_with_drop(struct cvxtest *t)
 static void test_dll_int_alloc_new(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d == NULL);
     CVX_MALLOC_RESET();
 }
@@ -60,7 +58,7 @@ static void test_dll_int_alloc_new(struct cvxtest *t)
 // Failing the container alloc must return NULL.
 static void test_dll_int_alloc_clone_new_fails(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -71,7 +69,7 @@ static void test_dll_int_alloc_clone_new_fails(struct cvxtest *t)
     // Allocs so far: 3 (1 struct + 2 nodes).
     // Fail the very next one (the clone's container).
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *copy = dll_int_clone(d);
+    struct dlinked_int *copy = dll_int_clone(d);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -81,7 +79,7 @@ static void test_dll_int_alloc_clone_new_fails(struct cvxtest *t)
 // Failing the first node copy must return NULL and not leak the container.
 static void test_dll_int_alloc_clone_node_fails(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -91,7 +89,7 @@ static void test_dll_int_alloc_clone_node_fails(struct cvxtest *t)
 
     // Allow 1 alloc (clone's container struct), then fail the first node.
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *copy = dll_int_clone(d);
+    struct dlinked_int *copy = dll_int_clone(d);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -102,7 +100,7 @@ static void test_dll_int_alloc_clone_node_fails(struct cvxtest *t)
 // (run with AddressSanitizer to verify no leak).
 static void test_dll_int_alloc_clone_second_node_fails(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -112,7 +110,7 @@ static void test_dll_int_alloc_clone_second_node_fails(struct cvxtest *t)
 
     // Allow 2 allocs (container + first node), then fail the second node.
     CVX_MALLOC_FAIL_AFTER(2);
-    cvx_container *copy = dll_int_clone(d);
+    struct dlinked_int *copy = dll_int_clone(d);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -122,7 +120,7 @@ static void test_dll_int_alloc_clone_second_node_fails(struct cvxtest *t)
 // Successful clone must be independent of the original after allocation.
 static void test_dll_int_alloc_clone_success(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -130,7 +128,7 @@ static void test_dll_int_alloc_clone_success(struct cvxtest *t)
     dll_int_push_back(d, 10);
     dll_int_push_back(d, 20);
 
-    cvx_container *copy = dll_int_clone(d);
+    struct dlinked_int *copy = dll_int_clone(d);
     CVXCHECK(t, copy != NULL);
     if (!copy)
     {
@@ -155,7 +153,7 @@ static void test_dll_int_alloc_clone_success(struct cvxtest *t)
 static void test_dll_int_alloc_push_front(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
     {
@@ -164,7 +162,7 @@ static void test_dll_int_alloc_push_front(struct cvxtest *t)
     }
 
     dll_int_push_front(d, 42);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, dll_int_count(d) == 0);
 
     CVX_MALLOC_RESET();
@@ -175,7 +173,7 @@ static void test_dll_int_alloc_push_front(struct cvxtest *t)
 // Existing elements must be untouched.
 static void test_dll_int_alloc_push_front_partial(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -186,7 +184,7 @@ static void test_dll_int_alloc_push_front_partial(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     dll_int_push_front(d, 30);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, dll_int_count(d) == 2);
     CVXCHECK(t, dll_int_front(d) == 10);
     CVXCHECK(t, dll_int_back(d) == 20);
@@ -200,7 +198,7 @@ static void test_dll_int_alloc_push_front_partial(struct cvxtest *t)
 static void test_dll_int_alloc_push_back(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
     {
@@ -209,7 +207,7 @@ static void test_dll_int_alloc_push_back(struct cvxtest *t)
     }
 
     dll_int_push_back(d, 42);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, dll_int_count(d) == 0);
 
     CVX_MALLOC_RESET();
@@ -222,7 +220,7 @@ static void test_dll_int_alloc_push_back(struct cvxtest *t)
 // Failing it must set CVX_FLAG_ALLOC and leave the list unchanged.
 static void test_dll_int_alloc_push_at_middle(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -232,7 +230,7 @@ static void test_dll_int_alloc_push_at_middle(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     dll_int_push_at(d, 99, 1);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, dll_int_count(d) == 2);
     CVXCHECK(t, dll_int_front(d) == 10);
     CVXCHECK(t, dll_int_back(d) == 20);
@@ -245,13 +243,13 @@ static void test_dll_int_alloc_push_at_middle(struct cvxtest *t)
 
 static void test_dll_int_alloc_iter_start_fails(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *it = dll_int_iter_start(d);
+    struct dlinked_int_iter *it = dll_int_iter_start(d);
     CVXCHECK(t, it == NULL);
 
     CVX_MALLOC_RESET();
@@ -260,13 +258,13 @@ static void test_dll_int_alloc_iter_start_fails(struct cvxtest *t)
 
 static void test_dll_int_alloc_iter_end_fails(struct cvxtest *t)
 {
-    cvx_container *d = dll_int_new();
+    struct dlinked_int *d = dll_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *it = dll_int_iter_end(d);
+    struct dlinked_int_iter *it = dll_int_iter_end(d);
     CVXCHECK(t, it == NULL);
 
     CVX_MALLOC_RESET();

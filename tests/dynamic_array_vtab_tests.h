@@ -8,13 +8,12 @@ static void test_da_vtabv_copy_called_on_copy(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_COPY_RESET();
 
-    cvx_container *col = da_int_new_with(da_int_vtabv_full, 8);
+    struct dynamic_array_int *col = da_int_new_with(da_int_vtabv_full, 8);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_push_back(col, 3);
 
-    struct dynamic_array_int *arr = (struct dynamic_array_int *)col;
-    struct dynamic_array_int copy = da_int_copy(arr);
+    struct dynamic_array_int copy = da_int_copy(col);
 
     CVX_TEST_COUNTER_COPY(t, 3);
     CVXCHECK(t, copy.count == 3);
@@ -30,12 +29,12 @@ static void test_da_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_COPY_RESET();
 
-    cvx_container *col = da_int_new_with(da_int_vtabv_full, 8);
+    struct dynamic_array_int *col = da_int_new_with(da_int_vtabv_full, 8);
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
 
-    cvx_container *clone = da_int_clone(col);
+    struct dynamic_array_int *clone = da_int_clone(col);
 
     CVX_TEST_COUNTER_COPY(t, 3);
     CVXCHECK(t, da_int_count(clone) == 3);
@@ -49,12 +48,12 @@ static void test_da_vtabv_copy_called_on_clone(struct cvxtest *t)
 
 static void test_da_vtabv_null_copy_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 8);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 8);
     da_int_push_back(col, 7);
     da_int_push_back(col, 8);
     da_int_push_back(col, 9);
 
-    cvx_container *clone = da_int_clone(col);
+    struct dynamic_array_int *clone = da_int_clone(col);
 
     CVXCHECK(t, clone != NULL);
     CVXCHECK(t, da_int_count(clone) == 3);
@@ -70,7 +69,7 @@ static void test_da_vtabv_drop_called_on_drop(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = da_int_new_with(da_int_vtabv_full, 8);
+    struct dynamic_array_int *col = da_int_new_with(da_int_vtabv_full, 8);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_push_back(col, 3);
@@ -82,7 +81,7 @@ static void test_da_vtabv_drop_called_on_drop(struct cvxtest *t)
 
 static void test_da_vtabv_null_drop_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 8);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 8);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_push_back(col, 3);
@@ -96,7 +95,7 @@ static void test_da_vtabv_drop_called_on_clear(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = da_int_new_with(da_int_vtabv_full, 8);
+    struct dynamic_array_int *col = da_int_new_with(da_int_vtabv_full, 8);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_push_back(col, 3);

@@ -10,32 +10,32 @@ static void test_dll_vtabv_copy_called_on_copy(struct cvxtest *t)
     CVX_TEST_COUNTER_COPY_RESET();
 
     struct dlinked_int self = dll_int_init(dll_int_vtabv_full);
-    dll_int_push_back(cvx_col(self), 1);
-    dll_int_push_back(cvx_col(self), 2);
-    dll_int_push_back(cvx_col(self), 3);
+    dll_int_push_back(&self, 1);
+    dll_int_push_back(&self, 2);
+    dll_int_push_back(&self, 3);
 
     struct dlinked_int copy = dll_int_copy(&self);
 
     CVX_TEST_COUNTER_COPY(t, 3);
     CVXCHECK(t, copy.count == 3);
-    CVXCHECK(t, dll_int_get(cvx_col(copy), 0) == 1);
-    CVXCHECK(t, dll_int_get(cvx_col(copy), 1) == 2);
-    CVXCHECK(t, dll_int_get(cvx_col(copy), 2) == 3);
+    CVXCHECK(t, dll_int_get(&copy, 0) == 1);
+    CVXCHECK(t, dll_int_get(&copy, 1) == 2);
+    CVXCHECK(t, dll_int_get(&copy, 2) == 3);
 
-    dll_int_clear(cvx_col(self));
-    dll_int_clear(cvx_col(copy));
+    dll_int_clear(&self);
+    dll_int_clear(&copy);
 }
 
 static void test_dll_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_COPY_RESET();
 
-    cvx_container *col = dll_int_new_with(dll_int_vtabv_full);
+    struct dlinked_int *col = dll_int_new_with(dll_int_vtabv_full);
     dll_int_push_back(col, 10);
     dll_int_push_back(col, 20);
     dll_int_push_back(col, 30);
 
-    cvx_container *clone = dll_int_clone(col);
+    struct dlinked_int *clone = dll_int_clone(col);
 
     CVX_TEST_COUNTER_COPY(t, 3);
     CVXCHECK(t, dll_int_count(clone) == 3);
@@ -49,12 +49,12 @@ static void test_dll_vtabv_copy_called_on_clone(struct cvxtest *t)
 
 static void test_dll_vtabv_null_copy_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 7);
     dll_int_push_back(col, 8);
     dll_int_push_back(col, 9);
 
-    cvx_container *clone = dll_int_clone(col);
+    struct dlinked_int *clone = dll_int_clone(col);
 
     CVXCHECK(t, clone != NULL);
     CVXCHECK(t, dll_int_count(clone) == 3);
@@ -70,7 +70,7 @@ static void test_dll_vtabv_drop_called_on_drop(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = dll_int_new_with(dll_int_vtabv_full);
+    struct dlinked_int *col = dll_int_new_with(dll_int_vtabv_full);
     dll_int_push_back(col, 1);
     dll_int_push_back(col, 2);
     dll_int_push_back(col, 3);
@@ -82,7 +82,7 @@ static void test_dll_vtabv_drop_called_on_drop(struct cvxtest *t)
 
 static void test_dll_vtabv_null_drop_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 1);
     dll_int_push_back(col, 2);
     dll_int_push_back(col, 3);
@@ -96,7 +96,7 @@ static void test_dll_vtabv_drop_called_on_clear(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = dll_int_new_with(dll_int_vtabv_full);
+    struct dlinked_int *col = dll_int_new_with(dll_int_vtabv_full);
     dll_int_push_back(col, 1);
     dll_int_push_back(col, 2);
     dll_int_push_back(col, 3);

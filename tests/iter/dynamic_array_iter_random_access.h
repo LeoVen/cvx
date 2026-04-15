@@ -7,11 +7,11 @@
 
 /* Helper: allocate a filled collection and return a raccess_iter wrapping its heap iterator */
 #define MAKE_RAI(name, col) \
-    cvx_container *col = da_int_new(); \
+    struct dynamic_array_int *col = da_int_new(); \
     da_int_push_back(col, 10); \
     da_int_push_back(col, 20); \
     da_int_push_back(col, 30); \
-    struct raccess_iter name = da_int_iter_as_raccess_iter(da_int_iter_start(col))
+    struct raccess_iter name = da_int_iter_as_raccess_iter((cvx_container *)da_int_iter_start(col))
 
 /* Check the flag stored on the underlying iterator instance */
 #define CHECK_ITER_FLAG(t, iter, expected) \
@@ -22,9 +22,9 @@
 static void test_rai_start(struct cvxtest *t)
 {
     /* Wrap the *collection* so start() can create a fresh iterator */
-    cvx_container *col = da_int_new();
-    struct raccess_iter col_rai = da_int_iter_as_raccess_iter(col);
-    cvx_container *new_iter = cvx_start(&col_rai);
+    struct dynamic_array_int *col = da_int_new();
+    struct raccess_iter col_rai = da_int_iter_as_raccess_iter((cvx_container *)col);
+    struct dynamic_array_int_iter *new_iter = (struct dynamic_array_int_iter *)cvx_start(&col_rai);
     CVXCHECK(t, new_iter != NULL);
     if (new_iter)
         da_int_iter_drop(new_iter);
@@ -34,12 +34,12 @@ static void test_rai_start(struct cvxtest *t)
 static void test_rai_end(struct cvxtest *t)
 {
     /* Wrap the *collection* so end() can create an end iterator */
-    cvx_container *col = da_int_new();
+    struct dynamic_array_int *col = da_int_new();
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
-    struct raccess_iter col_rai = da_int_iter_as_raccess_iter(col);
-    cvx_container *end_iter = col_rai.vtable->end(col_rai.instance);
+    struct raccess_iter col_rai = da_int_iter_as_raccess_iter((cvx_container *)col);
+    struct dynamic_array_int_iter *end_iter = (struct dynamic_array_int_iter *)col_rai.vtable->end(col_rai.instance);
     CVXCHECK(t, end_iter != NULL);
     if (end_iter)
     {
@@ -69,12 +69,12 @@ static void test_rai_at_end_false(struct cvxtest *t)
 
 static void test_rai_at_end_true(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new();
+    struct dynamic_array_int *col = da_int_new();
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
-    cvx_container *end_iter = da_int_iter_end(col);
-    struct raccess_iter iter = da_int_iter_as_raccess_iter(end_iter);
+    struct dynamic_array_int_iter *end_iter = da_int_iter_end(col);
+    struct raccess_iter iter = da_int_iter_as_raccess_iter((cvx_container *)end_iter);
     CVXCHECK(t, cvx_at_end(&iter) == true);
     cvx_drop(&iter);
     da_int_drop(col);
@@ -141,12 +141,12 @@ static void test_rai_forward(struct cvxtest *t)
 
 static void test_rai_backward(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new();
+    struct dynamic_array_int *col = da_int_new();
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
-    cvx_container *end_iter = da_int_iter_end(col);
-    struct raccess_iter iter = da_int_iter_as_raccess_iter(end_iter);
+    struct dynamic_array_int_iter *end_iter = da_int_iter_end(col);
+    struct raccess_iter iter = da_int_iter_as_raccess_iter((cvx_container *)end_iter);
     iter.vtable->backward(iter.instance, 1);
     CVXCHECK(t, cvx_index(&iter) == 2);
     cvx_drop(&iter);

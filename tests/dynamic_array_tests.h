@@ -21,24 +21,23 @@ static void test_da_int_init(struct cvxtest *t)
 static void test_da_int_init_with(struct cvxtest *t)
 {
     struct dynamic_array_int arr = da_int_init_with(NULL, 8);
-    cvx_container *col = cvx_col(arr);
 
     CVXCHECK(t, arr.buffer != NULL);
-    CVXCHECK(t, da_int_capacity(col) == 8);
-    CVXCHECK(t, da_int_count(col) == 0);
+    CVXCHECK(t, da_int_capacity(&arr) == 8);
+    CVXCHECK(t, da_int_count(&arr) == 0);
 
     free(arr.buffer);
 }
 
 static void test_da_int_new(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new();
+    struct dynamic_array_int *col = da_int_new();
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
 
-    CVXCHECK(t, col->tag == 99);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.tag == 99);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, da_int_count(col) == 0);
     CVXCHECK(t, da_int_capacity(col) == 0);
     da_int_drop(col);
@@ -46,7 +45,7 @@ static void test_da_int_new(struct cvxtest *t)
 
 static void test_da_int_new_with(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
@@ -58,7 +57,7 @@ static void test_da_int_new_with(struct cvxtest *t)
 
 static void test_da_int_new_with_zero_returns_null(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 0);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 0);
     CVXCHECK(t, col == NULL);
 }
 
@@ -66,29 +65,28 @@ static void test_da_int_new_with_zero_returns_null(struct cvxtest *t)
 
 static void test_da_int_push_back_grows(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new();
+    struct dynamic_array_int *col = da_int_new();
 
     for (int i = 0; i < 20; i++)
         da_int_push_back(col, i);
 
     CVXCHECK(t, da_int_count(col) == 20);
     CVXCHECK(t, da_int_capacity(col) >= 20);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     da_int_drop(col);
 }
 
 static void test_da_int_push_back_values(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
 
-    struct dynamic_array_int *self = (struct dynamic_array_int *)col;
-    CVXCHECK(t, self->buffer[0] == 10);
-    CVXCHECK(t, self->buffer[1] == 20);
-    CVXCHECK(t, self->buffer[2] == 30);
+    CVXCHECK(t, col->buffer[0] == 10);
+    CVXCHECK(t, col->buffer[1] == 20);
+    CVXCHECK(t, col->buffer[2] == 30);
 
     da_int_drop(col);
 }
@@ -97,15 +95,14 @@ static void test_da_int_push_back_values(struct cvxtest *t)
 
 static void test_da_int_push_front(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_push_front(col, 0);
 
-    struct dynamic_array_int *self = (struct dynamic_array_int *)col;
-    CVXCHECK(t, self->buffer[0] == 0);
-    CVXCHECK(t, self->buffer[1] == 1);
-    CVXCHECK(t, self->buffer[2] == 2);
+    CVXCHECK(t, col->buffer[0] == 0);
+    CVXCHECK(t, col->buffer[1] == 1);
+    CVXCHECK(t, col->buffer[2] == 2);
     CVXCHECK(t, da_int_count(col) == 3);
 
     da_int_drop(col);
@@ -115,28 +112,27 @@ static void test_da_int_push_front(struct cvxtest *t)
 
 static void test_da_int_push_at_middle(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
     da_int_push_back(col, 3);
     da_int_push_at(col, 2, 1);
 
-    struct dynamic_array_int *self = (struct dynamic_array_int *)col;
-    CVXCHECK(t, self->buffer[0] == 1);
-    CVXCHECK(t, self->buffer[1] == 2);
-    CVXCHECK(t, self->buffer[2] == 3);
+    CVXCHECK(t, col->buffer[0] == 1);
+    CVXCHECK(t, col->buffer[1] == 2);
+    CVXCHECK(t, col->buffer[2] == 3);
     CVXCHECK(t, da_int_count(col) == 3);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     da_int_drop(col);
 }
 
 static void test_da_int_push_at_out_of_range(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
     da_int_push_at(col, 99, 5);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     da_int_drop(col);
 }
@@ -145,7 +141,7 @@ static void test_da_int_push_at_out_of_range(struct cvxtest *t)
 
 static void test_da_int_pop_back(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 42);
     da_int_push_back(col, 7);
 
@@ -153,17 +149,17 @@ static void test_da_int_pop_back(struct cvxtest *t)
 
     CVXCHECK(t, out == 7);
     CVXCHECK(t, da_int_count(col) == 1);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     da_int_drop(col);
 }
 
 static void test_da_int_pop_back_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_pop_back(col);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     da_int_drop(col);
 }
@@ -172,7 +168,7 @@ static void test_da_int_pop_back_empty(struct cvxtest *t)
 
 static void test_da_int_pop_front(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
 
@@ -180,19 +176,17 @@ static void test_da_int_pop_front(struct cvxtest *t)
 
     CVXCHECK(t, out == 10);
     CVXCHECK(t, da_int_count(col) == 1);
-
-    struct dynamic_array_int *self = (struct dynamic_array_int *)col;
-    CVXCHECK(t, self->buffer[0] == 20);
+    CVXCHECK(t, col->buffer[0] == 20);
 
     da_int_drop(col);
 }
 
 static void test_da_int_pop_front_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_pop_front(col);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     da_int_drop(col);
 }
@@ -201,7 +195,7 @@ static void test_da_int_pop_front_empty(struct cvxtest *t)
 
 static void test_da_int_pop_at_middle(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_push_back(col, 3);
@@ -210,31 +204,29 @@ static void test_da_int_pop_at_middle(struct cvxtest *t)
 
     CVXCHECK(t, out == 2);
     CVXCHECK(t, da_int_count(col) == 2);
-
-    struct dynamic_array_int *self = (struct dynamic_array_int *)col;
-    CVXCHECK(t, self->buffer[0] == 1);
-    CVXCHECK(t, self->buffer[1] == 3);
+    CVXCHECK(t, col->buffer[0] == 1);
+    CVXCHECK(t, col->buffer[1] == 3);
 
     da_int_drop(col);
 }
 
 static void test_da_int_pop_at_out_of_range(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
     da_int_pop_at(col, 5);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     da_int_drop(col);
 }
 
 static void test_da_int_pop_at_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_pop_at(col, 0);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     da_int_drop(col);
 }
@@ -243,44 +235,44 @@ static void test_da_int_pop_at_empty(struct cvxtest *t)
 
 static void test_da_int_front(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 11);
     da_int_push_back(col, 22);
 
     CVXCHECK(t, da_int_front(col) == 11);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     da_int_drop(col);
 }
 
 static void test_da_int_back(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 11);
     da_int_push_back(col, 22);
 
     CVXCHECK(t, da_int_back(col) == 22);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     da_int_drop(col);
 }
 
 static void test_da_int_front_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_front(col);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     da_int_drop(col);
 }
 
 static void test_da_int_back_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_back(col);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     da_int_drop(col);
 }
@@ -289,7 +281,7 @@ static void test_da_int_back_empty(struct cvxtest *t)
 
 static void test_da_int_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     CVXCHECK(t, da_int_empty(col) == true);
 
     da_int_push_back(col, 1);
@@ -300,7 +292,7 @@ static void test_da_int_empty(struct cvxtest *t)
 
 static void test_da_int_full(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 2);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 2);
     CVXCHECK(t, da_int_full(col) == false);
 
     da_int_push_back(col, 1);
@@ -314,7 +306,7 @@ static void test_da_int_full(struct cvxtest *t)
 
 static void test_da_int_replace_back(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 5);
     da_int_push_back(col, 10);
 
@@ -329,11 +321,11 @@ static void test_da_int_replace_back(struct cvxtest *t)
 
 static void test_da_int_replace_back_on_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
 
     da_int_replace_back(col, 42);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
     CVXCHECK(t, da_int_count(col) == 0);
 
     da_int_drop(col);
@@ -343,7 +335,7 @@ static void test_da_int_replace_back_on_empty(struct cvxtest *t)
 
 static void test_da_int_get(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
@@ -351,28 +343,28 @@ static void test_da_int_get(struct cvxtest *t)
     CVXCHECK(t, da_int_get(col, 0) == 10);
     CVXCHECK(t, da_int_get(col, 1) == 20);
     CVXCHECK(t, da_int_get(col, 2) == 30);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     da_int_drop(col);
 }
 
 static void test_da_int_get_out_of_range(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
 
     da_int_get(col, 1);
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     da_int_drop(col);
 }
 
 static void test_da_int_get_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
 
     da_int_get(col, 0);
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     da_int_drop(col);
 }
@@ -381,7 +373,7 @@ static void test_da_int_get_empty(struct cvxtest *t)
 
 static void test_da_int_replace_front(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
 
@@ -396,11 +388,11 @@ static void test_da_int_replace_front(struct cvxtest *t)
 
 static void test_da_int_replace_front_on_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
 
     da_int_replace_front(col, 42);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
     CVXCHECK(t, da_int_count(col) == 0);
 
     da_int_drop(col);
@@ -410,31 +402,16 @@ static void test_da_int_replace_front_on_empty(struct cvxtest *t)
 
 static void test_da_int_clear(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 1);
     da_int_push_back(col, 2);
     da_int_clear(col);
 
     CVXCHECK(t, da_int_count(col) == 0);
     CVXCHECK(t, da_int_capacity(col) == 0);
-    CVXCHECK(t, ((struct dynamic_array_int *)col)->buffer == NULL);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->buffer == NULL);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
-    da_int_drop(col);
-}
-
-/* ---- wrong tag guard ---- */
-
-static void test_da_int_wrong_tag(struct cvxtest *t)
-{
-    cvx_container *col = da_int_new_with(NULL, 4);
-    col->tag = 0; /* corrupt the tag */
-    da_int_push_back(col, 1);
-
-    CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
-
-    /* restore tag so drop works */
-    col->tag = 99;
     da_int_drop(col);
 }
 
@@ -447,17 +424,16 @@ static void test_da_int_copy_empty(struct cvxtest *t)
 
     CVXCHECK(t, copy.count == 0);
     CVXCHECK(t, copy.buffer == NULL);
-    CVXCHECK(t, ((cvx_container *)&copy)->flag == CVX_FLAG_OK);
+    CVXCHECK(t, copy.super.flag == CVX_FLAG_OK);
 }
 
 static void test_da_int_copy_values(struct cvxtest *t)
 {
     struct dynamic_array_int orig = da_int_init_with(NULL, 4);
-    cvx_container *col = (cvx_container *)&orig;
 
-    da_int_push_back(col, 1);
-    da_int_push_back(col, 2);
-    da_int_push_back(col, 3);
+    da_int_push_back(&orig, 1);
+    da_int_push_back(&orig, 2);
+    da_int_push_back(&orig, 3);
 
     struct dynamic_array_int copy = da_int_copy(&orig);
 
@@ -476,12 +452,12 @@ static void test_da_int_copy_values(struct cvxtest *t)
 
 static void test_da_int_clone_empty(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new();
+    struct dynamic_array_int *col = da_int_new();
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
 
-    cvx_container *clone = da_int_clone(col);
+    struct dynamic_array_int *clone = da_int_clone(col);
     CVXCHECK(t, clone != NULL);
     if (!clone)
     {
@@ -489,7 +465,7 @@ static void test_da_int_clone_empty(struct cvxtest *t)
         return;
     }
 
-    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CVXCHECK(t, clone->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, da_int_count(col) == 0);
 
     da_int_drop(col);
@@ -498,12 +474,12 @@ static void test_da_int_clone_empty(struct cvxtest *t)
 
 static void test_da_int_clone_values(struct cvxtest *t)
 {
-    cvx_container *col = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
     da_int_push_back(col, 10);
     da_int_push_back(col, 20);
     da_int_push_back(col, 30);
 
-    cvx_container *clone = da_int_clone(col);
+    struct dynamic_array_int *clone = da_int_clone(col);
     CVXCHECK(t, clone != NULL);
     if (!clone)
     {
@@ -511,13 +487,12 @@ static void test_da_int_clone_values(struct cvxtest *t)
         return;
     }
 
-    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CVXCHECK(t, clone->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, da_int_get(clone, 0) == 10);
     CVXCHECK(t, da_int_get(clone, 1) == 20);
     CVXCHECK(t, da_int_get(clone, 2) == 30);
     /* Distinct allocation */
-    CVXCHECK(t, ((struct dynamic_array_int *)clone)->buffer !=
-                    ((struct dynamic_array_int *)col)->buffer);
+    CVXCHECK(t, clone->buffer != col->buffer);
 
     da_int_drop(col);
     da_int_drop(clone);
@@ -574,8 +549,6 @@ static int run_dynamic_array_tests(void)
     CVXRUN(&t, test_da_int_replace_front_on_empty);
     CVXRUN(&t, test_da_int_replace_back);
     CVXRUN(&t, test_da_int_replace_back_on_empty);
-
-    CVXRUN(&t, test_da_int_wrong_tag);
 
     return CVXSUMMARY(&t);
 }

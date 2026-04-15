@@ -30,41 +30,39 @@ static void test_sll_int_copy_empty(struct cvxtest *t)
     CVXCHECK(t, copy.count == 0);
     CVXCHECK(t, copy.head == NULL);
     CVXCHECK(t, copy.tail == NULL);
-    CVXCHECK(t, ((cvx_container *)&copy)->flag == CVX_FLAG_OK);
+    CVXCHECK(t, copy.super.flag == CVX_FLAG_OK);
 }
 
 static void test_sll_int_copy_values(struct cvxtest *t)
 {
     struct slinked_int orig = sll_int_init(NULL);
-    cvx_container *col = cvx_col(orig);
 
-    sll_int_push_back(col, 10);
-    sll_int_push_back(col, 20);
-    sll_int_push_back(col, 30);
+    sll_int_push_back(&orig, 10);
+    sll_int_push_back(&orig, 20);
+    sll_int_push_back(&orig, 30);
 
     struct slinked_int copy = sll_int_copy(&orig);
-    cvx_container *ccol = cvx_col(copy);
 
     CVXCHECK(t, copy.count == 3);
-    CVXCHECK(t, sll_int_get(ccol, 0) == 10);
-    CVXCHECK(t, sll_int_get(ccol, 1) == 20);
-    CVXCHECK(t, sll_int_get(ccol, 2) == 30);
+    CVXCHECK(t, sll_int_get(&copy, 0) == 10);
+    CVXCHECK(t, sll_int_get(&copy, 1) == 20);
+    CVXCHECK(t, sll_int_get(&copy, 2) == 30);
     /* Nodes must be distinct allocations */
     CVXCHECK(t, copy.head != orig.head);
 
-    sll_int_clear(col);
-    sll_int_clear(ccol);
+    sll_int_clear(&orig);
+    sll_int_clear(&copy);
 }
 
 static void test_sll_int_new(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
 
-    CVXCHECK(t, col->tag == 77);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.tag == 77);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_int_count(col) == 0);
 
     sll_int_drop(col);
@@ -72,15 +70,15 @@ static void test_sll_int_new(struct cvxtest *t)
 
 static void test_sll_int_new_with(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    struct slinked_int *col = sll_int_new_with(sll_int_vtabv_full);
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
 
-    CVXCHECK(t, col->tag == 77);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.tag == 77);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_int_count(col) == 0);
-    CVXCHECK(t, ((struct slinked_int *)col)->vtabv == sll_int_vtabv_full);
+    CVXCHECK(t, col->vtabv == sll_int_vtabv_full);
 
     sll_int_drop(col);
 }
@@ -89,12 +87,12 @@ static void test_sll_int_new_with(struct cvxtest *t)
 
 static void test_sll_int_clone_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
 
-    cvx_container *clone = sll_int_clone(col);
+    struct slinked_int *clone = sll_int_clone(col);
     CVXCHECK(t, clone != NULL);
     if (!clone)
     {
@@ -102,7 +100,7 @@ static void test_sll_int_clone_empty(struct cvxtest *t)
         return;
     }
 
-    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CVXCHECK(t, clone->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_int_count(clone) == 0);
 
     sll_int_drop(col);
@@ -111,12 +109,12 @@ static void test_sll_int_clone_empty(struct cvxtest *t)
 
 static void test_sll_int_clone_values(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
 
-    cvx_container *clone = sll_int_clone(col);
+    struct slinked_int *clone = sll_int_clone(col);
     CVXCHECK(t, clone != NULL);
     if (!clone)
     {
@@ -124,7 +122,7 @@ static void test_sll_int_clone_values(struct cvxtest *t)
         return;
     }
 
-    CVXCHECK(t, clone->flag == CVX_FLAG_OK);
+    CVXCHECK(t, clone->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_int_count(clone) == 3);
     CVXCHECK(t, sll_int_get(clone, 0) == 10);
     CVXCHECK(t, sll_int_get(clone, 1) == 20);
@@ -138,7 +136,7 @@ static void test_sll_int_clone_values(struct cvxtest *t)
 
 static void test_sll_int_clear(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_push_back(col, 2);
@@ -146,9 +144,9 @@ static void test_sll_int_clear(struct cvxtest *t)
     sll_int_clear(col);
 
     CVXCHECK(t, sll_int_count(col) == 0);
-    CVXCHECK(t, ((struct slinked_int *)col)->head == NULL);
-    CVXCHECK(t, ((struct slinked_int *)col)->tail == NULL);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->head == NULL);
+    CVXCHECK(t, col->tail == NULL);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     sll_int_drop(col);
 }
@@ -157,7 +155,7 @@ static void test_sll_int_clear(struct cvxtest *t)
 
 static void test_sll_int_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     CVXCHECK(t, sll_int_empty(col) == true);
 
@@ -174,20 +172,20 @@ static void test_sll_int_empty(struct cvxtest *t)
 
 static void test_sll_int_front_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_front(col);
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_back_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_back(col);
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     sll_int_drop(col);
 }
@@ -196,7 +194,7 @@ static void test_sll_int_back_empty(struct cvxtest *t)
 
 static void test_sll_int_get(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
@@ -205,29 +203,29 @@ static void test_sll_int_get(struct cvxtest *t)
     CVXCHECK(t, sll_int_get(col, 0) == 10);
     CVXCHECK(t, sll_int_get(col, 1) == 20);
     CVXCHECK(t, sll_int_get(col, 2) == 30);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_get_out_of_range(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_get(col, 1);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_get_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_get(col, 0);
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     sll_int_drop(col);
 }
@@ -236,7 +234,7 @@ static void test_sll_int_get_empty(struct cvxtest *t)
 
 static void test_sll_int_push_front(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 2);
     sll_int_push_back(col, 3);
@@ -254,14 +252,14 @@ static void test_sll_int_push_front(struct cvxtest *t)
 
 static void test_sll_int_push_back(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
 
     CVXCHECK(t, sll_int_count(col) == 3);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, sll_int_front(col) == 10);
     CVXCHECK(t, sll_int_back(col) == 30);
 
@@ -270,7 +268,7 @@ static void test_sll_int_push_back(struct cvxtest *t)
 
 static void test_sll_int_push_back_many(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     for (int i = 0; i < 100; i++)
         sll_int_push_back(col, i);
@@ -286,7 +284,7 @@ static void test_sll_int_push_back_many(struct cvxtest *t)
 
 static void test_sll_int_push_at_middle(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_push_back(col, 3);
@@ -296,14 +294,14 @@ static void test_sll_int_push_at_middle(struct cvxtest *t)
     CVXCHECK(t, sll_int_get(col, 0) == 1);
     CVXCHECK(t, sll_int_get(col, 1) == 2);
     CVXCHECK(t, sll_int_get(col, 2) == 3);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_push_at_head(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 2);
     sll_int_push_at(col, 1, 0);
@@ -316,7 +314,7 @@ static void test_sll_int_push_at_head(struct cvxtest *t)
 
 static void test_sll_int_push_at_tail(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_push_at(col, 2, 1);
@@ -328,12 +326,12 @@ static void test_sll_int_push_at_tail(struct cvxtest *t)
 
 static void test_sll_int_push_at_out_of_range(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_push_at(col, 99, 5);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     sll_int_drop(col);
 }
@@ -343,7 +341,7 @@ static void test_sll_int_push_at_out_of_range(struct cvxtest *t)
 // push_at with index > 1 exercises the traversal loop (index-1 iterations).
 static void test_sll_int_push_at_deep(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
@@ -362,7 +360,7 @@ static void test_sll_int_push_at_deep(struct cvxtest *t)
 
 static void test_sll_int_pop_front(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
@@ -378,25 +376,25 @@ static void test_sll_int_pop_front(struct cvxtest *t)
 
 static void test_sll_int_pop_front_to_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_pop_front(col);
 
     CVXCHECK(t, sll_int_count(col) == 0);
     /* Both head and tail must be NULL after the last element is removed */
-    CVXCHECK(t, ((struct slinked_int *)col)->head == NULL);
-    CVXCHECK(t, ((struct slinked_int *)col)->tail == NULL);
+    CVXCHECK(t, col->head == NULL);
+    CVXCHECK(t, col->tail == NULL);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_pop_front_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_pop_front(col);
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     sll_int_drop(col);
 }
@@ -405,7 +403,7 @@ static void test_sll_int_pop_front_empty(struct cvxtest *t)
 
 static void test_sll_int_pop_back(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
@@ -421,24 +419,24 @@ static void test_sll_int_pop_back(struct cvxtest *t)
 
 static void test_sll_int_pop_back_to_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_pop_back(col);
 
     CVXCHECK(t, sll_int_count(col) == 0);
-    CVXCHECK(t, ((struct slinked_int *)col)->head == NULL);
-    CVXCHECK(t, ((struct slinked_int *)col)->tail == NULL);
+    CVXCHECK(t, col->head == NULL);
+    CVXCHECK(t, col->tail == NULL);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_pop_back_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_pop_back(col);
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     sll_int_drop(col);
 }
@@ -447,7 +445,7 @@ static void test_sll_int_pop_back_empty(struct cvxtest *t)
 
 static void test_sll_int_pop_back_many(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
@@ -456,7 +454,7 @@ static void test_sll_int_pop_back_many(struct cvxtest *t)
     CVXCHECK(t, v == 30);
     CVXCHECK(t, sll_int_count(col) == 2);
     CVXCHECK(t, sll_int_back(col) == 20);
-    CVXCHECK(t, col->flag == CVX_FLAG_OK);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
 
     sll_int_drop(col);
 }
@@ -465,7 +463,7 @@ static void test_sll_int_pop_back_many(struct cvxtest *t)
 
 static void test_sll_int_pop_at_middle(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_push_back(col, 2);
@@ -486,7 +484,7 @@ static void test_sll_int_pop_at_middle(struct cvxtest *t)
 // pop_at(col, 0) must delegate to pop_front.
 static void test_sll_int_pop_at_front(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
@@ -502,7 +500,7 @@ static void test_sll_int_pop_at_front(struct cvxtest *t)
 // pop_at(col, count-1) must delegate to pop_back.
 static void test_sll_int_pop_at_back(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
@@ -518,7 +516,7 @@ static void test_sll_int_pop_at_back(struct cvxtest *t)
 // pop_at with index > 1 exercises the traversal loop.
 static void test_sll_int_pop_at_deep(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
@@ -536,22 +534,22 @@ static void test_sll_int_pop_at_deep(struct cvxtest *t)
 
 static void test_sll_int_pop_at_out_of_range(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 1);
     sll_int_pop_at(col, 5);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
 
     sll_int_drop(col);
 }
 
 static void test_sll_int_pop_at_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_pop_at(col, 0);
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
 
     sll_int_drop(col);
 }
@@ -560,7 +558,7 @@ static void test_sll_int_pop_at_empty(struct cvxtest *t)
 
 static void test_sll_int_replace_front(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
@@ -576,11 +574,11 @@ static void test_sll_int_replace_front(struct cvxtest *t)
 
 static void test_sll_int_replace_front_on_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_replace_front(col, 42);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
     CVXCHECK(t, sll_int_count(col) == 0);
 
     sll_int_drop(col);
@@ -590,7 +588,7 @@ static void test_sll_int_replace_front_on_empty(struct cvxtest *t)
 
 static void test_sll_int_replace_back(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_push_back(col, 5);
     sll_int_push_back(col, 10);
@@ -606,27 +604,13 @@ static void test_sll_int_replace_back(struct cvxtest *t)
 
 static void test_sll_int_replace_back_on_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
 
     sll_int_replace_back(col, 42);
 
-    CVXCHECK(t, col->flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
     CVXCHECK(t, sll_int_count(col) == 0);
 
-    sll_int_drop(col);
-}
-
-/* ---- wrong tag guard ---- */
-
-static void test_sll_int_wrong_tag(struct cvxtest *t)
-{
-    cvx_container *col = sll_int_new();
-    col->tag = 0;
-    sll_int_push_back(col, 1);
-
-    CVXCHECK(t, col->flag == CVX_FLAG_WRONG_TAG);
-
-    col->tag = 77;
     sll_int_drop(col);
 }
 
@@ -692,8 +676,6 @@ static int run_slinked_list_tests(void)
 
     CVXRUN(&t, test_sll_int_replace_back);
     CVXRUN(&t, test_sll_int_replace_back_on_empty);
-
-    CVXRUN(&t, test_sll_int_wrong_tag);
 
     return CVXSUMMARY(&t);
 }

@@ -5,7 +5,7 @@
 #include "tests/cvxtest.h"
 #include "tests/implementations.h"
 
-#define MAKE_QUEUE(name) struct queue_int name = sll_int_as_queue_int(sll_int_new())
+#define MAKE_QUEUE(name) struct queue_int name = sll_int_as_queue_int((cvx_container *)sll_int_new())
 
 /* ---- enqueue / count ---- */
 
@@ -89,7 +89,7 @@ static void test_sll_int_q_clone(struct cvxtest *t)
     cvx_enqueue(&q, 20);
     cvx_enqueue(&q, 30);
 
-    cvx_container *copy = cvx_clone(&q);
+    struct slinked_int *copy = (struct slinked_int *)cvx_clone(&q);
     CVXCHECK(t, copy != NULL);
     if (!copy)
     {

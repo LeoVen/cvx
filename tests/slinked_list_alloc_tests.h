@@ -17,7 +17,7 @@ static void test_sll_int_alloc_copy_node_fails_with_drop(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *src = sll_int_new_with(sll_int_vtabv_full);
+    struct slinked_int *src = sll_int_new_with(sll_int_vtabv_full);
     CVXCHECK(t, src != NULL);
     if (!src)
         return;
@@ -25,11 +25,9 @@ static void test_sll_int_alloc_copy_node_fails_with_drop(struct cvxtest *t)
     sll_int_push_back(src, 10);
     sll_int_push_back(src, 20);
 
-    struct slinked_int *self = (struct slinked_int *)src;
-
     // 1 node alloc succeeds (first node copied), then second fails.
     CVX_MALLOC_FAIL_AFTER(1);
-    struct slinked_int result = sll_int_copy(self);
+    struct slinked_int result = sll_int_copy(src);
 
     CVXCHECK(t, result.super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, result.head == NULL);
@@ -48,7 +46,7 @@ static void test_sll_int_alloc_copy_node_fails_with_drop(struct cvxtest *t)
 static void test_sll_int_alloc_new(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s == NULL);
     CVX_MALLOC_RESET();
 }
@@ -59,7 +57,7 @@ static void test_sll_int_alloc_new(struct cvxtest *t)
 static void test_sll_int_alloc_new_with(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *s = sll_int_new_with(NULL);
+    struct slinked_int *s = sll_int_new_with(NULL);
     CVXCHECK(t, s == NULL);
     CVX_MALLOC_RESET();
 }
@@ -70,7 +68,7 @@ static void test_sll_int_alloc_new_with(struct cvxtest *t)
 // Failing the container struct returns NULL.
 static void test_sll_int_alloc_clone_struct_fails(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -79,7 +77,7 @@ static void test_sll_int_alloc_clone_struct_fails(struct cvxtest *t)
     sll_int_push_back(s, 20);
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *copy = sll_int_clone(s);
+    struct slinked_int *copy = sll_int_clone(s);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -89,7 +87,7 @@ static void test_sll_int_alloc_clone_struct_fails(struct cvxtest *t)
 // Failing the first node must return NULL and not leak the container.
 static void test_sll_int_alloc_clone_first_node_fails(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -99,7 +97,7 @@ static void test_sll_int_alloc_clone_first_node_fails(struct cvxtest *t)
 
     // 1 alloc succeeds (clone struct), then node alloc fails.
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *copy = sll_int_clone(s);
+    struct slinked_int *copy = sll_int_clone(s);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -110,7 +108,7 @@ static void test_sll_int_alloc_clone_first_node_fails(struct cvxtest *t)
 // (run with AddressSanitizer to verify no leak).
 static void test_sll_int_alloc_clone_second_node_fails(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -120,7 +118,7 @@ static void test_sll_int_alloc_clone_second_node_fails(struct cvxtest *t)
 
     // 2 allocs succeed (clone struct + first node), then second node fails.
     CVX_MALLOC_FAIL_AFTER(2);
-    cvx_container *copy = sll_int_clone(s);
+    struct slinked_int *copy = sll_int_clone(s);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -130,7 +128,7 @@ static void test_sll_int_alloc_clone_second_node_fails(struct cvxtest *t)
 // A successful clone must be independent of the original.
 static void test_sll_int_alloc_clone_success(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -138,7 +136,7 @@ static void test_sll_int_alloc_clone_success(struct cvxtest *t)
     sll_int_push_back(s, 10);
     sll_int_push_back(s, 20);
 
-    cvx_container *copy = sll_int_clone(s);
+    struct slinked_int *copy = sll_int_clone(s);
     CVXCHECK(t, copy != NULL);
     if (!copy)
     {
@@ -161,14 +159,14 @@ static void test_sll_int_alloc_clone_success(struct cvxtest *t)
 // List must remain consistent (empty and droppable).
 static void test_sll_int_alloc_push_front_empty(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
     sll_int_push_front(s, 42);
-    CVXCHECK(t, s->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, s->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, sll_int_count(s) == 0);
 
     CVX_MALLOC_RESET();
@@ -179,7 +177,7 @@ static void test_sll_int_alloc_push_front_empty(struct cvxtest *t)
 // Existing elements must be untouched.
 static void test_sll_int_alloc_push_front_partial(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -190,7 +188,7 @@ static void test_sll_int_alloc_push_front_partial(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     sll_int_push_front(s, 30);
-    CVXCHECK(t, s->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, s->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, sll_int_count(s) == 2);
     CVXCHECK(t, sll_int_front(s) == 10);
     CVXCHECK(t, sll_int_back(s) == 20);
@@ -203,14 +201,14 @@ static void test_sll_int_alloc_push_front_partial(struct cvxtest *t)
 
 static void test_sll_int_alloc_push_back_empty(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
     sll_int_push_back(s, 42);
-    CVXCHECK(t, s->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, s->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, sll_int_count(s) == 0);
 
     CVX_MALLOC_RESET();
@@ -219,7 +217,7 @@ static void test_sll_int_alloc_push_back_empty(struct cvxtest *t)
 
 static void test_sll_int_alloc_push_back_partial(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -229,7 +227,7 @@ static void test_sll_int_alloc_push_back_partial(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     sll_int_push_back(s, 30);
-    CVXCHECK(t, s->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, s->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, sll_int_count(s) == 2);
     CVXCHECK(t, sll_int_front(s) == 10);
     CVXCHECK(t, sll_int_back(s) == 20);
@@ -244,7 +242,7 @@ static void test_sll_int_alloc_push_back_partial(struct cvxtest *t)
 // delegates to push_back; the middle path has its own malloc.
 static void test_sll_int_alloc_push_at_middle(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
@@ -254,7 +252,7 @@ static void test_sll_int_alloc_push_at_middle(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     sll_int_push_at(s, 99, 1); // middle insertion
-    CVXCHECK(t, s->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, s->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, sll_int_count(s) == 2);
     CVXCHECK(t, sll_int_front(s) == 10);
     CVXCHECK(t, sll_int_back(s) == 20);
@@ -267,13 +265,13 @@ static void test_sll_int_alloc_push_at_middle(struct cvxtest *t)
 
 static void test_sll_int_alloc_iter_start_fails(struct cvxtest *t)
 {
-    cvx_container *s = sll_int_new();
+    struct slinked_int *s = sll_int_new();
     CVXCHECK(t, s != NULL);
     if (!s)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *it = sll_int_iter_start(s);
+    struct slinked_int_iter *it = sll_int_iter_start(s);
     CVXCHECK(t, it == NULL);
 
     CVX_MALLOC_RESET();

@@ -8,11 +8,11 @@
 /* Helper: allocate a filled collection and return a bidirectional_iter wrapping its heap iterator
  */
 #define MAKE_BI(name, col) \
-    cvx_container *col = dll_int_new(); \
+    struct dlinked_int *col = dll_int_new(); \
     dll_int_push_back(col, 10); \
     dll_int_push_back(col, 20); \
     dll_int_push_back(col, 30); \
-    struct bidirectional_iter name = dll_int_iter_as_bidirectional_iter(dll_int_iter_start(col))
+    struct bidirectional_iter name = dll_int_iter_as_bidirectional_iter((cvx_container *)dll_int_iter_start(col))
 
 /* Check the flag stored on the underlying iterator instance */
 #define CHECK_ITER_FLAG(t, iter, expected) \
@@ -23,9 +23,9 @@
 static void test_bi_start(struct cvxtest *t)
 {
     /* Wrap the *collection* so start() creates a fresh iterator */
-    cvx_container *col = dll_int_new();
-    struct bidirectional_iter col_bi = dll_int_iter_as_bidirectional_iter(col);
-    cvx_container *new_iter = cvx_start(&col_bi);
+    struct dlinked_int *col = dll_int_new();
+    struct bidirectional_iter col_bi = dll_int_iter_as_bidirectional_iter((cvx_container *)col);
+    struct dlinked_int_iter *new_iter = (struct dlinked_int_iter *)cvx_start(&col_bi);
 
     CVXCHECK(t, new_iter != NULL);
     if (new_iter)
@@ -40,13 +40,13 @@ static void test_bi_start(struct cvxtest *t)
 static void test_bi_end(struct cvxtest *t)
 {
     /* Wrap the *collection* so end() creates a past-end iterator */
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 10);
     dll_int_push_back(col, 20);
     dll_int_push_back(col, 30);
 
-    struct bidirectional_iter col_bi = dll_int_iter_as_bidirectional_iter(col);
-    cvx_container *end_iter = cvx_end(&col_bi);
+    struct bidirectional_iter col_bi = dll_int_iter_as_bidirectional_iter((cvx_container *)col);
+    struct dlinked_int_iter *end_iter = (struct dlinked_int_iter *)cvx_end(&col_bi);
 
     CVXCHECK(t, end_iter != NULL);
     if (end_iter)
@@ -95,13 +95,13 @@ static void test_bi_at_end_false(struct cvxtest *t)
 
 static void test_bi_at_end_true(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 10);
     dll_int_push_back(col, 20);
     dll_int_push_back(col, 30);
 
-    cvx_container *end_iter = dll_int_iter_end(col);
-    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter(end_iter);
+    struct dlinked_int_iter *end_iter = dll_int_iter_end(col);
+    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter((cvx_container *)end_iter);
 
     CVXCHECK(t, cvx_at_end(&iter) == true);
 
@@ -111,8 +111,8 @@ static void test_bi_at_end_true(struct cvxtest *t)
 
 static void test_bi_at_start_and_end_empty(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
-    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter(dll_int_iter_start(col));
+    struct dlinked_int *col = dll_int_new();
+    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter((cvx_container *)dll_int_iter_start(col));
 
     CVXCHECK(t, cvx_at_start(&iter) == true);
     CVXCHECK(t, cvx_at_end(&iter) == true);
@@ -185,13 +185,13 @@ static void test_bi_prev(struct cvxtest *t)
 
 static void test_bi_prev_from_end(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 10);
     dll_int_push_back(col, 20);
     dll_int_push_back(col, 30);
 
-    cvx_container *end_iter = dll_int_iter_end(col);
-    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter(end_iter);
+    struct dlinked_int_iter *end_iter = dll_int_iter_end(col);
+    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter((cvx_container *)end_iter);
 
     cvx_prev(&iter);
 
@@ -228,13 +228,13 @@ static void test_bi_forward_clamp(struct cvxtest *t)
 
 static void test_bi_backward(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 10);
     dll_int_push_back(col, 20);
     dll_int_push_back(col, 30);
 
-    cvx_container *end_iter = dll_int_iter_end(col);
-    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter(end_iter);
+    struct dlinked_int_iter *end_iter = dll_int_iter_end(col);
+    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter((cvx_container *)end_iter);
 
     cvx_backward(&iter, 2);
 
@@ -247,13 +247,13 @@ static void test_bi_backward(struct cvxtest *t)
 
 static void test_bi_backward_clamp(struct cvxtest *t)
 {
-    cvx_container *col = dll_int_new();
+    struct dlinked_int *col = dll_int_new();
     dll_int_push_back(col, 10);
     dll_int_push_back(col, 20);
     dll_int_push_back(col, 30);
 
-    cvx_container *end_iter = dll_int_iter_end(col);
-    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter(end_iter);
+    struct dlinked_int_iter *end_iter = dll_int_iter_end(col);
+    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter((cvx_container *)end_iter);
 
     cvx_backward(&iter, 100);
 

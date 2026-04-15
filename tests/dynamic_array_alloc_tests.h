@@ -28,7 +28,7 @@ static void test_da_int_alloc_init_with_buffer_fails(struct cvxtest *t)
 // Failing that malloc must return a struct with CVX_FLAG_ALLOC and NULL buffer.
 static void test_da_int_alloc_copy_buffer_fails(struct cvxtest *t)
 {
-    cvx_container *src = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *src = da_int_new_with(NULL, 4);
     CVXCHECK(t, src != NULL);
     if (!src)
         return;
@@ -36,10 +36,8 @@ static void test_da_int_alloc_copy_buffer_fails(struct cvxtest *t)
     da_int_push_back(src, 10);
     da_int_push_back(src, 20);
 
-    struct dynamic_array_int *self = (struct dynamic_array_int *)src;
-
     CVX_MALLOC_FAIL_NEXT();
-    struct dynamic_array_int copy = da_int_copy(self);
+    struct dynamic_array_int copy = da_int_copy(src);
     CVXCHECK(t, copy.super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, copy.buffer == NULL);
 
@@ -53,7 +51,7 @@ static void test_da_int_alloc_copy_buffer_fails(struct cvxtest *t)
 static void test_da_int_alloc_new(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *d = da_int_new();
+    struct dynamic_array_int *d = da_int_new();
     CVXCHECK(t, d == NULL);
     CVX_MALLOC_RESET();
 }
@@ -65,7 +63,7 @@ static void test_da_int_alloc_new(struct cvxtest *t)
 static void test_da_int_alloc_new_with_struct_fails(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *d = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 4);
     CVXCHECK(t, d == NULL);
     CVX_MALLOC_RESET();
 }
@@ -74,7 +72,7 @@ static void test_da_int_alloc_new_with_struct_fails(struct cvxtest *t)
 static void test_da_int_alloc_new_with_buffer_fails(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *d = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 4);
     CVXCHECK(t, d == NULL);
     CVX_MALLOC_RESET();
 }
@@ -85,7 +83,7 @@ static void test_da_int_alloc_new_with_buffer_fails(struct cvxtest *t)
 // Failing the struct returns NULL.
 static void test_da_int_alloc_clone_struct_fails(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 4);
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -93,7 +91,7 @@ static void test_da_int_alloc_clone_struct_fails(struct cvxtest *t)
     da_int_push_back(d, 20);
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *copy = da_int_clone(d);
+    struct dynamic_array_int *copy = da_int_clone(d);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -104,7 +102,7 @@ static void test_da_int_alloc_clone_struct_fails(struct cvxtest *t)
 // return NULL.
 static void test_da_int_alloc_clone_buffer_fails(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 4);
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -113,7 +111,7 @@ static void test_da_int_alloc_clone_buffer_fails(struct cvxtest *t)
 
     // Allow 1 alloc (the clone struct), fail the buffer malloc.
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *copy = da_int_clone(d);
+    struct dynamic_array_int *copy = da_int_clone(d);
     CVXCHECK(t, copy == NULL);
 
     CVX_MALLOC_RESET();
@@ -123,14 +121,14 @@ static void test_da_int_alloc_clone_buffer_fails(struct cvxtest *t)
 // A successful clone must be independent of the original.
 static void test_da_int_alloc_clone_success(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new_with(NULL, 4);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 4);
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
     da_int_push_back(d, 10);
     da_int_push_back(d, 20);
 
-    cvx_container *copy = da_int_clone(d);
+    struct dynamic_array_int *copy = da_int_clone(d);
     CVXCHECK(t, copy != NULL);
     if (!copy)
     {
@@ -153,14 +151,14 @@ static void test_da_int_alloc_clone_success(struct cvxtest *t)
 // buffer malloc. Failing it must set CVX_FLAG_ALLOC; count stays 0.
 static void test_da_int_alloc_push_front_initial_buffer(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new();
+    struct dynamic_array_int *d = da_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
     da_int_push_front(d, 42);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, da_int_count(d) == 0);
 
     CVX_MALLOC_RESET();
@@ -174,7 +172,7 @@ static void test_da_int_alloc_push_front_initial_buffer(struct cvxtest *t)
 // On realloc failure the existing elements and capacity must be preserved.
 static void test_da_int_alloc_push_front_realloc(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new_with(NULL, 2);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 2);
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -184,7 +182,7 @@ static void test_da_int_alloc_push_front_realloc(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     da_int_push_front(d, 30);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, da_int_count(d) == 2);
     CVXCHECK(t, da_int_capacity(d) == 2);
     CVXCHECK(t, da_int_front(d) == 10);
@@ -196,14 +194,14 @@ static void test_da_int_alloc_push_front_realloc(struct cvxtest *t)
 
 static void test_da_int_alloc_push_at_initial_buffer(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new();
+    struct dynamic_array_int *d = da_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
     da_int_push_at(d, 42, 0);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, da_int_count(d) == 0);
 
     CVX_MALLOC_RESET();
@@ -212,7 +210,7 @@ static void test_da_int_alloc_push_at_initial_buffer(struct cvxtest *t)
 
 static void test_da_int_alloc_push_at_realloc(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new_with(NULL, 2);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 2);
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -222,7 +220,7 @@ static void test_da_int_alloc_push_at_realloc(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     da_int_push_at(d, 30, 1);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, da_int_count(d) == 2);
     CVXCHECK(t, da_int_capacity(d) == 2);
     CVXCHECK(t, da_int_front(d) == 10);
@@ -234,14 +232,14 @@ static void test_da_int_alloc_push_at_realloc(struct cvxtest *t)
 
 static void test_da_int_alloc_push_back_initial_buffer(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new();
+    struct dynamic_array_int *d = da_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
     da_int_push_back(d, 42);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, da_int_count(d) == 0);
 
     CVX_MALLOC_RESET();
@@ -250,7 +248,7 @@ static void test_da_int_alloc_push_back_initial_buffer(struct cvxtest *t)
 
 static void test_da_int_alloc_push_back_realloc(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new_with(NULL, 2);
+    struct dynamic_array_int *d = da_int_new_with(NULL, 2);
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
@@ -261,7 +259,7 @@ static void test_da_int_alloc_push_back_realloc(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     da_int_push_back(d, 30);
-    CVXCHECK(t, d->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, d->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, da_int_count(d) == 2);
     CVXCHECK(t, da_int_capacity(d) == 2); // capacity must not be corrupted
     CVXCHECK(t, da_int_front(d) == 10);
@@ -275,13 +273,13 @@ static void test_da_int_alloc_push_back_realloc(struct cvxtest *t)
 
 static void test_da_int_alloc_iter_start_fails(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new();
+    struct dynamic_array_int *d = da_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *it = da_int_iter_start(d);
+    struct dynamic_array_int_iter *it = da_int_iter_start(d);
     CVXCHECK(t, it == NULL);
 
     CVX_MALLOC_RESET();
@@ -290,13 +288,13 @@ static void test_da_int_alloc_iter_start_fails(struct cvxtest *t)
 
 static void test_da_int_alloc_iter_end_fails(struct cvxtest *t)
 {
-    cvx_container *d = da_int_new();
+    struct dynamic_array_int *d = da_int_new();
     CVXCHECK(t, d != NULL);
     if (!d)
         return;
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *it = da_int_iter_end(d);
+    struct dynamic_array_int_iter *it = da_int_iter_end(d);
     CVXCHECK(t, it == NULL);
 
     CVX_MALLOC_RESET();

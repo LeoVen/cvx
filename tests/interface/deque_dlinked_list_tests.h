@@ -5,7 +5,7 @@
 #include "tests/cvxtest.h"
 #include "tests/implementations.h"
 
-#define MAKE_DEQUE(name) struct deque_int name = dll_int_as_deque_int(dll_int_new())
+#define MAKE_DEQUE(name) struct deque_int name = dll_int_as_deque_int((cvx_container *)dll_int_new())
 
 /* ---- push_front / count ---- */
 
@@ -241,7 +241,7 @@ static void test_dll_int_dq_clone(struct cvxtest *t)
     cvx_push_back(&d, 20);
     cvx_push_back(&d, 30);
 
-    cvx_container *copy = cvx_clone(&d);
+    struct dlinked_int *copy = (struct dlinked_int *)cvx_clone(&d);
     CVXCHECK(t, copy != NULL);
     if (!copy)
     {

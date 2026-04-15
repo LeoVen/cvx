@@ -7,24 +7,24 @@
 
 /* Helper: allocate a 3-element list and return a forward_iter wrapping its heap iterator */
 #define MAKE_FI(name, col) \
-    cvx_container *col = sll_int_new(); \
+    struct slinked_int *col = sll_int_new(); \
     sll_int_push_back(col, 10); \
     sll_int_push_back(col, 20); \
     sll_int_push_back(col, 30); \
-    struct forward_iter name = sll_int_iter_as_forward_iter(sll_int_iter_start(col))
+    struct forward_iter name = sll_int_iter_as_forward_iter((cvx_container *)sll_int_iter_start(col))
 
 /* ---- Construction ---- */
 
 static void test_fi_start(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
 
     /* Wrap the collection so start() can create a fresh iterator */
-    struct forward_iter col_fi = sll_int_iter_as_forward_iter(col);
-    cvx_container *new_iter = cvx_start(&col_fi);
+    struct forward_iter col_fi = sll_int_iter_as_forward_iter((cvx_container *)col);
+    struct slinked_int_iter *new_iter = (struct slinked_int_iter *)cvx_start(&col_fi);
 
     CVXCHECK(t, new_iter != NULL);
     if (new_iter)
@@ -82,8 +82,8 @@ static void test_fi_at_end_true(struct cvxtest *t)
 
 static void test_fi_at_start_and_end_empty(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
-    struct forward_iter iter = sll_int_iter_as_forward_iter(sll_int_iter_start(col));
+    struct slinked_int *col = sll_int_new();
+    struct forward_iter iter = sll_int_iter_as_forward_iter((cvx_container *)sll_int_iter_start(col));
     CVXCHECK(t, cvx_at_start(&iter) == true);
     CVXCHECK(t, cvx_at_end(&iter) == true);
     cvx_drop(&iter);

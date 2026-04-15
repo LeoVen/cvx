@@ -10,32 +10,32 @@ static void test_sll_vtabv_copy_called_on_copy(struct cvxtest *t)
     CVX_TEST_COUNTER_COPY_RESET();
 
     struct slinked_int self = sll_int_init(sll_int_vtabv_full);
-    sll_int_push_back(cvx_col(self), 1);
-    sll_int_push_back(cvx_col(self), 2);
-    sll_int_push_back(cvx_col(self), 3);
+    sll_int_push_back(&self, 1);
+    sll_int_push_back(&self, 2);
+    sll_int_push_back(&self, 3);
 
     struct slinked_int copy = sll_int_copy(&self);
 
     CVX_TEST_COUNTER_COPY(t, 3);
     CVXCHECK(t, copy.count == 3);
-    CVXCHECK(t, sll_int_get(cvx_col(copy), 0) == 1);
-    CVXCHECK(t, sll_int_get(cvx_col(copy), 1) == 2);
-    CVXCHECK(t, sll_int_get(cvx_col(copy), 2) == 3);
+    CVXCHECK(t, sll_int_get(&copy, 0) == 1);
+    CVXCHECK(t, sll_int_get(&copy, 1) == 2);
+    CVXCHECK(t, sll_int_get(&copy, 2) == 3);
 
-    sll_int_clear(cvx_col(self));
-    sll_int_clear(cvx_col(copy));
+    sll_int_clear(&self);
+    sll_int_clear(&copy);
 }
 
 static void test_sll_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_COPY_RESET();
 
-    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    struct slinked_int *col = sll_int_new_with(sll_int_vtabv_full);
     sll_int_push_back(col, 10);
     sll_int_push_back(col, 20);
     sll_int_push_back(col, 30);
 
-    cvx_container *clone = sll_int_clone(col);
+    struct slinked_int *clone = sll_int_clone(col);
 
     CVX_TEST_COUNTER_COPY(t, 3);
     CVXCHECK(t, sll_int_count(clone) == 3);
@@ -49,12 +49,12 @@ static void test_sll_vtabv_copy_called_on_clone(struct cvxtest *t)
 
 static void test_sll_vtabv_null_copy_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 7);
     sll_int_push_back(col, 8);
     sll_int_push_back(col, 9);
 
-    cvx_container *clone = sll_int_clone(col);
+    struct slinked_int *clone = sll_int_clone(col);
 
     CVXCHECK(t, clone != NULL);
     CVXCHECK(t, sll_int_count(clone) == 3);
@@ -70,7 +70,7 @@ static void test_sll_vtabv_drop_called_on_drop(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    struct slinked_int *col = sll_int_new_with(sll_int_vtabv_full);
     sll_int_push_back(col, 1);
     sll_int_push_back(col, 2);
     sll_int_push_back(col, 3);
@@ -82,7 +82,7 @@ static void test_sll_vtabv_drop_called_on_drop(struct cvxtest *t)
 
 static void test_sll_vtabv_null_drop_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = sll_int_new();
+    struct slinked_int *col = sll_int_new();
     sll_int_push_back(col, 1);
     sll_int_push_back(col, 2);
     sll_int_push_back(col, 3);
@@ -96,7 +96,7 @@ static void test_sll_vtabv_drop_called_on_clear(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = sll_int_new_with(sll_int_vtabv_full);
+    struct slinked_int *col = sll_int_new_with(sll_int_vtabv_full);
     sll_int_push_back(col, 1);
     sll_int_push_back(col, 2);
     sll_int_push_back(col, 3);
