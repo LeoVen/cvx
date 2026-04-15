@@ -37,3 +37,6 @@ setup:
 	mkdir -p bin/examples
 	find . -type f -iname "*.c" | sed -r 's/^\.\/(.+)\.c$/\1/' | xargs -I {} bash -c "bear -a -o build/compile_commands.json -- {{cc}} {{cflags}} {}.c -o bin/{}"
 
+valgrind_all:
+	find . -type f -name "*.c" | xargs -I {} sh -c 'just valgrind {} || exit 255'
+
