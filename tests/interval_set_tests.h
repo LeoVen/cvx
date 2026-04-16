@@ -2,7 +2,6 @@
 #define INTERVAL_SET_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 
 #include "implementations.h"
 
@@ -585,7 +584,7 @@ static void test_is_int_overlaps_empty_set(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_interval_set_tests(void)
+static struct cvxresult run_interval_set_tests(void)
 {
     struct cvxtest t = { 0 };
 

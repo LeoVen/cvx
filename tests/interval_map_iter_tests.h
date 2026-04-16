@@ -2,7 +2,6 @@
 #define INTERVAL_MAP_ITER_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 
 #include "implementations.h"
 
@@ -364,7 +363,7 @@ static void test_im_int_iter_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_interval_map_iter_tests(void)
+static struct cvxresult run_interval_map_iter_tests(void)
 {
     struct cvxtest t = { 0 };
 

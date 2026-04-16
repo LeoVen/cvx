@@ -154,7 +154,7 @@ static void test_im_int_alloc_copy_buffer_fails(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_interval_map_alloc_tests(void)
+static struct cvxresult run_interval_map_alloc_tests(void)
 {
     struct cvxtest t = { 0 };
 

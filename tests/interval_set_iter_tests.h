@@ -2,7 +2,6 @@
 #define INTERVAL_SET_ITER_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 
 #include "implementations.h"
 
@@ -358,7 +357,7 @@ static void test_is_int_iter_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_interval_set_iter_tests(void)
+static struct cvxresult run_interval_set_iter_tests(void)
 {
     struct cvxtest t = { 0 };
 

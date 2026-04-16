@@ -225,7 +225,7 @@ static void test_im_int_guard_iter_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_interval_map_guard_tests(void)
+static struct cvxresult run_interval_map_guard_tests(void)
 {
     struct cvxtest t = { 0 };
 

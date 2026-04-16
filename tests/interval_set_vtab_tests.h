@@ -2,7 +2,6 @@
 #define INTERVAL_SET_VTAB_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 
 #include "implementations.h"
 
@@ -159,7 +158,7 @@ static void test_is_vtabv_null_drop_no_crash(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_interval_set_vtab_tests(void)
+static struct cvxresult run_interval_set_vtab_tests(void)
 {
     struct cvxtest t = { 0 };
 
