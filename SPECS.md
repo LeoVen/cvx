@@ -259,6 +259,17 @@ Internal parameters use surrounding underscores to avoid shadowing user-visible 
 
 ## Common Function Conventions
 
+Every container has a set of functions that are common to all of them.
+
+1. Initializers and destructors
+  * This includes both stack and heap allocated functions (see section below)
+2. Getters
+  * These functions are only accessing a single field of `struct SNAME`
+3. Operations
+  * Functions that are specific to the data structure
+4. Iterator
+  * Functions related to the iterator of this data structure (see section below)
+
 ### Initializers and Destructors
 
 Every implementation provides a consistent set of lifecycle functions. Their names encode both their allocation strategy and their intent.
@@ -454,6 +465,7 @@ The `<error_return>` values by convention:
 
 An implementation file can have a multitude of things. To make it easier to navigate, items must be in the following order:
 
+0. `#include "cvx/fallback.h"` for better LSP support
 1. `#ifndef` guards for each required macro, with an error message following the template:
   * `#error "path/to/file.h requires <MACRO> to be defined (what it is used for, e.g. #define <MACRO> short_example)`
   * For example: `#error "cvx/dlinked_list.h requires SNAME to be defined (the struct name, e.g. #define SNAME my_list)"`
@@ -464,7 +476,7 @@ An implementation file can have a multitude of things. To make it easier to navi
 5. All function definitions for the data structure, following a specific order:
   * Initializers and destructors come first (but between them there is no specific order)
   * Getters come second (accessing specific properties of the struct)
-  * Other operations come last (in no specific order)
+  * Other operations that are specific to the data structure come last (in no specific order, but still logically grouped)
 6. All iterator function definitions
   * They must also follow a similar logic to the data structure, where
   * Initializers come first, then getters and then the other operations
@@ -515,11 +527,13 @@ if (_self_->vtabv && _self_->vtabv->drop)
 
 ## Error handling
 
-Every data structure (implementation and iterators) have a flag field, defined in the `cvx_container` type. This flag must be set in every function. If the function's purpose succeeds, it must set the flag to `CVX_FLAG_OK`. Otherwise, it must set it to one of the possible values of `enum cvx_flags`.
+Every data structure (implementation and iterators) have a flag field, defined in the `cvx_container` type. This flag must be set in every function (with a few exceptions). If the function's purpose succeeds, it must set the flag to `CVX_FLAG_OK`. Otherwise, it must set it to one of the possible values of `enum cvx_flags`.
 
-Initialization functions that return `cvx_container *` return `NULL` on allocation failure (the caller must check for NULL, not the flag, in this case).
+Initialization functions that return `struct SNAME *` or `struct ITERATOR *` return `NULL` on allocation failure (the caller must check for NULL, not the flag, in this case).
 
 Functions that return `V` or `K` return `(V){ 0 }` or `(K){ 0 }` respectively, in case of an error.
+
+Getters must never set the flag, because their operation is too simple and it never fails (unless of course the passed pointer is invalid).
 
 ---
 
