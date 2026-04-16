@@ -2,7 +2,6 @@
 #define SLINKED_LIST_ITER_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 
 #include "implementations.h"
 

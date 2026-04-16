@@ -2,7 +2,6 @@
 #define DLINKED_LIST_VTABV_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 #include "implementations.h"
 
 static void test_dll_vtabv_copy_called_on_copy(struct cvxtest *t)

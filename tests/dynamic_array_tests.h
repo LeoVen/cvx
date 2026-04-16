@@ -2,7 +2,6 @@
 #define DYNAMIC_ARRAY_TESTS_H
 
 #include "cvxtest.h"
-#include "cvxtestutils.h"
 #include "implementations.h"
 
 /* ---- init / new ---- */
