@@ -4,6 +4,12 @@
 // this must come before everything
 #include "tests/alloc.h"
 
+#include "tests/binary_heap_tests.h"
+#include "tests/binary_heap_guard_tests.h"
+#include "tests/binary_heap_iter_tests.h"
+#include "tests/binary_heap_vtab_tests.h"
+#include "tests/binary_heap_alloc_tests.h"
+
 #include "tests/interface/deque_dlinked_list_tests.h"
 #include "tests/interface/queue_slinked_list_tests.h"
 #include "tests/interface/stack_dynamic_array_tests.h"
@@ -47,6 +53,12 @@ int main(void)
 {
     // clang-format off
     struct cvxresult (*tests[])(void) = {
+        run_binary_heap_tests,
+        run_binary_heap_guard_tests,
+        run_binary_heap_iter_tests,
+        run_binary_heap_vtab_tests,
+        run_binary_heap_alloc_tests,
+
         run_deque_dlinked_list_tests,
         run_queue_slinked_list_tests,
 

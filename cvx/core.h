@@ -36,6 +36,19 @@ typedef struct cvx_container
     enum cvx_flags flag;
 } cvx_container;
 
+/**
+ * enum cvx_heap_order
+ *
+ * Defines the two possible heaps:
+ * - Max Heap has the greatest element at the top
+ * - Min Heap has the smallest element at the top
+ */
+enum cvx_heap_order
+{
+    CVX_MAX_HEAP = 1,
+    CVX_MIN_HEAP = -1
+};
+
 #define CVX_CONTAINER_GUARDS(TAG, _col_, error_value) \
     if (_col_->tag != TAG) \
     { \

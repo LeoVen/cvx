@@ -36,6 +36,21 @@
 ///
 
 #define V int
+#define SNAME bheap_int
+#define PFX bh_int
+#define TAG 33
+#include "cvx/binary_heap.h"
+#define BH_ITER_TAG (33 * CVX_ITER_TAG_MULT)
+static struct bheap_int_vtabv *bh_int_vtabv_comp_only = &(struct bheap_int_vtabv){
+    .comp = int_comp,
+};
+static struct bheap_int_vtabv *bh_int_vtabv_full = &(struct bheap_int_vtabv){
+    .comp = int_comp,
+    .copy = int_copy,
+    .drop = int_drop,
+};
+
+#define V int
 #define SNAME dynamic_array_int
 #define PFX da_int
 #define TAG 99
