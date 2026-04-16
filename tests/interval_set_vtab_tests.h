@@ -13,8 +13,8 @@ static void test_is_vtabv_copy_on_copy(struct cvxtest *t)
     CVX_TEST_COUNTER_COPY_RESET();
 
     struct iset_int orig = is_int_init(is_int_vtabv_full);
-    is_int_add(cvx_col(orig), 1, 5);
-    is_int_add(cvx_col(orig), 10, 15);
+    is_int_add(&orig, 1, 5);
+    is_int_add(&orig, 10, 15);
 
     struct iset_int copy = is_int_copy(&orig);
 
@@ -22,8 +22,8 @@ static void test_is_vtabv_copy_on_copy(struct cvxtest *t)
     CVX_TEST_COUNTER_COPY(t, 4);
     CVXCHECK(t, copy.count == 2);
 
-    is_int_clear(cvx_col(orig));
-    is_int_clear(cvx_col(copy));
+    is_int_clear(&orig);
+    is_int_clear(&copy);
 }
 
 /* ---- copy called on clone ---- */
@@ -32,11 +32,11 @@ static void test_is_vtabv_copy_on_clone(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_COPY_RESET();
 
-    cvx_container *col = is_int_new_with(is_int_vtabv_full);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_full);
     is_int_add(col, 1, 5);
     is_int_add(col, 10, 15);
 
-    cvx_container *clone = is_int_clone(col);
+    struct iset_int *clone = is_int_clone(col);
 
     // 2 intervals × 2 bounds each = 4 copy calls.
     CVX_TEST_COUNTER_COPY(t, 4);
@@ -50,10 +50,10 @@ static void test_is_vtabv_copy_on_clone(struct cvxtest *t)
 
 static void test_is_vtabv_null_copy_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = is_int_new_with(is_int_vtabv_comp_only);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_comp_only);
     is_int_add(col, 1, 5);
 
-    cvx_container *clone = is_int_clone(col);
+    struct iset_int *clone = is_int_clone(col);
     CVXCHECK(t, clone != NULL);
     CVXCHECK(t, is_int_count(clone) == 1);
 
@@ -67,7 +67,7 @@ static void test_is_vtabv_drop_on_drop(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = is_int_new_with(is_int_vtabv_full);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_full);
     is_int_add(col, 1, 5);
     is_int_add(col, 10, 15);
 
@@ -83,7 +83,7 @@ static void test_is_vtabv_drop_on_clear(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = is_int_new_with(is_int_vtabv_full);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_full);
     is_int_add(col, 1, 5);
     is_int_add(col, 10, 15);
 
@@ -99,7 +99,7 @@ static void test_is_vtabv_drop_on_add_merge(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = is_int_new_with(is_int_vtabv_full);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_full);
     is_int_add(col, 1, 5);
     is_int_add(col, 10, 15);
     // Two intervals, drop count = 0 so far.
@@ -130,7 +130,7 @@ static void test_is_vtabv_drop_on_remove(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_DROP_RESET();
 
-    cvx_container *col = is_int_new_with(is_int_vtabv_full);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_full);
     is_int_add(col, 1, 10);
     CVX_TEST_COUNTER_DROP_RESET();
 
@@ -149,7 +149,7 @@ static void test_is_vtabv_drop_on_remove(struct cvxtest *t)
 
 static void test_is_vtabv_null_drop_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = is_int_new_with(is_int_vtabv_comp_only);
+    struct iset_int *col = is_int_new_with(is_int_vtabv_comp_only);
     is_int_add(col, 1, 5);
 
     is_int_drop(col);

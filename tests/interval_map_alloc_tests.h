@@ -12,7 +12,7 @@
 static void test_im_int_alloc_new(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *col = im_int_new();
+    struct imap_int_int *col = im_int_new();
     CVXCHECK(t, col == NULL);
     CVX_MALLOC_RESET();
 }
@@ -22,7 +22,7 @@ static void test_im_int_alloc_new(struct cvxtest *t)
 static void test_im_int_alloc_new_with(struct cvxtest *t)
 {
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     CVXCHECK(t, col == NULL);
     CVX_MALLOC_RESET();
 }
@@ -33,7 +33,7 @@ static void test_im_int_alloc_add_buffer_fails(struct cvxtest *t)
 {
     // 1 alloc for the struct succeeds, then the buffer malloc fails.
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     CVXCHECK(t, col != NULL);
     if (!col)
     {
@@ -42,7 +42,7 @@ static void test_im_int_alloc_add_buffer_fails(struct cvxtest *t)
     }
 
     im_int_add(col, 1, 5, 10);
-    CVXCHECK(t, col->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, im_int_count(col) == 0);
 
     CVX_MALLOC_RESET();
@@ -53,7 +53,7 @@ static void test_im_int_alloc_add_buffer_fails(struct cvxtest *t)
 
 static void test_im_int_alloc_add_realloc_fails(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     CVXCHECK(t, col != NULL);
     if (!col)
         return;
@@ -68,7 +68,7 @@ static void test_im_int_alloc_add_realloc_fails(struct cvxtest *t)
 
     CVX_MALLOC_FAIL_NEXT();
     im_int_add(col, 200, 205, 99);
-    CVXCHECK(t, col->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, col->super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, im_int_count(col) == 15);
 
     CVX_MALLOC_RESET();
@@ -79,11 +79,11 @@ static void test_im_int_alloc_add_realloc_fails(struct cvxtest *t)
 
 static void test_im_int_alloc_clone_struct_fails(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     im_int_add(col, 1, 5, 10);
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *clone = im_int_clone(col);
+    struct imap_int_int *clone = im_int_clone(col);
     CVXCHECK(t, clone == NULL);
 
     CVX_MALLOC_RESET();
@@ -94,12 +94,12 @@ static void test_im_int_alloc_clone_struct_fails(struct cvxtest *t)
 
 static void test_im_int_alloc_clone_buffer_fails(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     im_int_add(col, 1, 5, 10);
 
     // 1 alloc for the clone struct succeeds, then buffer malloc fails.
     CVX_MALLOC_FAIL_AFTER(1);
-    cvx_container *clone = im_int_clone(col);
+    struct imap_int_int *clone = im_int_clone(col);
     CVXCHECK(t, clone == NULL);
 
     CVX_MALLOC_RESET();
@@ -110,10 +110,10 @@ static void test_im_int_alloc_clone_buffer_fails(struct cvxtest *t)
 
 static void test_im_int_alloc_iter_start_fails(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
     CVXCHECK(t, iter == NULL);
 
     CVX_MALLOC_RESET();
@@ -124,10 +124,10 @@ static void test_im_int_alloc_iter_start_fails(struct cvxtest *t)
 
 static void test_im_int_alloc_iter_end_fails(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
 
     CVX_MALLOC_FAIL_NEXT();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
     CVXCHECK(t, iter == NULL);
 
     CVX_MALLOC_RESET();
@@ -139,17 +139,17 @@ static void test_im_int_alloc_iter_end_fails(struct cvxtest *t)
 static void test_im_int_alloc_copy_buffer_fails(struct cvxtest *t)
 {
     struct imap_int_int orig = im_int_init(im_int_vtabk, NULL);
-    im_int_add(cvx_col(orig), 1, 5, 10);
+    im_int_add(&orig, 1, 5, 10);
 
     CVX_MALLOC_FAIL_NEXT();
     struct imap_int_int copy = im_int_copy(&orig);
 
-    CVXCHECK(t, ((cvx_container *)&copy)->flag == CVX_FLAG_ALLOC);
+    CVXCHECK(t, copy.super.flag == CVX_FLAG_ALLOC);
     CVXCHECK(t, copy.count == 0);
     CVXCHECK(t, copy.buffer == NULL);
 
     CVX_MALLOC_RESET();
-    im_int_clear(cvx_col(orig));
+    im_int_clear(&orig);
 }
 
 /* ---- runner ---- */

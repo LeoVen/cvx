@@ -17,9 +17,8 @@ static void test_im_int_vtab_copy_on_copy(struct cvxtest *t)
     CVX_TEST_COUNTER_COPY_RESET();
 
     struct imap_int_int orig = im_int_init(im_int_vtabk_full, im_int_vtabv_full);
-    cvx_container *col = cvx_col(orig);
-    im_int_add(col, 1, 5, 10);
-    im_int_add(col, 10, 15, 20);
+    im_int_add(&orig, 1, 5, 10);
+    im_int_add(&orig, 10, 15, 20);
 
     CVX_TEST_COUNTER_COPY_RESET(); // reset after puts (no copy on put)
     struct imap_int_int copy = im_int_copy(&orig);
@@ -28,8 +27,8 @@ static void test_im_int_vtab_copy_on_copy(struct cvxtest *t)
     CVX_TEST_COUNTER_COPY(t, 6);
     CVXCHECK(t, copy.count == 2);
 
-    im_int_clear(col);
-    im_int_clear(cvx_col(copy));
+    im_int_clear(&orig);
+    im_int_clear(&copy);
 }
 
 /* ---- copy called on _clone ---- */
@@ -38,12 +37,12 @@ static void test_im_int_vtab_copy_on_clone(struct cvxtest *t)
 {
     CVX_TEST_COUNTER_COPY_RESET();
 
-    cvx_container *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 20);
 
     CVX_TEST_COUNTER_COPY_RESET();
-    cvx_container *clone = im_int_clone(col);
+    struct imap_int_int *clone = im_int_clone(col);
 
     // 2 entries × (2 K + 1 V) = 6 copy calls.
     CVX_TEST_COUNTER_COPY(t, 6);
@@ -57,10 +56,10 @@ static void test_im_int_vtab_copy_on_clone(struct cvxtest *t)
 
 static void test_im_int_vtab_null_copy_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     im_int_add(col, 1, 5, 10);
 
-    cvx_container *clone = im_int_clone(col);
+    struct imap_int_int *clone = im_int_clone(col);
     CVXCHECK(t, clone != NULL);
     CVXCHECK(t, im_int_count(clone) == 1);
 
@@ -72,7 +71,7 @@ static void test_im_int_vtab_null_copy_no_crash(struct cvxtest *t)
 
 static void test_im_int_vtab_drop_on_drop(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 20);
 
@@ -87,7 +86,7 @@ static void test_im_int_vtab_drop_on_drop(struct cvxtest *t)
 
 static void test_im_int_vtab_drop_on_clear(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 20);
 
@@ -104,7 +103,7 @@ static void test_im_int_vtab_drop_on_clear(struct cvxtest *t)
 
 static void test_im_int_vtab_drop_on_add_overwrite(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(col, 1, 10, 10);
 
     CVX_TEST_COUNTER_DROP_RESET();
@@ -122,7 +121,7 @@ static void test_im_int_vtab_drop_on_add_overwrite(struct cvxtest *t)
 
 static void test_im_int_vtab_drop_on_remove_split(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(col, 1, 10, 42);
 
     CVX_TEST_COUNTER_DROP_RESET();
@@ -149,7 +148,7 @@ static void test_im_int_vtab_join_on_add(struct cvxtest *t)
 {
     // Use vtabk_full so boundary copies during absorb are counted.
     // Use vtabv_with_comp so joining is enabled (no vtabv->copy/drop).
-    cvx_container *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_with_comp);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_with_comp);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 10); // same value, gap between them
 
@@ -182,7 +181,7 @@ static void test_im_int_vtab_join_on_add(struct cvxtest *t)
 
 static void test_im_int_vtab_null_drop_no_crash(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     im_int_add(col, 1, 5, 10);
 
     im_int_drop(col);

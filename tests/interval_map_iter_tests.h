@@ -7,9 +7,9 @@
 #include "implementations.h"
 
 /* Helper: create [1,5)→10  [10,15)→20  [20,25)→30 */
-static cvx_container *im_int_make3(void)
+static struct imap_int_int *im_int_make3(void)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 20);
     im_int_add(col, 20, 25, 30);
@@ -20,27 +20,25 @@ static cvx_container *im_int_make3(void)
 
 static void test_im_int_iter_init_start(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
+    struct imap_int_int *col = im_int_make3();
 
     struct imap_int_int_iter it = im_int_iter_init_start(col);
-    cvx_container *iter = (cvx_container *)&it;
 
-    CVXCHECK(t, iter->tag == (size_t)IM_ITER_TAG);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, it.super.tag == (size_t)IM_ITER_TAG);
+    CVXCHECK(t, it.super.flag == CVX_FLAG_OK);
     CVXCHECK(t, it.index == 0);
-    CVXCHECK(t, it.target == (struct imap_int_int *)col);
+    CVXCHECK(t, it.target == col);
 
     im_int_drop(col);
 }
 
 static void test_im_int_iter_init_start_empty(struct cvxtest *t)
 {
-    cvx_container *col = im_int_new_with(im_int_vtabk, NULL);
+    struct imap_int_int *col = im_int_new_with(im_int_vtabk, NULL);
 
     struct imap_int_int_iter it = im_int_iter_init_start(col);
-    cvx_container *iter = (cvx_container *)&it;
 
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, it.super.flag == CVX_FLAG_OK);
     CVXCHECK(t, it.index == 0);
 
     im_int_drop(col);
@@ -50,13 +48,12 @@ static void test_im_int_iter_init_start_empty(struct cvxtest *t)
 
 static void test_im_int_iter_init_end(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
+    struct imap_int_int *col = im_int_make3();
 
     struct imap_int_int_iter it = im_int_iter_init_end(col);
-    cvx_container *iter = (cvx_container *)&it;
 
-    CVXCHECK(t, iter->tag == (size_t)IM_ITER_TAG);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, it.super.tag == (size_t)IM_ITER_TAG);
+    CVXCHECK(t, it.super.flag == CVX_FLAG_OK);
     CVXCHECK(t, it.index == 3);
 
     im_int_drop(col);
@@ -66,8 +63,8 @@ static void test_im_int_iter_init_end(struct cvxtest *t)
 
 static void test_im_int_iter_start(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     CVXCHECK(t, iter != NULL);
     if (!iter)
@@ -76,9 +73,9 @@ static void test_im_int_iter_start(struct cvxtest *t)
         return;
     }
 
-    CVXCHECK(t, iter->tag == (size_t)IM_ITER_TAG);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
-    CVXCHECK(t, ((struct imap_int_int_iter *)iter)->index == 0);
+    CVXCHECK(t, iter->super.tag == (size_t)IM_ITER_TAG);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->index == 0);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -86,8 +83,8 @@ static void test_im_int_iter_start(struct cvxtest *t)
 
 static void test_im_int_iter_end(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     CVXCHECK(t, iter != NULL);
     if (!iter)
@@ -96,8 +93,8 @@ static void test_im_int_iter_end(struct cvxtest *t)
         return;
     }
 
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
-    CVXCHECK(t, ((struct imap_int_int_iter *)iter)->index == 3);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->index == 3);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -107,8 +104,8 @@ static void test_im_int_iter_end(struct cvxtest *t)
 
 static void test_im_int_iter_at_start(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     CVXCHECK(t, im_int_iter_at_start(iter) == true);
     im_int_iter_next(iter);
@@ -120,8 +117,8 @@ static void test_im_int_iter_at_start(struct cvxtest *t)
 
 static void test_im_int_iter_at_end(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     CVXCHECK(t, im_int_iter_at_end(iter) == true);
     im_int_iter_prev(iter);
@@ -135,8 +132,8 @@ static void test_im_int_iter_at_end(struct cvxtest *t)
 
 static void test_im_int_iter_count(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     CVXCHECK(t, im_int_iter_count(iter) == 3);
 
@@ -148,15 +145,15 @@ static void test_im_int_iter_count(struct cvxtest *t)
 
 static void test_im_int_iter_to_start(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     im_int_iter_next(iter);
     im_int_iter_next(iter);
     im_int_iter_to_start(iter);
 
     CVXCHECK(t, im_int_iter_at_start(iter) == true);
-    CVXCHECK(t, ((struct imap_int_int_iter *)iter)->index == 0);
+    CVXCHECK(t, iter->index == 0);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -164,13 +161,13 @@ static void test_im_int_iter_to_start(struct cvxtest *t)
 
 static void test_im_int_iter_to_end(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     im_int_iter_to_end(iter);
 
     CVXCHECK(t, im_int_iter_at_end(iter) == true);
-    CVXCHECK(t, ((struct imap_int_int_iter *)iter)->index == 3);
+    CVXCHECK(t, iter->index == 3);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -180,15 +177,15 @@ static void test_im_int_iter_to_end(struct cvxtest *t)
 
 static void test_im_int_iter_next_traversal(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     CVXCHECK(t, im_int_iter_value_lo(iter) == 1);
     CVXCHECK(t, im_int_iter_value_hi(iter) == 5);
     CVXCHECK(t, im_int_iter_value_val(iter) == 10);
 
     im_int_iter_next(iter);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, im_int_iter_value_lo(iter) == 10);
     CVXCHECK(t, im_int_iter_value_hi(iter) == 15);
     CVXCHECK(t, im_int_iter_value_val(iter) == 20);
@@ -207,11 +204,11 @@ static void test_im_int_iter_next_traversal(struct cvxtest *t)
 
 static void test_im_int_iter_next_at_end(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     im_int_iter_next(iter);
-    CVXCHECK(t, iter->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_RANGE);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -219,11 +216,11 @@ static void test_im_int_iter_next_at_end(struct cvxtest *t)
 
 static void test_im_int_iter_prev_traversal(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     im_int_iter_prev(iter);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, im_int_iter_value_lo(iter) == 20);
     CVXCHECK(t, im_int_iter_value_val(iter) == 30);
 
@@ -242,11 +239,11 @@ static void test_im_int_iter_prev_traversal(struct cvxtest *t)
 
 static void test_im_int_iter_prev_at_start(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     im_int_iter_prev(iter);
-    CVXCHECK(t, iter->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_RANGE);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -256,11 +253,11 @@ static void test_im_int_iter_prev_at_start(struct cvxtest *t)
 
 static void test_im_int_iter_forward(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     im_int_iter_forward(iter, 2);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, im_int_iter_value_lo(iter) == 20);
 
     im_int_iter_drop(iter);
@@ -269,11 +266,11 @@ static void test_im_int_iter_forward(struct cvxtest *t)
 
 static void test_im_int_iter_forward_clamps(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     im_int_iter_forward(iter, 100);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, im_int_iter_at_end(iter) == true);
 
     im_int_iter_drop(iter);
@@ -282,11 +279,11 @@ static void test_im_int_iter_forward_clamps(struct cvxtest *t)
 
 static void test_im_int_iter_backward(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     im_int_iter_backward(iter, 2);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, im_int_iter_value_lo(iter) == 10);
 
     im_int_iter_drop(iter);
@@ -295,11 +292,11 @@ static void test_im_int_iter_backward(struct cvxtest *t)
 
 static void test_im_int_iter_backward_clamps(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     im_int_iter_backward(iter, 100);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, im_int_iter_at_start(iter) == true);
 
     im_int_iter_drop(iter);
@@ -310,11 +307,11 @@ static void test_im_int_iter_backward_clamps(struct cvxtest *t)
 
 static void test_im_int_iter_value(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     struct imap_int_int_entry e = im_int_iter_value(iter);
-    CVXCHECK(t, iter->flag == CVX_FLAG_OK);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, e.lo == 1);
     CVXCHECK(t, e.hi == 5);
     CVXCHECK(t, e.val == 10);
@@ -325,11 +322,11 @@ static void test_im_int_iter_value(struct cvxtest *t)
 
 static void test_im_int_iter_value_at_end(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_end(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_end(col);
 
     im_int_iter_value(iter);
-    CVXCHECK(t, iter->flag == CVX_FLAG_RANGE);
+    CVXCHECK(t, iter->super.flag == CVX_FLAG_RANGE);
 
     im_int_iter_drop(iter);
     im_int_drop(col);
@@ -337,8 +334,8 @@ static void test_im_int_iter_value_at_end(struct cvxtest *t)
 
 static void test_im_int_iter_value_lo_hi_val(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     CVXCHECK(t, im_int_iter_value_lo(iter) == 1);
     CVXCHECK(t, im_int_iter_value_hi(iter) == 5);
@@ -352,8 +349,8 @@ static void test_im_int_iter_value_lo_hi_val(struct cvxtest *t)
 
 static void test_im_int_iter_index(struct cvxtest *t)
 {
-    cvx_container *col = im_int_make3();
-    cvx_container *iter = im_int_iter_start(col);
+    struct imap_int_int *col = im_int_make3();
+    struct imap_int_int_iter *iter = im_int_iter_start(col);
 
     CVXCHECK(t, im_int_iter_index(iter) == 0);
     im_int_iter_next(iter);
