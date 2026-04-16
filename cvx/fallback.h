@@ -19,6 +19,9 @@
 #include <string.h>
 
 // Container template macros
+#ifndef K
+#define K int
+#endif
 #ifndef V
 #define V int
 #endif
