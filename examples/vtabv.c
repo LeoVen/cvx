@@ -21,12 +21,12 @@ int main(void)
 {
     struct str_array_vtabv cbs = { .copy = str_copy, .drop = str_drop };
 
-    cvx_container *col = sa_new_with(&cbs, 8);
+    struct str_array *col = sa_new_with(&cbs, 8);
 
     sa_push_back(col, strdup("hello"));
     sa_push_back(col, strdup("world"));
 
-    cvx_container *clone = sa_clone(col);
+    struct str_array *clone = sa_clone(col);
 
     printf("%s %s\n", sa_get(col, 0), sa_get(clone, 1));
 
