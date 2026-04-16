@@ -107,7 +107,7 @@ static void test_da_vtabv_drop_called_on_clear(struct cvxtest *t)
     da_int_drop(col);
 }
 
-static int run_dynamic_array_vtab_tests(void)
+static struct cvxresult run_dynamic_array_vtab_tests(void)
 {
     struct cvxtest t = { 0 };
 

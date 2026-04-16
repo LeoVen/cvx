@@ -312,7 +312,7 @@ static void test_sll_int_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_slinked_list_iter_tests(void)
+static struct cvxresult run_slinked_list_iter_tests(void)
 {
     struct cvxtest t = { 0 };
 

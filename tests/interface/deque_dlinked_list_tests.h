@@ -261,7 +261,7 @@ static void test_dll_int_dq_clone(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_deque_dlinked_list_tests(void)
+static struct cvxresult run_deque_dlinked_list_tests(void)
 {
     struct cvxtest t = { 0 };
 

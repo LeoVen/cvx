@@ -255,7 +255,7 @@ static void test_da_int_iter_index_wrong_tag(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dynamic_array_guard_tests(void)
+static struct cvxresult run_dynamic_array_guard_tests(void)
 {
     struct cvxtest t = { 0 };
 

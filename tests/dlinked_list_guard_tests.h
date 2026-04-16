@@ -263,7 +263,7 @@ static void test_dll_int_guard_iter_init_end(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dlinked_list_guard_tests(void)
+static struct cvxresult run_dlinked_list_guard_tests(void)
 {
     struct cvxtest t = { 0 };
 

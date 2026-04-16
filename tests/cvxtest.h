@@ -14,6 +14,12 @@ struct cvxtest
     const char *current;
 };
 
+struct cvxresult
+{
+    int passed;
+    int failed;
+};
+
 /* ---- macros ---- */
 
 /* Record a failed check without aborting. */
@@ -47,9 +53,10 @@ struct cvxtest
         } \
     } while (0)
 
-/* Print a summary line and return the number of failures. */
+/* Print a summary line and return a cvxresult with passed and failed counts. */
 #define CVXSUMMARY(t) \
     (printf("\n%d/%d passed", (t)->passed, (t)->total), \
-     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), (t)->passed)
+     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), \
+     (struct cvxresult){ .passed = (t)->passed, .failed = (t)->failed })
 
 #endif /* CVXTEST_H */

@@ -451,7 +451,7 @@ static void test_dll_int_iter_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dlinked_list_iter_tests(void)
+static struct cvxresult run_dlinked_list_iter_tests(void)
 {
     struct cvxtest t = { 0 };
 

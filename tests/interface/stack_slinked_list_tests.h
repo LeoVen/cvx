@@ -139,7 +139,7 @@ static void test_sll_int_replace_on_empty(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_stack_slinked_list_tests(void)
+static struct cvxresult run_stack_slinked_list_tests(void)
 {
     struct cvxtest t = { 0 };
 

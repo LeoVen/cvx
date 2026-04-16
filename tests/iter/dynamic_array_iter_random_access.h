@@ -229,7 +229,7 @@ static void test_rai_go_to_out_of_range(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dynamic_array_iter_random_access_tests(void)
+static struct cvxresult run_dynamic_array_iter_random_access_tests(void)
 {
     struct cvxtest t = { 0 };
     printf("dynamic_array (random_access_iterator)\n");

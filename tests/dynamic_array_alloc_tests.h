@@ -303,7 +303,7 @@ static void test_da_int_alloc_iter_end_fails(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dynamic_array_alloc_tests(void)
+static struct cvxresult run_dynamic_array_alloc_tests(void)
 {
     struct cvxtest t = { 0 };
 

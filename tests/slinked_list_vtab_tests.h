@@ -108,7 +108,7 @@ static void test_sll_vtabv_drop_called_on_clear(struct cvxtest *t)
     sll_int_drop(col);
 }
 
-static int run_slinked_list_vtab_tests(void)
+static struct cvxresult run_slinked_list_vtab_tests(void)
 {
     struct cvxtest t = { 0 };
 

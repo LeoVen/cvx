@@ -332,7 +332,7 @@ static void test_bi_value_at_end(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dlinked_list_iter_bidirectional_tests(void)
+static struct cvxresult run_dlinked_list_iter_bidirectional_tests(void)
 {
     struct cvxtest t = { 0 };
     printf("dlinked_list (bidirectional_iterator)\n");

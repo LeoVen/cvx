@@ -34,7 +34,7 @@
 int main(void)
 {
     // clang-format off
-    int (*tests[])(void) = {
+    struct cvxresult (*tests[])(void) = {
         run_deque_dlinked_list_tests,
         run_queue_slinked_list_tests,
 
@@ -65,14 +65,20 @@ int main(void)
     // clang-format on
 
     size_t count = sizeof(tests) / sizeof(tests[0]);
-    int total = 0;
+    int total_passed = 0;
+    int total_failed = 0;
 
     for (size_t i = 0; i < count; i++)
     {
-        total += tests[i]();
+        struct cvxresult r = tests[i]();
+        total_passed += r.passed;
+        total_failed += r.failed;
     }
 
-    printf("Total Tests: %d\n", total);
+    printf("Total: %d passed", total_passed);
+    printf(", %d failed\n", total_failed);
+
+    printf("\n");
 
     return 0;
 }

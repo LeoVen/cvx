@@ -273,7 +273,7 @@ static void test_dll_int_alloc_iter_end_fails(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dlinked_list_alloc_tests(void)
+static struct cvxresult run_dlinked_list_alloc_tests(void)
 {
     struct cvxtest t = { 0 };
 

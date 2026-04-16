@@ -108,7 +108,7 @@ static void test_sll_int_q_clone(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_queue_slinked_list_tests(void)
+static struct cvxresult run_queue_slinked_list_tests(void)
 {
     struct cvxtest t = { 0 };
 

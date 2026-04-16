@@ -280,7 +280,7 @@ static void test_sll_int_alloc_iter_start_fails(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_slinked_list_alloc_tests(void)
+static struct cvxresult run_slinked_list_alloc_tests(void)
 {
     struct cvxtest t = { 0 };
 

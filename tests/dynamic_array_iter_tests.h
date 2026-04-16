@@ -353,7 +353,7 @@ static void test_da_int_iter_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_dynamic_array_iter_tests(void)
+static struct cvxresult run_dynamic_array_iter_tests(void)
 {
     struct cvxtest t = { 0 };
     printf("dynamic_array (iterator)\n");

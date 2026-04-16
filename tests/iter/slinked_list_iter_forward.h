@@ -190,7 +190,7 @@ static void test_fi_index(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_slinked_list_iter_forward_tests(void)
+static struct cvxresult run_slinked_list_iter_forward_tests(void)
 {
     struct cvxtest t = { 0 };
     printf("slinked_list (forward_iterator)\n");

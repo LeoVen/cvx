@@ -125,7 +125,7 @@ static void test_ist_replace_on_empty(struct cvxtest *t)
 
 /* ---- runner ---- */
 
-static int run_stack_dynamic_array_tests(void)
+static struct cvxresult run_stack_dynamic_array_tests(void)
 {
     struct cvxtest t = { 0 };
 
