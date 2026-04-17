@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-#include "cvx/core.h"
-
 #define V int
 #define PFX iset
 #define SNAME interval
@@ -32,61 +30,57 @@ static struct interval_map_vtabv *im_vtabv = &(struct interval_map_vtabv){
 int main(void)
 {
     struct interval i0 = iset_init(is_vtab);
-    cvx_container *i00 = (cvx_container *)&i0;
 
-    if (i00->flag != CVX_FLAG_OK)
+    if (iset_flag(&i0) != CVX_FLAG_OK)
     {
-        printf("Initializing error: %s\n", cvx_flags_str[i00->flag]);
+        printf("Initializing error: %s\n", cvx_flags_str[iset_flag(&i0)]);
     }
 
-    iset_add(i00, 10, 20);
-    iset_add(i00, 30, 40);
-    iset_add(i00, 50, 60);
-    iset_add(i00, 100, 101);
+    iset_add(&i0, 10, 20);
+    iset_add(&i0, 30, 40);
+    iset_add(&i0, 50, 60);
+    iset_add(&i0, 100, 101);
 
-    if (i00->flag != CVX_FLAG_OK)
+    if (iset_flag(&i0) != CVX_FLAG_OK)
     {
-        printf("Addition error: %s\n", cvx_flags_str[i00->flag]);
+        printf("Addition error: %s\n", cvx_flags_str[iset_flag(&i0)]);
     }
 
-    iset_remove(i00, 15, 35);
-    iset_remove(i00, 99, 100); // No effect
-    iset_remove(i00, 50, 51);
-    iset_remove(i00, 51, 59);
+    iset_remove(&i0, 15, 35);
+    iset_remove(&i0, 99, 100); // No effect
+    iset_remove(&i0, 50, 51);
+    iset_remove(&i0, 51, 59);
 
-    struct interval_iter set_iter = iset_iter_init_start(i00);
-    cvx_container *i00_iter = (cvx_container *)&set_iter;
+    struct interval_iter i00_iter = iset_iter_init_start(&i0);
 
-    for (iset_iter_to_start(i00_iter); !iset_iter_at_end(i00_iter); iset_iter_next(i00_iter))
+    for (iset_iter_to_start(&i00_iter); !iset_iter_at_end(&i00_iter); iset_iter_next(&i00_iter))
     {
-        struct interval_entry e = iset_iter_value(i00_iter);
+        struct interval_entry e = iset_iter_entry(&i00_iter);
         printf("[%d, %d)\n", e.lo, e.hi);
     }
 
-    iset_clear(i00);
+    iset_clear(&i0);
     printf("\n");
 
-    struct interval_map im0 = imap_init(im_vtabk, im_vtabv);
-    cvx_container *imap = (cvx_container *)&im0;
+    struct interval_map imap = imap_init(im_vtabk, im_vtabv);
 
-    imap_add(imap, 10, 20, "t1");
-    imap_add(imap, 15, 20, "t1");
-    imap_add(imap, 15, 20, "t2");
-    imap_add(imap, 5, 10, "t0");
+    imap_add(&imap, 10, 20, "t1");
+    imap_add(&imap, 15, 20, "t1");
+    imap_add(&imap, 15, 20, "t2");
+    imap_add(&imap, 5, 10, "t0");
 
-    printf("get(15) = %s\n", imap_get(imap, 15));
-    printf("get(10) = %s\n", imap_get(imap, 10));
+    printf("get(15) = %s\n", imap_get(&imap, 15));
+    printf("get(10) = %s\n", imap_get(&imap, 10));
 
-    struct interval_map_iter map_iter = imap_iter_init_start(imap);
-    cvx_container *im_iter = (cvx_container *)&map_iter;
+    struct interval_map_iter im_iter = imap_iter_init_start(&imap);
 
-    for (imap_iter_to_start(im_iter); !imap_iter_at_end(im_iter); imap_iter_next(im_iter))
+    for (imap_iter_to_start(&im_iter); !imap_iter_at_end(&im_iter); imap_iter_next(&im_iter))
     {
-        struct interval_map_entry e = imap_iter_value(im_iter);
+        struct interval_map_entry e = imap_iter_entry(&im_iter);
         printf("[%d, %d): %s\n", e.lo, e.hi, e.val);
     }
 
-    imap_clear(imap);
+    imap_clear(&imap);
 
     return 0;
 }
