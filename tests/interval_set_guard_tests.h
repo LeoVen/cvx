@@ -175,10 +175,10 @@ static void test_is_int_guard_iter_backward(struct cvxtest *t)
     CVXCHECK(t, iter->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_is_int_guard_iter_value(struct cvxtest *t)
+static void test_is_int_guard_iter_entry(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(iter);
-    struct iset_int_entry res = is_int__proxy_iter_value(iter);
+    struct iset_int_entry res = is_int__proxy_iter_entry(iter);
     CVXCHECK(t, res.lo == 0 && res.hi == 0);
     CVXCHECK(t, iter->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -238,7 +238,7 @@ static struct cvxresult run_interval_set_guard_tests(void)
     CVXRUN(&t, test_is_int_guard_iter_prev);
     CVXRUN(&t, test_is_int_guard_iter_forward);
     CVXRUN(&t, test_is_int_guard_iter_backward);
-    CVXRUN(&t, test_is_int_guard_iter_value);
+    CVXRUN(&t, test_is_int_guard_iter_entry);
     CVXRUN(&t, test_is_int_guard_iter_value_lo);
     CVXRUN(&t, test_is_int_guard_iter_value_hi);
     CVXRUN(&t, test_is_int_guard_iter_index);

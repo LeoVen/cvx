@@ -30,7 +30,7 @@
 // values.  vtabv->comp, if set, enables joining of adjacent equal-value
 // intervals.  vtabv->copy / vtabv->drop apply to V values.
 //
-// _iter_value returns struct ENTRY {K lo; K hi; V val;}.  To cast to a
+// _iter_entry returns struct ENTRY {K lo; K hi; V val;}.  To cast to a
 // generic iterator interface, declare it with V = struct CVX_(SNAME,_entry)
 // BEFORE including this header.
 
@@ -97,6 +97,7 @@ void FUNC(_drop)(struct SNAME *_self_);
 void FUNC(_clear)(struct SNAME *_self_);
 
 // ---- Getters ----
+enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
 size_t FUNC(_count)(struct SNAME *_self_);
 bool FUNC(_empty)(struct SNAME *_self_);
 
@@ -129,7 +130,7 @@ void FUNC(_iter_forward)(struct ITERATOR *_iter_, size_t _steps_);
 void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_);
 
 // ---- Iterator access ----
-struct ENTRY FUNC(_iter_value)(struct ITERATOR *_iter_);
+struct ENTRY FUNC(_iter_entry)(struct ITERATOR *_iter_);
 K FUNC(_iter_value_lo)(struct ITERATOR *_iter_);
 K FUNC(_iter_value_hi)(struct ITERATOR *_iter_);
 V FUNC(_iter_value_val)(struct ITERATOR *_iter_);
@@ -308,15 +309,18 @@ void FUNC(_clear)(struct SNAME *_self_)
     _self_->super.flag = CVX_FLAG_OK;
 }
 
+enum cvx_flags FUNC(_flag)(struct SNAME *_self_)
+{
+    return _self_->super.flag;
+}
+
 size_t FUNC(_count)(struct SNAME *_self_)
 {
-    _self_->super.flag = CVX_FLAG_OK;
     return _self_->count;
 }
 
 bool FUNC(_empty)(struct SNAME *_self_)
 {
-    _self_->super.flag = CVX_FLAG_OK;
     return _self_->count == 0;
 }
 
@@ -807,7 +811,7 @@ void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_)
     _iter_->super.flag = CVX_FLAG_OK;
 }
 
-struct ENTRY FUNC(_iter_value)(struct ITERATOR *_iter_)
+struct ENTRY FUNC(_iter_entry)(struct ITERATOR *_iter_)
 {
     if (_iter_->index >= _iter_->target->count)
     {
@@ -954,7 +958,7 @@ void FUNC_PROXY(_iter_next)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TA
 void FUNC_PROXY(_iter_prev)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_prev)((struct ITERATOR *)_col_); }
 void FUNC_PROXY(_iter_forward)(cvx_container *_col_, size_t _steps_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_forward)((struct ITERATOR *)_col_, _steps_); }
 void FUNC_PROXY(_iter_backward)(cvx_container *_col_, size_t _steps_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_backward)((struct ITERATOR *)_col_, _steps_); }
-struct ENTRY FUNC_PROXY(_iter_value)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, (struct ENTRY){ 0 }); return FUNC(_iter_value)((struct ITERATOR *)_col_); }
+struct ENTRY FUNC_PROXY(_iter_entry)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, (struct ENTRY){ 0 }); return FUNC(_iter_entry)((struct ITERATOR *)_col_); }
 K FUNC_PROXY(_iter_value_lo)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, (K){ 0 }); return FUNC(_iter_value_lo)((struct ITERATOR *)_col_); }
 K FUNC_PROXY(_iter_value_hi)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, (K){ 0 }); return FUNC(_iter_value_hi)((struct ITERATOR *)_col_); }
 V FUNC_PROXY(_iter_value_val)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, (V){ 0 }); return FUNC(_iter_value_val)((struct ITERATOR *)_col_); }
@@ -972,7 +976,7 @@ size_t FUNC_PROXY(_iter_index)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER
 //   #define V  struct CVX_(SNAME,_entry)
 //   #define INTERFACE <name>
 //   #include "cvx/iter/forward_iterator.h"
-// before this header, because _iter_value returns struct ENTRY.
+// before this header, because _iter_entry returns struct ENTRY.
 #define INTERFACE IMPL_FORWARD_ITER
 
 #define IMPL_START FUNC_PROXY(_iter_start)
@@ -983,7 +987,7 @@ size_t FUNC_PROXY(_iter_index)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER
 #define IMPL_TO_START FUNC_PROXY(_iter_to_start)
 #define IMPL_NEXT FUNC_PROXY(_iter_next)
 #define IMPL_FORWARD FUNC_PROXY(_iter_forward)
-#define IMPL_VALUE FUNC_PROXY(_iter_value)
+#define IMPL_VALUE FUNC_PROXY(_iter_entry)
 #define IMPL_INDEX FUNC_PROXY(_iter_index)
 
 #include "cvx/iter/forward_iterator_cast.h"
@@ -1006,7 +1010,7 @@ size_t FUNC_PROXY(_iter_index)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER
 //   #define V  struct CVX_(SNAME,_entry)
 //   #define INTERFACE <name>
 //   #include "cvx/iter/bidirectional_iterator.h"
-// before this header, because _iter_value returns struct ENTRY.
+// before this header, because _iter_entry returns struct ENTRY.
 #define INTERFACE IMPL_BIDIRECTIONAL_ITER
 
 #define IMPL_START FUNC_PROXY(_iter_start)
@@ -1021,7 +1025,7 @@ size_t FUNC_PROXY(_iter_index)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER
 #define IMPL_PREV FUNC_PROXY(_iter_prev)
 #define IMPL_FORWARD FUNC_PROXY(_iter_forward)
 #define IMPL_BACKWARD FUNC_PROXY(_iter_backward)
-#define IMPL_VALUE FUNC_PROXY(_iter_value)
+#define IMPL_VALUE FUNC_PROXY(_iter_entry)
 #define IMPL_INDEX FUNC_PROXY(_iter_index)
 
 #include "cvx/iter/bidirectional_iterator_cast.h"

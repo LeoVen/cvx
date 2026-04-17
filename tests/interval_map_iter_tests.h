@@ -304,12 +304,12 @@ static void test_im_int_iter_backward_clamps(struct cvxtest *t)
 
 /* ---- iter_value / iter_value_lo / iter_value_hi / iter_value_val ---- */
 
-static void test_im_int_iter_value(struct cvxtest *t)
+static void test_im_int_iter_entry(struct cvxtest *t)
 {
     struct imap_int_int *col = im_int_make3();
     struct imap_int_int_iter *iter = im_int_iter_start(col);
 
-    struct imap_int_int_entry e = im_int_iter_value(iter);
+    struct imap_int_int_entry e = im_int_iter_entry(iter);
     CVXCHECK(t, iter->super.flag == CVX_FLAG_OK);
     CVXCHECK(t, e.lo == 1);
     CVXCHECK(t, e.hi == 5);
@@ -319,12 +319,12 @@ static void test_im_int_iter_value(struct cvxtest *t)
     im_int_drop(col);
 }
 
-static void test_im_int_iter_value_at_end(struct cvxtest *t)
+static void test_im_int_iter_entry_at_end(struct cvxtest *t)
 {
     struct imap_int_int *col = im_int_make3();
     struct imap_int_int_iter *iter = im_int_iter_end(col);
 
-    im_int_iter_value(iter);
+    im_int_iter_entry(iter);
     CVXCHECK(t, iter->super.flag == CVX_FLAG_RANGE);
 
     im_int_iter_drop(iter);
@@ -394,8 +394,8 @@ static struct cvxresult run_interval_map_iter_tests(void)
     CVXRUN(&t, test_im_int_iter_backward);
     CVXRUN(&t, test_im_int_iter_backward_clamps);
 
-    CVXRUN(&t, test_im_int_iter_value);
-    CVXRUN(&t, test_im_int_iter_value_at_end);
+    CVXRUN(&t, test_im_int_iter_entry);
+    CVXRUN(&t, test_im_int_iter_entry_at_end);
     CVXRUN(&t, test_im_int_iter_value_lo_hi_val);
     CVXRUN(&t, test_im_int_iter_index);
 

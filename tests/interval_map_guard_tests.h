@@ -183,10 +183,10 @@ static void test_im_int_guard_iter_backward(struct cvxtest *t)
     CVXCHECK(t, iter->flag == CVX_FLAG_WRONG_TAG);
 }
 
-static void test_im_int_guard_iter_value(struct cvxtest *t)
+static void test_im_int_guard_iter_entry(struct cvxtest *t)
 {
     MAKE_INVALID_CONTAINER(iter);
-    struct imap_int_int_entry res = im_int__proxy_iter_value(iter);
+    struct imap_int_int_entry res = im_int__proxy_iter_entry(iter);
     CVXCHECK(t, res.lo == 0 && res.hi == 0 && res.val == 0);
     CVXCHECK(t, iter->flag == CVX_FLAG_WRONG_TAG);
 }
@@ -255,7 +255,7 @@ static struct cvxresult run_interval_map_guard_tests(void)
     CVXRUN(&t, test_im_int_guard_iter_prev);
     CVXRUN(&t, test_im_int_guard_iter_forward);
     CVXRUN(&t, test_im_int_guard_iter_backward);
-    CVXRUN(&t, test_im_int_guard_iter_value);
+    CVXRUN(&t, test_im_int_guard_iter_entry);
     CVXRUN(&t, test_im_int_guard_iter_value_lo);
     CVXRUN(&t, test_im_int_guard_iter_value_hi);
     CVXRUN(&t, test_im_int_guard_iter_value_val);
