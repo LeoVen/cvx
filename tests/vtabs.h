@@ -33,4 +33,9 @@ void int_drop(int a)
     cvx_counter_vtab_drop += 1;
 }
 
+size_t int_hash(int a)
+{
+    return (size_t)(a < 0 ? -a : a);
+}
+
 #endif /* CVX_VTABS_TEST_H */

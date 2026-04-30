@@ -146,4 +146,26 @@ static struct imap_int_int_vtabv *im_int_vtabv_full = &(struct imap_int_int_vtab
     .drop = int_drop,
 };
 
+#define K int
+#define V int
+#define SNAME ht_int_int
+#define PFX ht_int
+#define TAG 22
+#include "cvx/hashtable.h"
+#define HT_ITER_TAG (22 * CVX_ITER_TAG_MULT)
+static struct ht_int_int_vtabk *ht_int_vtabk = &(struct ht_int_int_vtabk){
+    .comp = int_comp,
+    .hash = int_hash,
+};
+static struct ht_int_int_vtabk *ht_int_vtabk_full = &(struct ht_int_int_vtabk){
+    .comp = int_comp,
+    .hash = int_hash,
+    .copy = int_copy,
+    .drop = int_drop,
+};
+static struct ht_int_int_vtabv *ht_int_vtabv_full = &(struct ht_int_int_vtabv){
+    .copy = int_copy,
+    .drop = int_drop,
+};
+
 #endif /* CVX_IMPLEMENTATIONS_TEST_H */

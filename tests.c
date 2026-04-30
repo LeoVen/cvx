@@ -47,6 +47,12 @@
 #include "tests/interval_map_iter_tests.h"
 #include "tests/interval_map_vtab_tests.h"
 #include "tests/interval_map_alloc_tests.h"
+
+#include "tests/hashtable_tests.h"
+#include "tests/hashtable_guard_tests.h"
+#include "tests/hashtable_iter_tests.h"
+#include "tests/hashtable_vtab_tests.h"
+#include "tests/hashtable_alloc_tests.h"
 // clang-format on
 
 int main(void)
@@ -97,6 +103,12 @@ int main(void)
         run_interval_map_iter_tests,
         run_interval_map_vtab_tests,
         run_interval_map_alloc_tests,
+
+        run_hashtable_tests,
+        run_hashtable_guard_tests,
+        run_hashtable_iter_tests,
+        run_hashtable_vtab_tests,
+        run_hashtable_alloc_tests,
     };
     // clang-format on
 
