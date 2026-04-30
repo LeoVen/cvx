@@ -1,3 +1,38 @@
+/// binary_heap.h
+///
+/// This is a Binary Heap implementation that uses a contiguous array to store
+/// its elements. The indices are a simulated to form a binary tree.
+///
+/// Given a node I at an index i, you can find:
+/// Parent(I) = (i - 1) / 2, { for i > 0 }
+///   Left(I) = 2i + 1
+///  Right(I) = 2i + 2
+///
+/// Visual structure (representation):
+///
+///
+///               [ 95 ]                    <-- Root (Level 0)
+///              /      \
+///         [ 70 ]      [ 80 ]              <-- Level 1
+///         /    \      /    \
+///     [ 40 ] [ 50 ] [ 10 ] [ 30 ]         <-- Level 2
+///
+/// Array-based structure (actual structure in memory):
+///
+/// Index:    0      1      2      3      4      5      6
+///         +------+------+------+------+------+------+------+
+///  Array: |  95  |  70  |  80  |  40  |  50  |  10  |  30  |
+///         +------+------+------+------+------+------+------+
+///            ^      ^      ^      ^      ^      ^      ^
+///          Root   L-Child R-Child ...    ...    ...    ...
+///
+/// The heap is by default a Max heap, but it can be initialized with an enum of
+/// type `cvx_heap_order` that is going to multiply the result of your compare
+/// function by 1 or -1. This is usefull to keep a single comparison function
+/// for the custom type, while being able to check at runtime if a heap is MIN
+/// or MAX.
+///
+
 #include "cvx/fallback.h"
 
 // clang-format off
