@@ -6,7 +6,7 @@
 
 static void test_dll_vtabv_copy_called_on_copy(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct dlinked_int self = dll_int_init(dll_int_vtabv_full);
     dll_int_push_back(&self, 1);
@@ -15,7 +15,7 @@ static void test_dll_vtabv_copy_called_on_copy(struct cvxtest *t)
 
     struct dlinked_int copy = dll_int_copy(&self);
 
-    CVX_TEST_COUNTER_COPY(t, 3);
+    CVX_TEST_COUNTER_CLONE(t, 3);
     CVXCHECK(t, copy.count == 3);
     CVXCHECK(t, dll_int_get(&copy, 0) == 1);
     CVXCHECK(t, dll_int_get(&copy, 1) == 2);
@@ -27,7 +27,7 @@ static void test_dll_vtabv_copy_called_on_copy(struct cvxtest *t)
 
 static void test_dll_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct dlinked_int *col = dll_int_new_with(dll_int_vtabv_full);
     dll_int_push_back(col, 10);
@@ -36,7 +36,7 @@ static void test_dll_vtabv_copy_called_on_clone(struct cvxtest *t)
 
     struct dlinked_int *clone = dll_int_clone(col);
 
-    CVX_TEST_COUNTER_COPY(t, 3);
+    CVX_TEST_COUNTER_CLONE(t, 3);
     CVXCHECK(t, dll_int_count(clone) == 3);
     CVXCHECK(t, dll_int_get(clone, 0) == 10);
     CVXCHECK(t, dll_int_get(clone, 1) == 20);

@@ -46,7 +46,7 @@ static struct bheap_int_vtabv *bh_int_vtabv_comp_only = &(struct bheap_int_vtabv
 };
 static struct bheap_int_vtabv *bh_int_vtabv_full = &(struct bheap_int_vtabv){
     .comp = int_comp,
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 
@@ -57,7 +57,7 @@ static struct bheap_int_vtabv *bh_int_vtabv_full = &(struct bheap_int_vtabv){
 #include "cvx/dynamic_array.h"
 #define DA_ITER_TAG (99 * CVX_ITER_TAG_MULT)
 static struct dynamic_array_vtabv *da_vtabv_full = &(struct dynamic_array_vtabv){
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 
@@ -71,7 +71,7 @@ static struct dynamic_array_vtabv *da_vtabv_full = &(struct dynamic_array_vtabv)
 #include "cvx/slinked_list.h"
 #define SLL_ITER_TAG (77 * CVX_ITER_TAG_MULT)
 static struct slinked_int_vtabv *sll_int_vtabv_full = &(struct slinked_int_vtabv){
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 
@@ -87,7 +87,7 @@ static struct slinked_int_vtabv *sll_int_vtabv_full = &(struct slinked_int_vtabv
 #include "cvx/dlinked_list.h"
 #define DLL_ITER_TAG (88 * CVX_ITER_TAG_MULT)
 static struct dlinked_int_vtabv *dll_int_vtabv_full = &(struct dlinked_int_vtabv){
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 
@@ -109,7 +109,7 @@ static struct iset_int_vtabv *is_int_vtabv_comp_only = &(struct iset_int_vtabv){
 };
 static struct iset_int_vtabv *is_int_vtabv_full = &(struct iset_int_vtabv){
     .comp = int_comp,
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 
@@ -132,7 +132,7 @@ static struct imap_int_int_vtabk *im_int_vtabk = &(struct imap_int_int_vtabk){
 };
 static struct imap_int_int_vtabk *im_int_vtabk_full = &(struct imap_int_int_vtabk){
     .comp = int_comp,
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 static struct imap_int_int_vtabv *im_int_vtabv_with_comp = &(struct imap_int_int_vtabv){
@@ -140,7 +140,7 @@ static struct imap_int_int_vtabv *im_int_vtabv_with_comp = &(struct imap_int_int
 };
 static struct imap_int_int_vtabv *im_int_vtabv_full = &(struct imap_int_int_vtabv){
     .comp = int_comp,
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 
@@ -158,11 +158,11 @@ static struct ht_int_int_vtabk *ht_int_vtabk = &(struct ht_int_int_vtabk){
 static struct ht_int_int_vtabk *ht_int_vtabk_full = &(struct ht_int_int_vtabk){
     .comp = int_comp,
     .hash = int_hash,
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 static struct ht_int_int_vtabv *ht_int_vtabv_full = &(struct ht_int_int_vtabv){
-    .copy = int_copy,
+    .clone = int_copy,
     .drop = int_drop,
 };
 

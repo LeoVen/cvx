@@ -8,8 +8,8 @@ static size_t cvx_counter_vtab_comp = 0;
 #define CVX_TEST_COUNTER_COMP_RESET() cvx_counter_vtab_comp = 0
 
 static size_t cvx_counter_vtab_copy = 0;
-#define CVX_TEST_COUNTER_COPY(t, n) CVXCHECK(t, n == cvx_counter_vtab_copy)
-#define CVX_TEST_COUNTER_COPY_RESET() cvx_counter_vtab_copy = 0
+#define CVX_TEST_COUNTER_CLONE(t, n) CVXCHECK(t, n == cvx_counter_vtab_copy)
+#define CVX_TEST_COUNTER_CLONE_RESET() cvx_counter_vtab_copy = 0
 
 static size_t cvx_counter_vtab_drop = 0;
 #define CVX_TEST_COUNTER_DROP(t, n) CVXCHECK(t, n == cvx_counter_vtab_drop)

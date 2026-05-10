@@ -17,11 +17,11 @@ static void test_ht_int_vtab_copy_on_copy(struct cvxtest *t)
     ht_int_insert(&orig, 1, 10);
     ht_int_insert(&orig, 2, 20);
 
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
     struct ht_int_int copy = ht_int_copy(&orig);
 
     // 2 entries × (1 K + 1 V) = 4 copy calls
-    CVX_TEST_COUNTER_COPY(t, 4);
+    CVX_TEST_COUNTER_CLONE(t, 4);
     CVXCHECK(t, copy.count == 2);
 
     ht_int_clear(&orig);
@@ -36,11 +36,11 @@ static void test_ht_int_vtab_copy_on_clone(struct cvxtest *t)
     ht_int_insert(col, 10, 100);
     ht_int_insert(col, 20, 200);
 
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
     struct ht_int_int *clone = ht_int_clone(col);
 
     // 2 entries × (1 K + 1 V) = 4 copy calls
-    CVX_TEST_COUNTER_COPY(t, 4);
+    CVX_TEST_COUNTER_CLONE(t, 4);
     CVXCHECK(t, ht_int_count(clone) == 2);
 
     ht_int_drop(col);

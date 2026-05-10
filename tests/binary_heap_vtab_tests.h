@@ -6,7 +6,7 @@
 
 static void test_bh_int_vtabv_copy_called_on_copy(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct bheap_int *h = bh_int_new_with(bh_int_vtabv_full, CVX_MAX_HEAP, 0);
     bh_int_push(h, 1);
@@ -15,7 +15,7 @@ static void test_bh_int_vtabv_copy_called_on_copy(struct cvxtest *t)
 
     struct bheap_int copy = bh_int_copy(h);
 
-    CVX_TEST_COUNTER_COPY(t, 3);
+    CVX_TEST_COUNTER_CLONE(t, 3);
     CVXCHECK(t, copy.count == 3);
 
     free(copy.buffer);
@@ -24,7 +24,7 @@ static void test_bh_int_vtabv_copy_called_on_copy(struct cvxtest *t)
 
 static void test_bh_int_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct bheap_int *h = bh_int_new_with(bh_int_vtabv_full, CVX_MAX_HEAP, 0);
     bh_int_push(h, 10);
@@ -33,7 +33,7 @@ static void test_bh_int_vtabv_copy_called_on_clone(struct cvxtest *t)
 
     struct bheap_int *clone = bh_int_clone(h);
 
-    CVX_TEST_COUNTER_COPY(t, 3);
+    CVX_TEST_COUNTER_CLONE(t, 3);
     CVXCHECK(t, bh_int_count(clone) == 3);
 
     bh_int_drop(h);

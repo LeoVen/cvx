@@ -71,11 +71,11 @@ void FUNC(_clear)(struct SNAME *_self_);
 // Getters
 size_t FUNC(_count)(struct SNAME *_self_);
 bool FUNC(_empty)(struct SNAME *_self_);
+
+// Operations
 V FUNC(_front)(struct SNAME *_self_);
 V FUNC(_back)(struct SNAME *_self_);
 V FUNC(_get)(struct SNAME *_self_, size_t _index_);
-
-// Operations
 void FUNC(_push_front)(struct SNAME *_self_, V _item_);
 void FUNC(_push_back)(struct SNAME *_self_, V _item_);
 void FUNC(_push_at)(struct SNAME *_self_, V _item_, size_t _index_);
@@ -144,8 +144,8 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
         _new_node_->next = NULL;
         _new_node_->prev = _res_.tail;
 
-        if (_self_->vtabv && _self_->vtabv->copy)
-            _new_node_->value = _self_->vtabv->copy(_curr_->value);
+        if (_self_->vtabv && _self_->vtabv->clone)
+            _new_node_->value = _self_->vtabv->clone(_curr_->value);
         else
             _new_node_->value = _curr_->value;
 
@@ -223,8 +223,8 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
         _new_node_->next = NULL;
         _new_node_->prev = _copy_->tail;
 
-        if (_copy_->vtabv && _copy_->vtabv->copy)
-            _new_node_->value = _copy_->vtabv->copy(_curr_->value);
+        if (_copy_->vtabv && _copy_->vtabv->clone)
+            _new_node_->value = _copy_->vtabv->clone(_curr_->value);
         else
             _new_node_->value = _curr_->value;
 
@@ -289,7 +289,6 @@ size_t FUNC(_count)(struct SNAME *_self_)
 
 bool FUNC(_empty)(struct SNAME *_self_)
 {
-    _self_->super.flag = CVX_FLAG_OK;
     return _self_->count == 0;
 }
 

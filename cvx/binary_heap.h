@@ -210,8 +210,8 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
 
     for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
     {
-        if (_self_->vtabv && _self_->vtabv->copy)
-            _res_.buffer[_i_] = _self_->vtabv->copy(_self_->buffer[_i_]);
+        if (_self_->vtabv && _self_->vtabv->clone)
+            _res_.buffer[_i_] = _self_->vtabv->clone(_self_->buffer[_i_]);
         else
             _res_.buffer[_i_] = _self_->buffer[_i_];
     }
@@ -296,8 +296,8 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
 
     for (size_t _i_ = 0; _i_ < _orig_->count; _i_++)
     {
-        if (_orig_->vtabv && _orig_->vtabv->copy)
-            _copy_->buffer[_i_] = _orig_->vtabv->copy(_orig_->buffer[_i_]);
+        if (_orig_->vtabv && _orig_->vtabv->clone)
+            _copy_->buffer[_i_] = _orig_->vtabv->clone(_orig_->buffer[_i_]);
         else
             _copy_->buffer[_i_] = _orig_->buffer[_i_];
     }

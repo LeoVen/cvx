@@ -125,7 +125,7 @@ void  str_drop(char *s) { free(s); }
 int main(void)
 {
     // Build a vtabv with copy and drop - no comp/hash/prio needed here
-    struct str_array_vtabv cbs = { .copy = str_copy, .drop = str_drop };
+    struct str_array_vtabv cbs = { .clone = str_copy, .drop = str_drop };
 
     cvx_container *col = sa_new_with(&cbs, 8);
 

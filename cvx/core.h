@@ -20,7 +20,7 @@
 
 #define CVX_VTAB_DEFINITION(T) \
     CVX_VTAB_COMP(comp, T); \
-    CVX_VTAB_COPY(copy, T); \
+    CVX_VTAB_COPY(clone, T); \
     CVX_VTAB_DROP(drop, T); \
     CVX_VTAB_HASH(hash, T); \
     CVX_VTAB_PRIO(prio, T);

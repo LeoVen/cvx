@@ -144,10 +144,10 @@ void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
     orig->super.flag = CVX_FLAG_OK;
     if (!orig->buffer || !clone->buffer)
         return;
-    if (clone->vtabv && clone->vtabv->copy)
+    if (clone->vtabv && clone->vtabv->clone)
     {
         for (size_t i = 0; i < orig->count; i++)
-            clone->buffer[i] = clone->vtabv->copy(orig->buffer[i]);
+            clone->buffer[i] = clone->vtabv->clone(orig->buffer[i]);
     }
     else
     {

@@ -1,7 +1,7 @@
 /// Open-addressing, linear-probing hashtable with robin hood insertion.
 ///
 /// Keys are hashed with vtabk->hash and compared with vtabk->comp.
-/// Both are required; vtabk->copy / vtabk->drop and vtabv->copy / vtabv->drop
+/// Both are required; vtabk->clone / vtabk->drop and vtabv->clone / vtabv->drop
 /// are optional.
 ///
 /// Capacity is always a prime number.  A resize is triggered whenever
@@ -252,11 +252,11 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
         _buf_[_i_] = _self_->buffer[_i_];
         if (_self_->buffer[_i_].state == CVX_(SNAME, _es_filled))
         {
-            _buf_[_i_].key = (_self_->vtabk && _self_->vtabk->copy)
-                                 ? _self_->vtabk->copy(_self_->buffer[_i_].key)
+            _buf_[_i_].key = (_self_->vtabk && _self_->vtabk->clone)
+                                 ? _self_->vtabk->clone(_self_->buffer[_i_].key)
                                  : _self_->buffer[_i_].key;
-            _buf_[_i_].val = (_self_->vtabv && _self_->vtabv->copy)
-                                 ? _self_->vtabv->copy(_self_->buffer[_i_].val)
+            _buf_[_i_].val = (_self_->vtabv && _self_->vtabv->clone)
+                                 ? _self_->vtabv->clone(_self_->buffer[_i_].val)
                                  : _self_->buffer[_i_].val;
         }
     }
@@ -275,6 +275,8 @@ struct SNAME *FUNC(_new)(void)
         return NULL;
 
     *_res_ = FUNC(_init)(NULL, NULL);
+    _res_->super.tag = TAG;
+    _res_->super.flag = CVX_FLAG_OK;
 
     return _res_;
 }
@@ -321,11 +323,11 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
         _buf_[_i_] = _orig_->buffer[_i_];
         if (_orig_->buffer[_i_].state == CVX_(SNAME, _es_filled))
         {
-            _buf_[_i_].key = (_orig_->vtabk && _orig_->vtabk->copy)
-                                 ? _orig_->vtabk->copy(_orig_->buffer[_i_].key)
+            _buf_[_i_].key = (_orig_->vtabk && _orig_->vtabk->clone)
+                                 ? _orig_->vtabk->clone(_orig_->buffer[_i_].key)
                                  : _orig_->buffer[_i_].key;
-            _buf_[_i_].val = (_orig_->vtabv && _orig_->vtabv->copy)
-                                 ? _orig_->vtabv->copy(_orig_->buffer[_i_].val)
+            _buf_[_i_].val = (_orig_->vtabv && _orig_->vtabv->clone)
+                                 ? _orig_->vtabv->clone(_orig_->buffer[_i_].val)
                                  : _orig_->buffer[_i_].val;
         }
     }

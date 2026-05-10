@@ -138,8 +138,8 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
 
         _new_node_->next = NULL;
 
-        if (_self_->vtabv && _self_->vtabv->copy)
-            _new_node_->value = _self_->vtabv->copy(_curr_->value);
+        if (_self_->vtabv && _self_->vtabv->clone)
+            _new_node_->value = _self_->vtabv->clone(_curr_->value);
         else
             _new_node_->value = _curr_->value;
 
@@ -216,8 +216,8 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
 
         _new_node_->next = NULL;
 
-        if (_copy_->vtabv && _copy_->vtabv->copy)
-            _new_node_->value = _copy_->vtabv->copy(_curr_->value);
+        if (_copy_->vtabv && _copy_->vtabv->clone)
+            _new_node_->value = _copy_->vtabv->clone(_curr_->value);
         else
             _new_node_->value = _curr_->value;
 

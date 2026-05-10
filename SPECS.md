@@ -294,12 +294,12 @@ Every implementation provides a consistent set of lifecycle functions. Their nam
   - Similar to `_init_with`
 - **`_copy`**
   - Creates a deep copy of a container and returns it by value as `struct SNAME`
-  - Elements are optionally copied using `vtabv->copy`, otherwise a shallow copy is performed
+  - Elements are optionally copied using `vtabv->clone`, otherwise a shallow copy is performed
   - The result is independent of the original
 - **`_clone`**
   - Creates a deep copy of a heap-allocated container and returns a new `struct SNAME *`
   - Its proxy returns `cvx_container *` and is used by interfaces
-  - Elements are optionally copied using `vtabv->copy`, otherwise a shallow copy is performed
+  - Elements are optionally copied using `vtabv->clone`, otherwise a shallow copy is performed
   - Copies the `vtabv` pointer from the original so callbacks remain active on the clone
 - **`_drop`**
   - Frees all internal resources (nodes, buffers, etc.)
@@ -513,8 +513,8 @@ Both the member value (`vtabv` or `vtabk`) and the associated function must be c
 
 ```c
 // copy
-if (_self_->vtabv && _self_->vtabv->copy)
-    dest = _self_->vtabv->copy(src);
+if (_self_->vtabv && _self_->vtabv->clone)
+    dest = _self_->vtabv->clone(src);
 else
     dest = src;   // direct assignment (shallow)
 

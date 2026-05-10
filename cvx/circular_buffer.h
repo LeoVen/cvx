@@ -153,12 +153,12 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
     _res_.count = _self_->count;
     _res_.head = 0;
 
-    if (_self_->vtabv && _self_->vtabv->copy)
+    if (_self_->vtabv && _self_->vtabv->clone)
     {
         for (size_t i = 0; i < _self_->count; i++)
         {
             size_t _phys_ = (_self_->head + i) % _self_->capacity;
-            _res_.buffer[i] = _self_->vtabv->copy(_self_->buffer[_phys_]);
+            _res_.buffer[i] = _self_->vtabv->clone(_self_->buffer[_phys_]);
         }
     }
     else
@@ -255,12 +255,12 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
     _res_->capacity = _orig_->capacity;
     _res_->count = _orig_->count;
 
-    if (_res_->vtabv && _res_->vtabv->copy)
+    if (_res_->vtabv && _res_->vtabv->clone)
     {
         for (size_t i = 0; i < _orig_->count; i++)
         {
             size_t _phys_ = (_orig_->head + i) % _orig_->capacity;
-            _res_->buffer[i] = _res_->vtabv->copy(_orig_->buffer[_phys_]);
+            _res_->buffer[i] = _res_->vtabv->clone(_orig_->buffer[_phys_]);
         }
     }
     else

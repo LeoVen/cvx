@@ -9,7 +9,7 @@
 
 static void test_is_vtabv_copy_on_copy(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct iset_int orig = is_int_init(is_int_vtabv_full);
     is_int_add(&orig, 1, 5);
@@ -18,7 +18,7 @@ static void test_is_vtabv_copy_on_copy(struct cvxtest *t)
     struct iset_int copy = is_int_copy(&orig);
 
     // 2 intervals × 2 bounds each = 4 copy calls.
-    CVX_TEST_COUNTER_COPY(t, 4);
+    CVX_TEST_COUNTER_CLONE(t, 4);
     CVXCHECK(t, copy.count == 2);
 
     is_int_clear(&orig);
@@ -29,7 +29,7 @@ static void test_is_vtabv_copy_on_copy(struct cvxtest *t)
 
 static void test_is_vtabv_copy_on_clone(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct iset_int *col = is_int_new_with(is_int_vtabv_full);
     is_int_add(col, 1, 5);
@@ -38,7 +38,7 @@ static void test_is_vtabv_copy_on_clone(struct cvxtest *t)
     struct iset_int *clone = is_int_clone(col);
 
     // 2 intervals × 2 bounds each = 4 copy calls.
-    CVX_TEST_COUNTER_COPY(t, 4);
+    CVX_TEST_COUNTER_CLONE(t, 4);
     CVXCHECK(t, is_int_count(clone) == 2);
 
     is_int_drop(col);
@@ -109,11 +109,10 @@ static void test_is_vtabv_drop_on_add_merge(struct cvxtest *t)
     // comparison → existing 15 wins, so incoming 12 is NOT stored, but 15 was
     // already kept).
     // Specifically:
-    //   merged_lo: comp(3, 1) > 0 → existing lo=1 wins, incoming 3 ignored (no drop since it came from caller by value)
-    //   merged_hi: comp(12, 15) < 0 → existing hi=15 wins, incoming 12 ignored
-    //   drop buffer[0].hi = 5  (inner boundary)
-    //   drop buffer[1].lo = 10 (inner boundary)
-    //   → 2 drop calls total
+    //   merged_lo: comp(3, 1) > 0 → existing lo=1 wins, incoming 3 ignored (no drop since it came
+    //   from caller by value) merged_hi: comp(12, 15) < 0 → existing hi=15 wins, incoming 12
+    //   ignored drop buffer[0].hi = 5  (inner boundary) drop buffer[1].lo = 10 (inner boundary) → 2
+    //   drop calls total
     CVX_TEST_COUNTER_DROP_RESET();
     is_int_add(col, 3, 12);
     CVX_TEST_COUNTER_DROP(t, 2);

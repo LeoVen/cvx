@@ -6,7 +6,7 @@
 
 static void test_sll_vtabv_copy_called_on_copy(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct slinked_int self = sll_int_init(sll_int_vtabv_full);
     sll_int_push_back(&self, 1);
@@ -15,7 +15,7 @@ static void test_sll_vtabv_copy_called_on_copy(struct cvxtest *t)
 
     struct slinked_int copy = sll_int_copy(&self);
 
-    CVX_TEST_COUNTER_COPY(t, 3);
+    CVX_TEST_COUNTER_CLONE(t, 3);
     CVXCHECK(t, copy.count == 3);
     CVXCHECK(t, sll_int_get(&copy, 0) == 1);
     CVXCHECK(t, sll_int_get(&copy, 1) == 2);
@@ -27,7 +27,7 @@ static void test_sll_vtabv_copy_called_on_copy(struct cvxtest *t)
 
 static void test_sll_vtabv_copy_called_on_clone(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct slinked_int *col = sll_int_new_with(sll_int_vtabv_full);
     sll_int_push_back(col, 10);
@@ -36,7 +36,7 @@ static void test_sll_vtabv_copy_called_on_clone(struct cvxtest *t)
 
     struct slinked_int *clone = sll_int_clone(col);
 
-    CVX_TEST_COUNTER_COPY(t, 3);
+    CVX_TEST_COUNTER_CLONE(t, 3);
     CVXCHECK(t, sll_int_count(clone) == 3);
     CVXCHECK(t, sll_int_get(clone, 0) == 10);
     CVXCHECK(t, sll_int_get(clone, 1) == 20);

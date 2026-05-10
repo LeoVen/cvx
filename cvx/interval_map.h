@@ -1,3 +1,19 @@
+/// Interval map with right-open intervals [lo, hi).
+///
+/// Maps each [lo, hi) → V, with no overlapping intervals.  On _add, existing
+/// intervals that overlap or touch (with the same value, when vtabv->comp is
+/// set) the inserted range are merged; partial overlaps with a different value
+/// produce left/right residual intervals.  On _remove, intervals overlapping
+/// the erased range are split if necessary.
+///
+/// vtabk->comp is required.  vtabk->clone / vtabk->drop apply to K boundary
+/// values.  vtabv->comp, if set, enables joining of adjacent equal-value
+/// intervals.  vtabv->clone / vtabv->drop apply to V values.
+///
+/// _iter_entry returns struct ENTRY {K lo; K hi; V val;}.  To cast to a
+/// generic iterator interface, declare it with V = struct CVX_(SNAME,_entry)
+/// BEFORE including this header.
+
 #include "cvx/fallback.h"
 
 // clang-format off
@@ -17,22 +33,6 @@
 #error "cvx/interval_map.h requires TAG to be defined (a unique integer tag, e.g. #define TAG 1)"
 #endif
 // clang-format on
-
-// Interval map with right-open intervals [lo, hi).
-//
-// Maps each [lo, hi) → V, with no overlapping intervals.  On _add, existing
-// intervals that overlap or touch (with the same value, when vtabv->comp is
-// set) the inserted range are merged; partial overlaps with a different value
-// produce left/right residual intervals.  On _remove, intervals overlapping
-// the erased range are split if necessary.
-//
-// vtabk->comp is required.  vtabk->copy / vtabk->drop apply to K boundary
-// values.  vtabv->comp, if set, enables joining of adjacent equal-value
-// intervals.  vtabv->copy / vtabv->drop apply to V values.
-//
-// _iter_entry returns struct ENTRY {K lo; K hi; V val;}.  To cast to a
-// generic iterator interface, declare it with V = struct CVX_(SNAME,_entry)
-// BEFORE including this header.
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -180,14 +180,14 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
 
     for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
     {
-        _buf_[_i_].lo = (_self_->vtabk && _self_->vtabk->copy)
-                            ? _self_->vtabk->copy(_self_->buffer[_i_].lo)
+        _buf_[_i_].lo = (_self_->vtabk && _self_->vtabk->clone)
+                            ? _self_->vtabk->clone(_self_->buffer[_i_].lo)
                             : _self_->buffer[_i_].lo;
-        _buf_[_i_].hi = (_self_->vtabk && _self_->vtabk->copy)
-                            ? _self_->vtabk->copy(_self_->buffer[_i_].hi)
+        _buf_[_i_].hi = (_self_->vtabk && _self_->vtabk->clone)
+                            ? _self_->vtabk->clone(_self_->buffer[_i_].hi)
                             : _self_->buffer[_i_].hi;
-        _buf_[_i_].val = (_self_->vtabv && _self_->vtabv->copy)
-                             ? _self_->vtabv->copy(_self_->buffer[_i_].val)
+        _buf_[_i_].val = (_self_->vtabv && _self_->vtabv->clone)
+                             ? _self_->vtabv->clone(_self_->buffer[_i_].val)
                              : _self_->buffer[_i_].val;
     }
 
@@ -253,14 +253,14 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
 
     for (size_t _i_ = 0; _i_ < _orig_->count; _i_++)
     {
-        _buf_[_i_].lo = (_orig_->vtabk && _orig_->vtabk->copy)
-                            ? _orig_->vtabk->copy(_orig_->buffer[_i_].lo)
+        _buf_[_i_].lo = (_orig_->vtabk && _orig_->vtabk->clone)
+                            ? _orig_->vtabk->clone(_orig_->buffer[_i_].lo)
                             : _orig_->buffer[_i_].lo;
-        _buf_[_i_].hi = (_orig_->vtabk && _orig_->vtabk->copy)
-                            ? _orig_->vtabk->copy(_orig_->buffer[_i_].hi)
+        _buf_[_i_].hi = (_orig_->vtabk && _orig_->vtabk->clone)
+                            ? _orig_->vtabk->clone(_orig_->buffer[_i_].hi)
                             : _orig_->buffer[_i_].hi;
-        _buf_[_i_].val = (_orig_->vtabv && _orig_->vtabv->copy)
-                             ? _orig_->vtabv->copy(_orig_->buffer[_i_].val)
+        _buf_[_i_].val = (_orig_->vtabv && _orig_->vtabv->clone)
+                             ? _orig_->vtabv->clone(_orig_->buffer[_i_].val)
                              : _orig_->buffer[_i_].val;
     }
 
@@ -391,16 +391,16 @@ void FUNC(_add)(struct SNAME *_self_, K _lo_, K _hi_, V _val_)
     K _effective_lo_ = _lo_;
     if (_has_left_ && _same_val_left_)
     {
-        _effective_lo_ = (_self_->vtabk && _self_->vtabk->copy)
-                             ? _self_->vtabk->copy(_self_->buffer[_start_].lo)
+        _effective_lo_ = (_self_->vtabk && _self_->vtabk->clone)
+                             ? _self_->vtabk->clone(_self_->buffer[_start_].lo)
                              : _self_->buffer[_start_].lo;
     }
 
     K _effective_hi_ = _hi_;
     if (_has_right_ && _same_val_right_)
     {
-        _effective_hi_ = (_self_->vtabk && _self_->vtabk->copy)
-                             ? _self_->vtabk->copy(_self_->buffer[_last_].hi)
+        _effective_hi_ = (_self_->vtabk && _self_->vtabk->clone)
+                             ? _self_->vtabk->clone(_self_->buffer[_last_].hi)
                              : _self_->buffer[_last_].hi;
     }
 
@@ -410,12 +410,12 @@ void FUNC(_add)(struct SNAME *_self_, K _lo_, K _hi_, V _val_)
     bool _build_left_ = _has_left_ && !_same_val_left_;
     if (_build_left_)
     {
-        _left_lo_ = (_self_->vtabk && _self_->vtabk->copy)
-                        ? _self_->vtabk->copy(_self_->buffer[_start_].lo)
+        _left_lo_ = (_self_->vtabk && _self_->vtabk->clone)
+                        ? _self_->vtabk->clone(_self_->buffer[_start_].lo)
                         : _self_->buffer[_start_].lo;
-        _left_hi_ = (_self_->vtabk && _self_->vtabk->copy) ? _self_->vtabk->copy(_lo_) : _lo_;
-        _left_val_ = (_self_->vtabv && _self_->vtabv->copy)
-                         ? _self_->vtabv->copy(_self_->buffer[_start_].val)
+        _left_hi_ = (_self_->vtabk && _self_->vtabk->clone) ? _self_->vtabk->clone(_lo_) : _lo_;
+        _left_val_ = (_self_->vtabv && _self_->vtabv->clone)
+                         ? _self_->vtabv->clone(_self_->buffer[_start_].val)
                          : _self_->buffer[_start_].val;
     }
 
@@ -425,12 +425,12 @@ void FUNC(_add)(struct SNAME *_self_, K _lo_, K _hi_, V _val_)
     bool _build_right_ = _has_right_ && !_same_val_right_;
     if (_build_right_)
     {
-        _right_lo_ = (_self_->vtabk && _self_->vtabk->copy) ? _self_->vtabk->copy(_hi_) : _hi_;
-        _right_hi_ = (_self_->vtabk && _self_->vtabk->copy)
-                         ? _self_->vtabk->copy(_self_->buffer[_last_].hi)
+        _right_lo_ = (_self_->vtabk && _self_->vtabk->clone) ? _self_->vtabk->clone(_hi_) : _hi_;
+        _right_hi_ = (_self_->vtabk && _self_->vtabk->clone)
+                         ? _self_->vtabk->clone(_self_->buffer[_last_].hi)
                          : _self_->buffer[_last_].hi;
-        _right_val_ = (_self_->vtabv && _self_->vtabv->copy)
-                          ? _self_->vtabv->copy(_self_->buffer[_last_].val)
+        _right_val_ = (_self_->vtabv && _self_->vtabv->clone)
+                          ? _self_->vtabv->clone(_self_->buffer[_last_].val)
                           : _self_->buffer[_last_].val;
     }
 
@@ -516,12 +516,12 @@ void FUNC(_remove)(struct SNAME *_self_, K _lo_, K _hi_)
     V _left_val_;
     if (_has_left_)
     {
-        _left_lo_ = (_self_->vtabk && _self_->vtabk->copy)
-                        ? _self_->vtabk->copy(_self_->buffer[_start_].lo)
+        _left_lo_ = (_self_->vtabk && _self_->vtabk->clone)
+                        ? _self_->vtabk->clone(_self_->buffer[_start_].lo)
                         : _self_->buffer[_start_].lo;
-        _left_hi_ = (_self_->vtabk && _self_->vtabk->copy) ? _self_->vtabk->copy(_lo_) : _lo_;
-        _left_val_ = (_self_->vtabv && _self_->vtabv->copy)
-                         ? _self_->vtabv->copy(_self_->buffer[_start_].val)
+        _left_hi_ = (_self_->vtabk && _self_->vtabk->clone) ? _self_->vtabk->clone(_lo_) : _lo_;
+        _left_val_ = (_self_->vtabv && _self_->vtabv->clone)
+                         ? _self_->vtabv->clone(_self_->buffer[_start_].val)
                          : _self_->buffer[_start_].val;
     }
 
@@ -529,12 +529,12 @@ void FUNC(_remove)(struct SNAME *_self_, K _lo_, K _hi_)
     V _right_val_;
     if (_has_right_)
     {
-        _right_lo_ = (_self_->vtabk && _self_->vtabk->copy) ? _self_->vtabk->copy(_hi_) : _hi_;
-        _right_hi_ = (_self_->vtabk && _self_->vtabk->copy)
-                         ? _self_->vtabk->copy(_self_->buffer[_last_].hi)
+        _right_lo_ = (_self_->vtabk && _self_->vtabk->clone) ? _self_->vtabk->clone(_hi_) : _hi_;
+        _right_hi_ = (_self_->vtabk && _self_->vtabk->clone)
+                         ? _self_->vtabk->clone(_self_->buffer[_last_].hi)
                          : _self_->buffer[_last_].hi;
-        _right_val_ = (_self_->vtabv && _self_->vtabv->copy)
-                          ? _self_->vtabv->copy(_self_->buffer[_last_].val)
+        _right_val_ = (_self_->vtabv && _self_->vtabv->clone)
+                          ? _self_->vtabv->clone(_self_->buffer[_last_].val)
                           : _self_->buffer[_last_].val;
     }
 

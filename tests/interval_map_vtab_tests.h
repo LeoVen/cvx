@@ -13,17 +13,17 @@
 
 static void test_im_int_vtab_copy_on_copy(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct imap_int_int orig = im_int_init(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(&orig, 1, 5, 10);
     im_int_add(&orig, 10, 15, 20);
 
-    CVX_TEST_COUNTER_COPY_RESET(); // reset after puts (no copy on put)
+    CVX_TEST_COUNTER_CLONE_RESET(); // reset after puts (no copy on put)
     struct imap_int_int copy = im_int_copy(&orig);
 
     // 2 entries × (2 K + 1 V) = 6 copy calls.
-    CVX_TEST_COUNTER_COPY(t, 6);
+    CVX_TEST_COUNTER_CLONE(t, 6);
     CVXCHECK(t, copy.count == 2);
 
     im_int_clear(&orig);
@@ -34,17 +34,17 @@ static void test_im_int_vtab_copy_on_copy(struct cvxtest *t)
 
 static void test_im_int_vtab_copy_on_clone(struct cvxtest *t)
 {
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
 
     struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_full);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 20);
 
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
     struct imap_int_int *clone = im_int_clone(col);
 
     // 2 entries × (2 K + 1 V) = 6 copy calls.
-    CVX_TEST_COUNTER_COPY(t, 6);
+    CVX_TEST_COUNTER_CLONE(t, 6);
     CVXCHECK(t, im_int_count(clone) == 2);
 
     im_int_drop(col);
@@ -124,14 +124,14 @@ static void test_im_int_vtab_drop_on_remove_split(struct cvxtest *t)
     im_int_add(col, 1, 10, 42);
 
     CVX_TEST_COUNTER_DROP_RESET();
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
     im_int_remove(col, 3, 7); // splits into [1,3)→42 and [7,10)→42
 
     // Residuals are built by copying K boundaries and V value before dropping.
     // Left residual:  copy(lo=1) + copy(hi_new=3) + copy(val=42) = 3 copies
     // Right residual: copy(lo_new=7) + copy(hi=10) + copy(val=42) = 3 copies
     // Total copies: 6.
-    CVX_TEST_COUNTER_COPY(t, 6);
+    CVX_TEST_COUNTER_CLONE(t, 6);
 
     // Drop the original entry: drop(lo=1) + drop(hi=10) + drop(val=42) = 3 drops.
     CVX_TEST_COUNTER_DROP(t, 3);
@@ -146,21 +146,21 @@ static void test_im_int_vtab_drop_on_remove_split(struct cvxtest *t)
 static void test_im_int_vtab_join_on_add(struct cvxtest *t)
 {
     // Use vtabk_full so boundary copies during absorb are counted.
-    // Use vtabv_with_comp so joining is enabled (no vtabv->copy/drop).
+    // Use vtabv_with_comp so joining is enabled (no vtabv->clone/drop).
     struct imap_int_int *col = im_int_new_with(im_int_vtabk_full, im_int_vtabv_with_comp);
     im_int_add(col, 1, 5, 10);
     im_int_add(col, 10, 15, 10); // same value, gap between them
 
-    CVX_TEST_COUNTER_COPY_RESET();
+    CVX_TEST_COUNTER_CLONE_RESET();
     CVX_TEST_COUNTER_DROP_RESET();
 
     // Fill the gap: [5,10)→10.  Same value on both sides → merge to [1,15)→10.
     im_int_add(col, 5, 10, 10);
 
-    // effective_lo absorbed from buffer[0].lo via vtabk->copy(1) → 1 copy
-    // effective_hi absorbed from buffer[1].hi via vtabk->copy(15) → 1 copy
-    // No vtabv->copy (vtabv_with_comp has no copy fn).
-    CVX_TEST_COUNTER_COPY(t, 2);
+    // effective_lo absorbed from buffer[0].lo via vtabk->clone(1) → 1 copy
+    // effective_hi absorbed from buffer[1].hi via vtabk->clone(15) → 1 copy
+    // No vtabv->clone (vtabv_with_comp has no copy fn).
+    CVX_TEST_COUNTER_CLONE(t, 2);
 
     // Drop buffer[0]: vtabk->drop(lo=1) + vtabk->drop(hi=5) → 2 drops
     //                 vtabv->drop is NULL → 0 drops

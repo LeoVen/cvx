@@ -22,7 +22,7 @@
 // Both overlap and touch trigger merging on _add.
 //
 // vtabv->comp is required; all operations validate it and set CVX_FLAG_VTAB if
-// absent.  vtabv->copy / vtabv->drop apply to individual V values (lo and hi
+// absent.  vtabv->clone / vtabv->drop apply to individual V values (lo and hi
 // each independently).  vtabv->prio, if set, is used as an extra adjacency
 // predicate: prio(a,b)!=0 means b immediately follows a (e.g. b==a+1 for
 // integers).  When prio is not set, only the natural touching condition
@@ -178,10 +178,10 @@ struct SNAME FUNC(_copy)(struct SNAME *_self_)
 
     for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
     {
-        if (_self_->vtabv && _self_->vtabv->copy)
+        if (_self_->vtabv && _self_->vtabv->clone)
         {
-            _buf_[_i_].lo = _self_->vtabv->copy(_self_->buffer[_i_].lo);
-            _buf_[_i_].hi = _self_->vtabv->copy(_self_->buffer[_i_].hi);
+            _buf_[_i_].lo = _self_->vtabv->clone(_self_->buffer[_i_].lo);
+            _buf_[_i_].hi = _self_->vtabv->clone(_self_->buffer[_i_].hi);
         }
         else
         {
@@ -248,10 +248,10 @@ struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
 
     for (size_t _i_ = 0; _i_ < _orig_->count; _i_++)
     {
-        if (_orig_->vtabv && _orig_->vtabv->copy)
+        if (_orig_->vtabv && _orig_->vtabv->clone)
         {
-            _buf_[_i_].lo = _orig_->vtabv->copy(_orig_->buffer[_i_].lo);
-            _buf_[_i_].hi = _orig_->vtabv->copy(_orig_->buffer[_i_].hi);
+            _buf_[_i_].lo = _orig_->vtabv->clone(_orig_->buffer[_i_].lo);
+            _buf_[_i_].hi = _orig_->vtabv->clone(_orig_->buffer[_i_].hi);
         }
         else
         {
@@ -329,7 +329,6 @@ void FUNC(_add)(struct SNAME *_self_, V _lo_, V _hi_)
         return;
     }
 
-    // Ensure room for at least one more interval (worst case: pure insert).
     if (!FUNC(__assert_capacity)(_self_))
         return;
 
@@ -473,17 +472,17 @@ void FUNC(_remove)(struct SNAME *_self_, V _lo_, V _hi_)
 
     if (_has_left_)
     {
-        _left_lo_ = (_self_->vtabv->copy) ? _self_->vtabv->copy(_self_->buffer[_start_].lo)
+        _left_lo_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_self_->buffer[_start_].lo)
                                           : _self_->buffer[_start_].lo;
         // left_hi = _lo_ (caller-owned value, copy it to store independently).
-        _left_hi_ = (_self_->vtabv->copy) ? _self_->vtabv->copy(_lo_) : _lo_;
+        _left_hi_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_lo_) : _lo_;
     }
 
     if (_has_right_)
     {
         // right_lo = _hi_ (caller-owned value, copy it to store independently).
-        _right_lo_ = (_self_->vtabv->copy) ? _self_->vtabv->copy(_hi_) : _hi_;
-        _right_hi_ = (_self_->vtabv->copy) ? _self_->vtabv->copy(_self_->buffer[_last_].hi)
+        _right_lo_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_hi_) : _hi_;
+        _right_hi_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_self_->buffer[_last_].hi)
                                            : _self_->buffer[_last_].hi;
     }
 
