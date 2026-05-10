@@ -12,15 +12,9 @@
 
 #include "tests/interface/deque_dlinked_list_tests.h"
 #include "tests/interface/queue_slinked_list_tests.h"
-#include "tests/interface/stack_dynamic_array_tests.h"
 #include "tests/interface/stack_slinked_list_tests.h"
 
 #include "tests/dynamic_array_tests.h"
-#include "tests/dynamic_array_guard_tests.h"
-#include "tests/dynamic_array_iter_tests.h"
-#include "tests/dynamic_array_vtab_tests.h"
-#include "tests/dynamic_array_alloc_tests.h"
-#include "tests/iter/dynamic_array_iter_random_access.h"
 
 #include "tests/slinked_list_tests.h"
 #include "tests/slinked_list_guard_tests.h"
@@ -68,15 +62,7 @@ int main(void)
         run_deque_dlinked_list_tests,
         run_queue_slinked_list_tests,
 
-        run_stack_dynamic_array_tests,
         run_stack_slinked_list_tests,
-
-        run_dynamic_array_tests,
-        run_dynamic_array_guard_tests,
-        run_dynamic_array_iter_tests,
-        run_dynamic_array_vtab_tests,
-        run_dynamic_array_alloc_tests,
-        run_dynamic_array_iter_random_access_tests,
 
         run_slinked_list_tests,
         run_slinked_list_guard_tests,
@@ -109,6 +95,8 @@ int main(void)
         run_hashtable_iter_tests,
         run_hashtable_vtab_tests,
         run_hashtable_alloc_tests,
+
+        run_dynamic_array_tests,
     };
     // clang-format on
 

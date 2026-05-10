@@ -1,503 +1,366 @@
 #ifndef DYNAMIC_ARRAY_TESTS_H
 #define DYNAMIC_ARRAY_TESTS_H
 
+#include "cvx/flags.h"
 #include "cvxtest.h"
 #include "implementations.h"
+#include <stdlib.h>
 
-/* ---- init / new ---- */
-
-static void test_da_int_init(struct cvxtest *t)
+static void test_da_init(struct cvxtest *t)
 {
-    struct dynamic_array_int arr = da_int_init(NULL);
-    cvx_container *col = (cvx_container *)(&arr);
-
-    CVXCHECK(t, col->tag == 99);
+    // Default init
+    struct dynamic_array arr;
+    da_init(&arr, NULL, 0);
+    CVXCHECK(t, arr.super.tag == 99);
     CVXCHECK(t, arr.buffer == NULL);
     CVXCHECK(t, arr.capacity == 0);
     CVXCHECK(t, arr.count == 0);
-}
-
-static void test_da_int_init_with(struct cvxtest *t)
-{
-    struct dynamic_array_int arr = da_int_init_with(NULL, 8);
-
+    // Capacity init
+    da_init(&arr, da_vtabv_full, 16);
     CVXCHECK(t, arr.buffer != NULL);
-    CVXCHECK(t, da_int_capacity(&arr) == 8);
-    CVXCHECK(t, da_int_count(&arr) == 0);
-
-    free(arr.buffer);
+    CVXCHECK(t, arr.vtabv == da_vtabv_full);
+    CVXCHECK(t, da_capacity(&arr) == 16);
+    CVXCHECK(t, da_count(&arr) == 0);
+    da_drop(&arr);
 }
 
-static void test_da_int_new(struct cvxtest *t)
+static void test_da_drop(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new();
-    CVXCHECK(t, col != NULL);
-    if (!col)
-        return;
-
-    CVXCHECK(t, col->super.tag == 99);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-    CVXCHECK(t, da_int_count(col) == 0);
-    CVXCHECK(t, da_int_capacity(col) == 0);
-    da_int_drop(col);
+    // Drop empty
+    struct dynamic_array arr;
+    da_init(&arr, NULL, 0);
+    da_drop(&arr);
+    // Random combination of _init, _drop, _clone on empty _init should always work
+    struct dynamic_array clone;
+    da_init(&arr, NULL, 0);
+    for (int i = 0; i < 100; i++)
+    {
+        int choice = rand() % 3;
+        if (choice == 0)
+            da_init(&arr, NULL, 0);
+        if (choice == 1)
+            da_drop(&arr);
+        if (choice == 2)
+            da_clone(&arr, &clone);
+    }
 }
 
-static void test_da_int_new_with(struct cvxtest *t)
+static void test_da_clone(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    CVXCHECK(t, col != NULL);
-    if (!col)
-        return;
-
-    CVXCHECK(t, da_int_capacity(col) == 4);
-    CVXCHECK(t, da_int_count(col) == 0);
-    da_int_drop(col);
-}
-
-static void test_da_int_new_with_zero_returns_null(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 0);
-    CVXCHECK(t, col == NULL);
-}
-
-/* ---- push_back / count / capacity growth ---- */
-
-static void test_da_int_push_back_grows(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new();
-
+    // Clone and drop empty
+    struct dynamic_array arr, clone;
+    da_init(&arr, NULL, 0);
+    da_clone(&arr, &clone);
+    CVXCHECK(t, clone.super.flag == CVX_FLAG_OK);
+    CVXCHECK(t, clone.super.tag == 99);
+    CVXCHECK(t, clone.count == 0);
+    da_drop(&arr);
+    da_drop(&clone);
+    // Clone with memcpy
+    da_init(&arr, NULL, 1);
     for (int i = 0; i < 20; i++)
-        da_int_push_back(col, i);
-
-    CVXCHECK(t, da_int_count(col) == 20);
-    CVXCHECK(t, da_int_capacity(col) >= 20);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
+        da_push_back(&arr, i);
+    da_clone(&arr, &clone);
+    CVXCHECK(t, clone.count == 20);
+    CVXCHECK(t, clone.buffer != NULL);
+    for (int i = 0; i < 20; i++)
+        CVXCHECK(t, clone.buffer[i] == i);
+    da_drop(&arr);
+    da_drop(&clone);
+    // Clone with vtabv->clone
+    CVX_TEST_COUNTER_CLONE_RESET();
+    da_init(&arr, da_vtabv_full, 1);
+    for (int i = 0; i < 20; i++)
+        da_push_back(&arr, i);
+    CVX_TEST_COUNTER_CLONE(t, 0);
+    da_clone(&arr, &clone);
+    CVX_TEST_COUNTER_CLONE(t, 20);
+    CVXCHECK(t, arr.vtabv == clone.vtabv);
+    for (int i = 0; i < 20; i++)
+        CVXCHECK(t, clone.buffer[i] == i);
+    da_drop(&arr);
+    da_drop(&clone);
 }
 
-static void test_da_int_push_back_values(struct cvxtest *t)
+static void test_da_flag(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 10);
-    da_int_push_back(col, 20);
-    da_int_push_back(col, 30);
-
-    CVXCHECK(t, col->buffer[0] == 10);
-    CVXCHECK(t, col->buffer[1] == 20);
-    CVXCHECK(t, col->buffer[2] == 30);
-
-    da_int_drop(col);
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 16);
+    CVXCHECK(t, da_flag(&arr) == CVX_FLAG_OK);
+    da_drop(&arr);
 }
 
-/* ---- push_front ---- */
-
-static void test_da_int_push_front(struct cvxtest *t)
+static void test_da_count(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-    da_int_push_back(col, 2);
-    da_int_push_front(col, 0);
-
-    CVXCHECK(t, col->buffer[0] == 0);
-    CVXCHECK(t, col->buffer[1] == 1);
-    CVXCHECK(t, col->buffer[2] == 2);
-    CVXCHECK(t, da_int_count(col) == 3);
-
-    da_int_drop(col);
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 16);
+    CVXCHECK(t, da_count(&arr) == 0);
+    da_push_back(&arr, 10);
+    CVXCHECK(t, da_count(&arr) == 1);
+    da_drop(&arr);
 }
 
-/* ---- push_at ---- */
-
-static void test_da_int_push_at_middle(struct cvxtest *t)
+static void test_da_capacity(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-    da_int_push_back(col, 3);
-    da_int_push_at(col, 2, 1);
-
-    CVXCHECK(t, col->buffer[0] == 1);
-    CVXCHECK(t, col->buffer[1] == 2);
-    CVXCHECK(t, col->buffer[2] == 3);
-    CVXCHECK(t, da_int_count(col) == 3);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 16);
+    CVXCHECK(t, da_capacity(&arr) == 16);
+    for (int i = 0; i < 20; i++)
+        da_push_at(&arr, i, 0);
+    CVXCHECK(t, da_capacity(&arr) == (size_t)(16 * CVX_BUFFER_GROWTH_RATE));
+    da_drop(&arr);
 }
 
-static void test_da_int_push_at_out_of_range(struct cvxtest *t)
+static void test_da_empty(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-    da_int_push_at(col, 99, 5);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
-
-    da_int_drop(col);
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    CVXCHECK(t, da_empty(&arr) == true);
+    da_push_back(&arr, 1);
+    da_drop(&arr);
 }
 
-/* ---- pop_back ---- */
-
-static void test_da_int_pop_back(struct cvxtest *t)
+static void test_da_full(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 42);
-    da_int_push_back(col, 7);
-
-    int out = da_int_pop_back(col);
-
-    CVXCHECK(t, out == 7);
-    CVXCHECK(t, da_int_count(col) == 1);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 2);
+    CVXCHECK(t, da_full(&arr) == false);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    CVXCHECK(t, da_full(&arr) == true);
+    da_drop(&arr);
 }
 
-static void test_da_int_pop_back_empty(struct cvxtest *t)
+static void test_da_front(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_pop_back(col);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-
-    da_int_drop(col);
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 11);
+    da_push_back(&arr, 22);
+    CVXCHECK(t, da_front(&arr) == 11);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    da_drop(&arr);
+    // Empty
+    da_init(&arr, da_vtabv_full, 0);
+    da_front(&arr);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    da_drop(&arr);
 }
 
-/* ---- pop_front ---- */
-
-static void test_da_int_pop_front(struct cvxtest *t)
+static void test_da_back(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 10);
-    da_int_push_back(col, 20);
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 11);
+    da_push_back(&arr, 22);
+    CVXCHECK(t, da_back(&arr) == 22);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    da_drop(&arr);
+    // Empty
+    da_init(&arr, da_vtabv_full, 0);
+    da_back(&arr);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    da_drop(&arr);
+}
 
-    int out = da_int_pop_front(col);
+static void test_da_get(struct cvxtest *t)
+{
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 10);
+    da_push_back(&arr, 20);
+    da_push_back(&arr, 30);
+    CVXCHECK(t, da_get(&arr, 0) == 10);
+    CVXCHECK(t, da_get(&arr, 1) == 20);
+    CVXCHECK(t, da_get(&arr, 2) == 30);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    da_drop(&arr);
+    // Out of range
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 1);
+    da_get(&arr, 1);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_RANGE);
+    da_drop(&arr);
+    // Empty
+    da_init(&arr, da_vtabv_full, 0);
+    da_get(&arr, 0);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_RANGE);
+    da_drop(&arr);
+}
 
+static void test_da_push_front(struct cvxtest *t)
+{
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 1);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    da_push_front(&arr, 0);
+    CVXCHECK(t, arr.buffer[0] == 0);
+    CVXCHECK(t, arr.buffer[1] == 1);
+    CVXCHECK(t, arr.buffer[2] == 2);
+    CVXCHECK(t, da_count(&arr) == 3);
+    da_drop(&arr);
+}
+
+static void test_da_push_at(struct cvxtest *t)
+{
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 3);
+    da_push_at(&arr, 2, 1);
+    CVXCHECK(t, arr.buffer[0] == 1);
+    CVXCHECK(t, arr.buffer[1] == 2);
+    CVXCHECK(t, arr.buffer[2] == 3);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    CVXCHECK(t, da_count(&arr) == 3);
+    da_drop(&arr);
+    // Out of range
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 1);
+    da_push_at(&arr, 99, 5);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_RANGE);
+    da_drop(&arr);
+}
+
+static void test_da_push_back(struct cvxtest *t)
+{
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 1);
+    da_push_back(&arr, 10);
+    da_push_back(&arr, 20);
+    da_push_back(&arr, 30);
+    CVXCHECK(t, arr.buffer[0] == 10);
+    CVXCHECK(t, arr.buffer[1] == 20);
+    CVXCHECK(t, arr.buffer[2] == 30);
+    da_drop(&arr);
+    // Buffer growth
+    da_init(&arr, da_vtabv_full, 1);
+    for (int i = 0; i < 20; i++)
+        da_push_back(&arr, i);
+    CVXCHECK(t, da_count(&arr) == 20);
+    CVXCHECK(t, da_capacity(&arr) >= 20);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    da_drop(&arr);
+}
+
+static void test_da_pop_front(struct cvxtest *t)
+{
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 10);
+    da_push_back(&arr, 20);
+    int out = da_pop_front(&arr);
     CVXCHECK(t, out == 10);
-    CVXCHECK(t, da_int_count(col) == 1);
-    CVXCHECK(t, col->buffer[0] == 20);
-
-    da_int_drop(col);
+    CVXCHECK(t, da_count(&arr) == 1);
+    CVXCHECK(t, arr.buffer[0] == 20);
+    da_drop(&arr);
+    // Empty case
+    da_init(&arr, da_vtabv_full, 0);
+    da_pop_front(&arr);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    da_drop(&arr);
 }
 
-static void test_da_int_pop_front_empty(struct cvxtest *t)
+static void test_da_pop_at(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_pop_front(col);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-
-    da_int_drop(col);
-}
-
-/* ---- pop_at ---- */
-
-static void test_da_int_pop_at_middle(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-    da_int_push_back(col, 2);
-    da_int_push_back(col, 3);
-
-    int out = da_int_pop_at(col, 1);
-
+    // Pop at middle
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    da_push_back(&arr, 3);
+    int out = da_pop_at(&arr, 1);
     CVXCHECK(t, out == 2);
-    CVXCHECK(t, da_int_count(col) == 2);
-    CVXCHECK(t, col->buffer[0] == 1);
-    CVXCHECK(t, col->buffer[1] == 3);
-
-    da_int_drop(col);
+    CVXCHECK(t, da_count(&arr) == 2);
+    CVXCHECK(t, arr.buffer[0] == 1);
+    CVXCHECK(t, arr.buffer[1] == 3);
+    da_drop(&arr);
+    // Out of range
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 1);
+    da_pop_at(&arr, 5);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_RANGE);
+    da_drop(&arr);
+    // Empty
+    da_init(&arr, da_vtabv_full, 0);
+    da_pop_at(&arr, 0);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    da_drop(&arr);
 }
 
-static void test_da_int_pop_at_out_of_range(struct cvxtest *t)
+static void test_da_pop_back(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-    da_int_pop_at(col, 5);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
-
-    da_int_drop(col);
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 42);
+    da_push_back(&arr, 7);
+    int out = da_pop_back(&arr);
+    CVXCHECK(t, out == 7);
+    CVXCHECK(t, da_count(&arr) == 1);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    da_drop(&arr);
+    // Case empty
+    da_init(&arr, da_vtabv_full, 0);
+    da_pop_back(&arr);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    da_drop(&arr);
 }
 
-static void test_da_int_pop_at_empty(struct cvxtest *t)
+static void test_da_replace_front(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_pop_at(col, 0);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-
-    da_int_drop(col);
-}
-
-/* ---- front / back ---- */
-
-static void test_da_int_front(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 11);
-    da_int_push_back(col, 22);
-
-    CVXCHECK(t, da_int_front(col) == 11);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
-}
-
-static void test_da_int_back(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 11);
-    da_int_push_back(col, 22);
-
-    CVXCHECK(t, da_int_back(col) == 22);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
-}
-
-static void test_da_int_front_empty(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_front(col);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-
-    da_int_drop(col);
-}
-
-static void test_da_int_back_empty(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_back(col);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-
-    da_int_drop(col);
-}
-
-/* ---- empty / full ---- */
-
-static void test_da_int_empty(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    CVXCHECK(t, da_int_empty(col) == true);
-
-    da_int_push_back(col, 1);
-    CVXCHECK(t, da_int_empty(col) == false);
-
-    da_int_drop(col);
-}
-
-static void test_da_int_full(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 2);
-    CVXCHECK(t, da_int_full(col) == false);
-
-    da_int_push_back(col, 1);
-    da_int_push_back(col, 2);
-    CVXCHECK(t, da_int_full(col) == true);
-
-    da_int_drop(col);
-}
-
-/* ---- replace_back ---- */
-
-static void test_da_int_replace_back(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 5);
-    da_int_push_back(col, 10);
-
-    int old = da_int_replace_back(col, 99);
-
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 10);
+    da_push_back(&arr, 20);
+    int old = da_replace_front(&arr, 99);
     CVXCHECK(t, old == 10);
-    CVXCHECK(t, da_int_back(col) == 99);
-    CVXCHECK(t, da_int_count(col) == 2);
-
-    da_int_drop(col);
+    CVXCHECK(t, da_front(&arr) == 99);
+    CVXCHECK(t, da_count(&arr) == 2);
+    da_drop(&arr);
+    // When empty
+    da_init(&arr, NULL, 0);
+    da_replace_front(&arr, 42);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, da_count(&arr) == 0);
+    da_drop(&arr);
 }
-
-static void test_da_int_replace_back_on_empty(struct cvxtest *t)
+static void test_da_replace_back(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-
-    da_int_replace_back(col, 42);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-    CVXCHECK(t, da_int_count(col) == 0);
-
-    da_int_drop(col);
-}
-
-/* ---- get ---- */
-
-static void test_da_int_get(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 10);
-    da_int_push_back(col, 20);
-    da_int_push_back(col, 30);
-
-    CVXCHECK(t, da_int_get(col, 0) == 10);
-    CVXCHECK(t, da_int_get(col, 1) == 20);
-    CVXCHECK(t, da_int_get(col, 2) == 30);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
-}
-
-static void test_da_int_get_out_of_range(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-
-    da_int_get(col, 1);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
-
-    da_int_drop(col);
-}
-
-static void test_da_int_get_empty(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-
-    da_int_get(col, 0);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_RANGE);
-
-    da_int_drop(col);
-}
-
-/* ---- replace_front ---- */
-
-static void test_da_int_replace_front(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 10);
-    da_int_push_back(col, 20);
-
-    int old = da_int_replace_front(col, 99);
-
+    // Regular case
+    struct dynamic_array arr;
+    da_init(&arr, da_vtabv_full, 0);
+    da_push_back(&arr, 5);
+    da_push_back(&arr, 10);
+    int old = da_replace_back(&arr, 99);
     CVXCHECK(t, old == 10);
-    CVXCHECK(t, da_int_front(col) == 99);
-    CVXCHECK(t, da_int_count(col) == 2);
-
-    da_int_drop(col);
+    CVXCHECK(t, da_back(&arr) == 99);
+    CVXCHECK(t, da_count(&arr) == 2);
+    da_drop(&arr);
+    // When empty
+    da_init(&arr, da_vtabv_full, 0);
+    da_replace_back(&arr, 42);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_EMPTY);
+    CVXCHECK(t, da_count(&arr) == 0);
+    da_drop(&arr);
 }
 
-static void test_da_int_replace_front_on_empty(struct cvxtest *t)
+static void test_da_swap(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-
-    da_int_replace_front(col, 42);
-
-    CVXCHECK(t, col->super.flag == CVX_FLAG_EMPTY);
-    CVXCHECK(t, da_int_count(col) == 0);
-
-    da_int_drop(col);
 }
-
-/* ---- clear ---- */
-
-static void test_da_int_clear(struct cvxtest *t)
+static void test_da_compare(struct cvxtest *t)
 {
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 1);
-    da_int_push_back(col, 2);
-    da_int_clear(col);
-
-    CVXCHECK(t, da_int_count(col) == 0);
-    CVXCHECK(t, da_int_capacity(col) == 0);
-    CVXCHECK(t, col->buffer == NULL);
-    CVXCHECK(t, col->super.flag == CVX_FLAG_OK);
-
-    da_int_drop(col);
 }
-
-/* ---- copy (int / memcpy branch) ---- */
-
-static void test_da_int_copy_empty(struct cvxtest *t)
+static void test_da_sort(struct cvxtest *t)
 {
-    struct dynamic_array_int orig = da_int_init(NULL);
-    struct dynamic_array_int copy = da_int_copy(&orig);
-
-    CVXCHECK(t, copy.count == 0);
-    CVXCHECK(t, copy.buffer == NULL);
-    CVXCHECK(t, copy.super.flag == CVX_FLAG_OK);
 }
-
-static void test_da_int_copy_values(struct cvxtest *t)
-{
-    struct dynamic_array_int orig = da_int_init_with(NULL, 4);
-
-    da_int_push_back(&orig, 1);
-    da_int_push_back(&orig, 2);
-    da_int_push_back(&orig, 3);
-
-    struct dynamic_array_int copy = da_int_copy(&orig);
-
-    CVXCHECK(t, copy.count == 3);
-    CVXCHECK(t, copy.buffer[0] == 1);
-    CVXCHECK(t, copy.buffer[1] == 2);
-    CVXCHECK(t, copy.buffer[2] == 3);
-    /* Buffers must be distinct allocations */
-    CVXCHECK(t, copy.buffer != orig.buffer);
-
-    free(orig.buffer);
-    free(copy.buffer);
-}
-
-/* ---- clone (int / memcpy branch) ---- */
-
-static void test_da_int_clone_empty(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new();
-    CVXCHECK(t, col != NULL);
-    if (!col)
-        return;
-
-    struct dynamic_array_int *clone = da_int_clone(col);
-    CVXCHECK(t, clone != NULL);
-    if (!clone)
-    {
-        da_int_drop(col);
-        return;
-    }
-
-    CVXCHECK(t, clone->super.flag == CVX_FLAG_OK);
-    CVXCHECK(t, da_int_count(col) == 0);
-
-    da_int_drop(col);
-    da_int_drop(clone);
-}
-
-static void test_da_int_clone_values(struct cvxtest *t)
-{
-    struct dynamic_array_int *col = da_int_new_with(NULL, 4);
-    da_int_push_back(col, 10);
-    da_int_push_back(col, 20);
-    da_int_push_back(col, 30);
-
-    struct dynamic_array_int *clone = da_int_clone(col);
-    CVXCHECK(t, clone != NULL);
-    if (!clone)
-    {
-        da_int_drop(col);
-        return;
-    }
-
-    CVXCHECK(t, clone->super.flag == CVX_FLAG_OK);
-    CVXCHECK(t, da_int_get(clone, 0) == 10);
-    CVXCHECK(t, da_int_get(clone, 1) == 20);
-    CVXCHECK(t, da_int_get(clone, 2) == 30);
-    /* Distinct allocation */
-    CVXCHECK(t, clone->buffer != col->buffer);
-
-    da_int_drop(col);
-    da_int_drop(clone);
-}
-
-/* ---- runner ---- */
 
 static struct cvxresult run_dynamic_array_tests(void)
 {
@@ -505,49 +368,28 @@ static struct cvxresult run_dynamic_array_tests(void)
 
     printf("dynamic_array\n");
 
-    CVXRUN(&t, test_da_int_init);
-    CVXRUN(&t, test_da_int_init_with);
-
-    CVXRUN(&t, test_da_int_copy_empty);
-    CVXRUN(&t, test_da_int_copy_values);
-
-    CVXRUN(&t, test_da_int_new);
-    CVXRUN(&t, test_da_int_new_with);
-    CVXRUN(&t, test_da_int_new_with_zero_returns_null);
-
-    CVXRUN(&t, test_da_int_clone_empty);
-    CVXRUN(&t, test_da_int_clone_values);
-
-    CVXRUN(&t, test_da_int_clear);
-
-    CVXRUN(&t, test_da_int_empty);
-    CVXRUN(&t, test_da_int_full);
-    CVXRUN(&t, test_da_int_front);
-    CVXRUN(&t, test_da_int_front_empty);
-    CVXRUN(&t, test_da_int_back);
-    CVXRUN(&t, test_da_int_back_empty);
-    CVXRUN(&t, test_da_int_get);
-    CVXRUN(&t, test_da_int_get_out_of_range);
-    CVXRUN(&t, test_da_int_get_empty);
-
-    CVXRUN(&t, test_da_int_push_front);
-    CVXRUN(&t, test_da_int_push_at_middle);
-    CVXRUN(&t, test_da_int_push_at_out_of_range);
-    CVXRUN(&t, test_da_int_push_back_grows);
-    CVXRUN(&t, test_da_int_push_back_values);
-
-    CVXRUN(&t, test_da_int_pop_front);
-    CVXRUN(&t, test_da_int_pop_front_empty);
-    CVXRUN(&t, test_da_int_pop_at_middle);
-    CVXRUN(&t, test_da_int_pop_at_out_of_range);
-    CVXRUN(&t, test_da_int_pop_at_empty);
-    CVXRUN(&t, test_da_int_pop_back);
-    CVXRUN(&t, test_da_int_pop_back_empty);
-
-    CVXRUN(&t, test_da_int_replace_front);
-    CVXRUN(&t, test_da_int_replace_front_on_empty);
-    CVXRUN(&t, test_da_int_replace_back);
-    CVXRUN(&t, test_da_int_replace_back_on_empty);
+    CVXRUN(&t, test_da_init);
+    CVXRUN(&t, test_da_drop);
+    CVXRUN(&t, test_da_clone);
+    CVXRUN(&t, test_da_flag);
+    CVXRUN(&t, test_da_count);
+    CVXRUN(&t, test_da_capacity);
+    CVXRUN(&t, test_da_empty);
+    CVXRUN(&t, test_da_full);
+    CVXRUN(&t, test_da_front);
+    CVXRUN(&t, test_da_back);
+    CVXRUN(&t, test_da_get);
+    CVXRUN(&t, test_da_push_front);
+    CVXRUN(&t, test_da_push_at);
+    CVXRUN(&t, test_da_push_back);
+    CVXRUN(&t, test_da_pop_front);
+    CVXRUN(&t, test_da_pop_at);
+    CVXRUN(&t, test_da_pop_back);
+    CVXRUN(&t, test_da_replace_front);
+    CVXRUN(&t, test_da_replace_back);
+    CVXRUN(&t, test_da_swap);
+    CVXRUN(&t, test_da_compare);
+    CVXRUN(&t, test_da_sort);
 
     return CVXSUMMARY(&t);
 }

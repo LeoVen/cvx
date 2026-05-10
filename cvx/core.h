@@ -30,9 +30,19 @@
 #define CVX_ITER_TAG_MULT 100
 #endif
 
+#ifndef CVX_BUFFER_GROWTH_RATE
+#define CVX_BUFFER_GROWTH_RATE 1.5
+#endif
+#ifndef CVX_BUFFER_MIN_SIZE
+#define CVX_BUFFER_MIN_SIZE 8
+#endif
+#if CVX_BUFFER_MIN_SIZE < 2
+#error "CVX_BUFFER_MIN_SIZE must be greater than 1"
+#endif
+
 typedef struct cvx_container
 {
-    size_t tag;
+    int tag;
     enum cvx_flags flag;
 } cvx_container;
 

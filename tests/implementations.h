@@ -51,14 +51,12 @@ static struct bheap_int_vtabv *bh_int_vtabv_full = &(struct bheap_int_vtabv){
 };
 
 #define V int
-#define SNAME dynamic_array_int
-#define PFX da_int
+#define SNAME dynamic_array
+#define PFX da
 #define TAG 99
-#define IMPL_RANDOM_ACCESS_ITER raccess_iter
-#define IMPL_STACK stack_int
 #include "cvx/dynamic_array.h"
 #define DA_ITER_TAG (99 * CVX_ITER_TAG_MULT)
-static struct dynamic_array_int_vtabv *da_int_vtabv_full = &(struct dynamic_array_int_vtabv){
+static struct dynamic_array_vtabv *da_vtabv_full = &(struct dynamic_array_vtabv){
     .copy = int_copy,
     .drop = int_drop,
 };
