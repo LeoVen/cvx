@@ -10,6 +10,7 @@ struct cvxtest
     int total;
     int passed;
     int failed;
+    int total_checks;
     int checks_failed;
     const char *current;
 };
@@ -26,6 +27,7 @@ struct cvxresult
 #define CVXCHECK(t, cond) \
     do \
     { \
+        (t)->total_checks++; \
         if (!(cond)) \
         { \
             fprintf(stderr, "    FAIL  %s:%d  (%s)\n", __FILE__, __LINE__, #cond); \
@@ -38,10 +40,15 @@ struct cvxresult
     do \
     { \
         (t)->current = #fn; \
+        (t)->total_checks = 0; \
         (t)->checks_failed = 0; \
         (t)->total++; \
         fn(t); \
-        if ((t)->checks_failed == 0) \
+        if ((t)->total_checks == 0) \
+        { \
+            printf("  EMPTY %s\n", #fn); \
+        } \
+        else if ((t)->checks_failed == 0) \
         { \
             printf("  PASS  %s\n", #fn); \
             (t)->passed++; \
