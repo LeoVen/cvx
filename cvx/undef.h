@@ -13,6 +13,7 @@
 #undef FUNC_PROXY
 #undef NODE
 #undef ENTRY
+#undef ENTRY_STATE
 #undef ITERATOR
 #undef ITER_TAG
 
