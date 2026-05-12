@@ -110,6 +110,24 @@ bool FUNC(_contains_interval)(struct SNAME *_self_, V _lo_, V _hi_);
 /// Sets flag to CVX_FLAG_OK on success.
 bool FUNC(_overlaps)(struct SNAME *_self_, V _lo_, V _hi_);
 
+// ---- Set operations ----
+/// Returns a new set containing all intervals from _left_ and _right_ (A ∪ B).
+/// Both operands are left unchanged.  Returns NULL on allocation failure.
+struct SNAME *FUNC(_union)(struct SNAME *_left_, struct SNAME *_right_);
+/// Returns a new set containing only intervals covered by both _left_ and _right_ (A ∩ B).
+/// Both operands are left unchanged.  Returns NULL on allocation failure.
+struct SNAME *FUNC(_intersect)(struct SNAME *_left_, struct SNAME *_right_);
+/// Returns a new set of intervals in _left_ that are not covered by _right_ (A \ B).
+/// Both operands are left unchanged.  Returns NULL on allocation failure.
+struct SNAME *FUNC(_diff)(struct SNAME *_left_, struct SNAME *_right_);
+/// Returns a new set of intervals covered by exactly one of _left_ or _right_ ((A \ B) ∪ (B \ A)).
+/// Both operands are left unchanged.  Returns NULL on allocation failure.
+struct SNAME *FUNC(_symdiff)(struct SNAME *_left_, struct SNAME *_right_);
+/// Returns a new set representing the complement of _self_ within the universe [_lo_, _hi_).
+/// _self_ is left unchanged.  Returns NULL on allocation failure.  Returns an empty set
+/// if _lo_ >= _hi_.
+struct SNAME *FUNC(_compl)(struct SNAME *_self_, V _lo_, V _hi_);
+
 // ---- Iterator constructors ----
 struct ITERATOR FUNC(_iter_init_start)(struct SNAME *_target_);
 struct ITERATOR FUNC(_iter_init_end)(struct SNAME *_target_);
@@ -139,6 +157,7 @@ size_t FUNC(_iter_index)(struct ITERATOR *_iter_);
 // ---- Private helpers ----
 bool FUNC(__assert_capacity)(struct SNAME *_self_);
 size_t FUNC(__lower_bound)(struct SNAME *_self_, V _lo_);
+bool FUNC(__append)(struct SNAME *_self_, V _lo_, V _hi_);
 
 ///
 ///
@@ -598,6 +617,283 @@ bool FUNC(_overlaps)(struct SNAME *_self_, V _lo_, V _hi_)
            _self_->vtabv->comp(_self_->buffer[_start_].lo, _hi_) < 0;
 }
 
+struct SNAME *FUNC(_union)(struct SNAME *_left_, struct SNAME *_right_)
+{
+    CVX_VTAB_COMP(_comp_, V) = NULL;
+
+    if (_left_->vtabv && _left_->vtabv->comp)
+        _comp_ = _left_->vtabv->comp;
+    else if (_right_->vtabv && _right_->vtabv->comp)
+        _comp_ = _right_->vtabv->comp;
+
+    if (!_comp_)
+    {
+        _left_->super.flag = CVX_FLAG_VTAB;
+        _right_->super.flag = CVX_FLAG_VTAB;
+        return NULL;
+    }
+
+    struct SNAME *_res_ = FUNC(_new_with)(_left_->vtabv);
+    if (!_res_)
+        return NULL;
+
+    size_t _i_ = 0, _j_ = 0;
+    bool _active_ = false;
+    V _cur_lo_ = (V){ 0 }, _cur_hi_ = (V){ 0 };
+
+    while (_i_ < _left_->count || _j_ < _right_->count)
+    {
+        V _nlo_, _nhi_;
+        if (_j_ >= _right_->count ||
+            (_i_ < _left_->count &&
+             _left_->vtabv->comp(_left_->buffer[_i_].lo, _right_->buffer[_j_].lo) <= 0))
+        {
+            _nlo_ = _left_->buffer[_i_].lo;
+            _nhi_ = _left_->buffer[_i_].hi;
+            _i_++;
+        }
+        else
+        {
+            _nlo_ = _right_->buffer[_j_].lo;
+            _nhi_ = _right_->buffer[_j_].hi;
+            _j_++;
+        }
+
+        if (!_active_)
+        {
+            _cur_lo_ = _nlo_;
+            _cur_hi_ = _nhi_;
+            _active_ = true;
+        }
+        else if (_left_->vtabv->comp(_nlo_, _cur_hi_) <= 0)
+        {
+            // overlapping or touching: extend if needed
+            if (_left_->vtabv->comp(_nhi_, _cur_hi_) > 0)
+                _cur_hi_ = _nhi_;
+        }
+        else
+        {
+            // disjoint: emit current, start new
+            if (!FUNC(__append)(_res_, _cur_lo_, _cur_hi_))
+            {
+                FUNC(_drop)(_res_);
+                return NULL;
+            }
+            _cur_lo_ = _nlo_;
+            _cur_hi_ = _nhi_;
+        }
+    }
+
+    if (_active_)
+    {
+        if (!FUNC(__append)(_res_, _cur_lo_, _cur_hi_))
+        {
+            FUNC(_drop)(_res_);
+            return NULL;
+        }
+    }
+
+    _res_->super.flag = CVX_FLAG_OK;
+    return _res_;
+}
+
+struct SNAME *FUNC(_intersect)(struct SNAME *_left_, struct SNAME *_right_)
+{
+    CVX_VTAB_COMP(_comp_, V) = NULL;
+
+    if (_left_->vtabv && _left_->vtabv->comp)
+        _comp_ = _left_->vtabv->comp;
+    else if (_right_->vtabv && _right_->vtabv->comp)
+        _comp_ = _right_->vtabv->comp;
+
+    if (!_comp_)
+    {
+        _left_->super.flag = CVX_FLAG_VTAB;
+        _right_->super.flag = CVX_FLAG_VTAB;
+        return NULL;
+    }
+
+    struct SNAME *_res_ = FUNC(_new_with)(_left_->vtabv);
+    if (!_res_)
+        return NULL;
+
+    size_t _i_ = 0, _j_ = 0;
+
+    while (_i_ < _left_->count && _j_ < _right_->count)
+    {
+        V _alo_ = _left_->buffer[_i_].lo;
+        V _ahi_ = _left_->buffer[_i_].hi;
+        V _blo_ = _right_->buffer[_j_].lo;
+        V _bhi_ = _right_->buffer[_j_].hi;
+
+        // overlap = [max(alo,blo), min(ahi,bhi))
+        V _lo_ = _left_->vtabv->comp(_alo_, _blo_) >= 0 ? _alo_ : _blo_;
+        V _hi_ = _left_->vtabv->comp(_ahi_, _bhi_) <= 0 ? _ahi_ : _bhi_;
+
+        if (_left_->vtabv->comp(_lo_, _hi_) < 0)
+        {
+            if (!FUNC(__append)(_res_, _lo_, _hi_))
+            {
+                FUNC(_drop)(_res_);
+                return NULL;
+            }
+        }
+
+        // advance whichever interval ends first
+        if (_left_->vtabv->comp(_ahi_, _bhi_) <= 0)
+            _i_++;
+        else
+            _j_++;
+    }
+
+    _res_->super.flag = CVX_FLAG_OK;
+    return _res_;
+}
+
+struct SNAME *FUNC(_diff)(struct SNAME *_left_, struct SNAME *_right_)
+{
+    CVX_VTAB_COMP(_comp_, V) = NULL;
+
+    if (_left_->vtabv && _left_->vtabv->comp)
+        _comp_ = _left_->vtabv->comp;
+    else if (_right_->vtabv && _right_->vtabv->comp)
+        _comp_ = _right_->vtabv->comp;
+
+    if (!_comp_)
+    {
+        _left_->super.flag = CVX_FLAG_VTAB;
+        _right_->super.flag = CVX_FLAG_VTAB;
+        return NULL;
+    }
+
+    struct SNAME *_res_ = FUNC(_new_with)(_left_->vtabv);
+    if (!_res_)
+        return NULL;
+
+    size_t _j_ = 0; // global right pointer; only advances forward
+
+    for (size_t _i_ = 0; _i_ < _left_->count; _i_++)
+    {
+        V _cur_lo_ = _left_->buffer[_i_].lo;
+        V _cur_hi_ = _left_->buffer[_i_].hi;
+
+        // skip right intervals that end at or before cur_lo
+        while (_j_ < _right_->count && _left_->vtabv->comp(_right_->buffer[_j_].hi, _cur_lo_) <= 0)
+            _j_++;
+
+        size_t _jj_ = _j_;
+        while (_jj_ < _right_->count && _left_->vtabv->comp(_right_->buffer[_jj_].lo, _cur_hi_) < 0)
+        {
+            // right[jj] overlaps [cur_lo, cur_hi)
+            if (_left_->vtabv->comp(_right_->buffer[_jj_].lo, _cur_lo_) > 0)
+            {
+                // gap before right[jj]
+                if (!FUNC(__append)(_res_, _cur_lo_, _right_->buffer[_jj_].lo))
+                {
+                    FUNC(_drop)(_res_);
+                    return NULL;
+                }
+            }
+            if (_left_->vtabv->comp(_right_->buffer[_jj_].hi, _cur_lo_) > 0)
+                _cur_lo_ = _right_->buffer[_jj_].hi;
+            _jj_++;
+        }
+
+        if (_left_->vtabv->comp(_cur_lo_, _cur_hi_) < 0)
+        {
+            if (!FUNC(__append)(_res_, _cur_lo_, _cur_hi_))
+            {
+                FUNC(_drop)(_res_);
+                return NULL;
+            }
+        }
+    }
+
+    _res_->super.flag = CVX_FLAG_OK;
+    return _res_;
+}
+
+struct SNAME *FUNC(_symdiff)(struct SNAME *_left_, struct SNAME *_right_)
+{
+    struct SNAME *_ab_ = FUNC(_diff)(_left_, _right_);
+    if (!_ab_)
+        return NULL;
+
+    struct SNAME *_ba_ = FUNC(_diff)(_right_, _left_);
+    if (!_ba_)
+    {
+        FUNC(_drop)(_ab_);
+        return NULL;
+    }
+
+    struct SNAME *_res_ = FUNC(_union)(_ab_, _ba_);
+    FUNC(_drop)(_ab_);
+    FUNC(_drop)(_ba_);
+    return _res_;
+}
+
+struct SNAME *FUNC(_compl)(struct SNAME *_self_, V _lo_, V _hi_)
+{
+    if (!_self_->vtabv || !_self_->vtabv->comp)
+    {
+        _self_->super.flag = CVX_FLAG_VTAB;
+        return NULL;
+    }
+
+    struct SNAME *_res_ = FUNC(_new_with)(_self_->vtabv);
+    if (!_res_)
+        return NULL;
+
+    if (_self_->vtabv->comp(_lo_, _hi_) >= 0)
+    {
+        _res_->super.flag = CVX_FLAG_OK;
+        return _res_;
+    }
+
+    V _cur_ = _lo_;
+
+    for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
+    {
+        // skip intervals entirely before [lo, hi)
+        if (_self_->vtabv->comp(_self_->buffer[_i_].hi, _lo_) <= 0)
+            continue;
+        // stop if interval starts at or after hi
+        if (_self_->vtabv->comp(_self_->buffer[_i_].lo, _hi_) >= 0)
+            break;
+
+        // gap = [cur, min(buffer[i].lo, hi))
+        V _gap_hi_ =
+            _self_->vtabv->comp(_self_->buffer[_i_].lo, _hi_) < 0 ? _self_->buffer[_i_].lo : _hi_;
+
+        if (_self_->vtabv->comp(_cur_, _gap_hi_) < 0)
+        {
+            if (!FUNC(__append)(_res_, _cur_, _gap_hi_))
+            {
+                FUNC(_drop)(_res_);
+                return NULL;
+            }
+        }
+
+        if (_self_->vtabv->comp(_self_->buffer[_i_].hi, _cur_) > 0)
+            _cur_ = _self_->buffer[_i_].hi;
+
+        if (_self_->vtabv->comp(_cur_, _hi_) >= 0)
+            break;
+    }
+
+    if (_self_->vtabv->comp(_cur_, _hi_) < 0)
+    {
+        if (!FUNC(__append)(_res_, _cur_, _hi_))
+        {
+            FUNC(_drop)(_res_);
+            return NULL;
+        }
+    }
+
+    _res_->super.flag = CVX_FLAG_OK;
+    return _res_;
+}
+
 ///
 ///
 /// ITERATOR
@@ -804,6 +1100,19 @@ bool FUNC(__assert_capacity)(struct SNAME *_self_)
     return true;
 }
 
+bool FUNC(__append)(struct SNAME *_self_, V _lo_, V _hi_)
+{
+    if (!FUNC(__assert_capacity)(_self_))
+        return false;
+
+    _self_->buffer[_self_->count++] = (struct ENTRY){
+        .lo = (_self_->vtabv && _self_->vtabv->clone) ? _self_->vtabv->clone(_lo_) : _lo_,
+        .hi = (_self_->vtabv && _self_->vtabv->clone) ? _self_->vtabv->clone(_hi_) : _hi_,
+    };
+
+    return true;
+}
+
 // Returns the index of the first interval whose hi >= _lo_ (i.e., the first
 // that could overlap or touch [_lo_, ...) from the left).
 // Returns self->count if no such interval exists.
@@ -840,6 +1149,11 @@ void FUNC_PROXY(_remove)(cvx_container *_col_, V _lo_, V _hi_) { CVX_CONTAINER_G
 bool FUNC_PROXY(_contains)(cvx_container *_col_, V _val_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_contains)((struct SNAME *)_col_, _val_); }
 bool FUNC_PROXY(_contains_interval)(cvx_container *_col_, V _lo_, V _hi_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_contains_interval)((struct SNAME *)_col_, _lo_, _hi_); }
 bool FUNC_PROXY(_overlaps)(cvx_container *_col_, V _lo_, V _hi_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_overlaps)((struct SNAME *)_col_, _lo_, _hi_); }
+cvx_container *FUNC_PROXY(_union)(cvx_container *_l_, cvx_container *_r_) { CVX_CONTAINER_GUARDS(TAG, _l_, NULL); CVX_CONTAINER_GUARDS(TAG, _r_, NULL); return (cvx_container *)FUNC(_union)((struct SNAME *)_l_, (struct SNAME *)_r_); }
+cvx_container *FUNC_PROXY(_intersect)(cvx_container *_l_, cvx_container *_r_) { CVX_CONTAINER_GUARDS(TAG, _l_, NULL); CVX_CONTAINER_GUARDS(TAG, _r_, NULL); return (cvx_container *)FUNC(_intersect)((struct SNAME *)_l_, (struct SNAME *)_r_); }
+cvx_container *FUNC_PROXY(_diff)(cvx_container *_l_, cvx_container *_r_) { CVX_CONTAINER_GUARDS(TAG, _l_, NULL); CVX_CONTAINER_GUARDS(TAG, _r_, NULL); return (cvx_container *)FUNC(_diff)((struct SNAME *)_l_, (struct SNAME *)_r_); }
+cvx_container *FUNC_PROXY(_symdiff)(cvx_container *_l_, cvx_container *_r_) { CVX_CONTAINER_GUARDS(TAG, _l_, NULL); CVX_CONTAINER_GUARDS(TAG, _r_, NULL); return (cvx_container *)FUNC(_symdiff)((struct SNAME *)_l_, (struct SNAME *)_r_); }
+cvx_container *FUNC_PROXY(_compl)(cvx_container *_col_, V _lo_, V _hi_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_compl)((struct SNAME *)_col_, _lo_, _hi_); }
 cvx_container *FUNC_PROXY(_iter_start)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_iter_start)((struct SNAME *)_col_); }
 cvx_container *FUNC_PROXY(_iter_end)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_iter_end)((struct SNAME *)_col_); }
 void FUNC_PROXY(_iter_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_drop)((struct ITERATOR *)_col_); }
