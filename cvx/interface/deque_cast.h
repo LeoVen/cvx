@@ -4,12 +4,6 @@
 #ifndef INTERFACE
 #error "cvx/interface/deque_cast.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_deque)"
 #endif
-#ifndef IMPL_NEW
-#error "cvx/interface/deque_cast.h requires IMPL_NEW to be defined"
-#endif
-#ifndef IMPL_CLONE
-#error "cvx/interface/deque_cast.h requires IMPL_CLONE to be defined"
-#endif
 #ifndef IMPL_DROP
 #error "cvx/interface/deque_cast.h requires IMPL_DROP to be defined"
 #endif
@@ -39,8 +33,6 @@
 #include "cvx/core.h"
 
 struct VTABLE(INTERFACE) GLOBAL_VTABLE(SNAME, _as_, INTERFACE) = {
-    .new = IMPL_NEW,
-    .clone = IMPL_CLONE,
     .drop = IMPL_DROP,
     .push_front = IMPL_PUSH_FRONT,
     .push_back = IMPL_PUSH_BACK,

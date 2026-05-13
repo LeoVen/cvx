@@ -4,14 +4,8 @@
 #ifndef INTERFACE
 #error "cvx/interface/queue_cast.h requires INTERFACE to be defined (the struct name, e.g. #define INTERFACE my_queue)"
 #endif
-#ifndef IMPL_NEW
-#error "cvx/interface/queue_cast.h requires IMPL_NEW to be defined"
-#endif
 #ifndef IMPL_DROP
 #error "cvx/interface/queue_cast.h requires IMPL_DROP to be defined"
-#endif
-#ifndef IMPL_CLONE
-#error "cvx/interface/queue_cast.h requires IMPL_CLONE to be defined"
 #endif
 #ifndef IMPL_ENQUEUE
 #error "cvx/interface/queue_cast.h requires IMPL_ENQUEUE to be defined"
@@ -27,9 +21,7 @@
 #include "cvx/core.h"
 
 struct VTABLE(INTERFACE) GLOBAL_VTABLE(SNAME, _as_, INTERFACE) = {
-    .new = IMPL_NEW,
     .drop = IMPL_DROP,
-    .clone = IMPL_CLONE,
     .enqueue = IMPL_ENQUEUE,
     .dequeue = IMPL_DEQUEUE,
     .count = IMPL_COUNT,

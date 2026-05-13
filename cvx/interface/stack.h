@@ -14,8 +14,7 @@
 struct VTABLE(INTERFACE)
 {
     // constructors and destructors
-    cvx_container *(*new)(void);
-    cvx_container *(*clone)(cvx_container *);
+    void (*clone)(cvx_container *, cvx_container *);
     void (*drop)(cvx_container *);
     // operations
     void (*push)(cvx_container *, V);
