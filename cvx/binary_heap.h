@@ -1,5 +1,7 @@
 /// binary_heap.h
 ///
+/// Status: refine
+///
 /// This is a Binary Heap implementation that uses a contiguous array to store
 /// its elements. The indices are a simulated to form a binary tree.
 ///
@@ -80,19 +82,10 @@ struct ITERATOR
     struct SNAME *target;
 };
 
-// ---- Non-allocating initializers ----
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
-struct SNAME FUNC(_init_with)(struct VTAB_V *_vtabv_, enum cvx_heap_order HO, size_t capacity);
-struct SNAME FUNC(_copy)(struct SNAME *_self_);
-
-// ---- Allocating initializers ----
-struct SNAME *FUNC(_new)(void);
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_, enum cvx_heap_order HO, size_t capacity);
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_);
-
-// ---- Destructors ----
+// ---- Initializers and destructors ----
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, enum cvx_heap_order HO, size_t capacity);
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
 void FUNC(_drop)(struct SNAME *_self_);
-void FUNC(_clear)(struct SNAME *_self_);
 
 // ---- Getters ----
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
@@ -136,6 +129,7 @@ size_t FUNC(_iter_index)(struct ITERATOR *_iter_);
 void FUNC(__float_up)(struct SNAME *_self_, size_t index);
 void FUNC(__float_down)(struct SNAME *_self_, size_t index);
 bool FUNC(__assert_capacity)(struct SNAME *_self_);
+bool FUNC(__assert_buffer)(struct SNAME *self, size_t capacity);
 
 ///
 ///
@@ -143,197 +137,61 @@ bool FUNC(__assert_capacity)(struct SNAME *_self_);
 ///
 ///
 
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, enum cvx_heap_order HO, size_t capacity)
 {
-    struct SNAME _res_ = (struct SNAME){ 0 };
-
-    if (!_vtabv_ || !_vtabv_->comp)
+    *self = (struct SNAME){ 0 };
+    if (!vtabv || !vtabv->comp)
     {
-        _res_.super.flag = CVX_FLAG_VTAB;
-        return _res_;
+        self->super.flag = CVX_FLAG_VTAB;
+        return;
     }
-
-    _res_.super.tag = TAG;
-    _res_.vtabv = _vtabv_;
-    _res_.HO = CVX_MAX_HEAP;
-
-    return _res_;
-}
-
-struct SNAME FUNC(_init_with)(struct VTAB_V *_vtabv_, enum cvx_heap_order HO, size_t capacity)
-{
-    struct SNAME _res_ = (struct SNAME){ 0 };
-
-    if (!_vtabv_ || !_vtabv_->comp)
-    {
-        _res_.super.flag = CVX_FLAG_VTAB;
-        return _res_;
-    }
-
-    if (capacity > 0)
-    {
-        _res_.buffer = malloc(sizeof(V) * capacity);
-        if (!_res_.buffer)
-        {
-            _res_.super.flag = CVX_FLAG_ALLOC;
-            return _res_;
-        }
-        _res_.capacity = capacity;
-    }
-
-    _res_.super.tag = TAG;
-    _res_.super.flag = CVX_FLAG_OK;
-    _res_.vtabv = _vtabv_;
-    _res_.HO = HO;
-
-    return _res_;
-}
-
-struct SNAME FUNC(_copy)(struct SNAME *_self_)
-{
-    struct SNAME _res_ = (struct SNAME){ 0 };
-
-    _res_.super.tag = TAG;
-    _res_.super.flag = CVX_FLAG_OK;
-    _res_.vtabv = _self_->vtabv;
-    _res_.HO = _self_->HO;
-
-    if (_self_->count == 0)
-        return _res_;
-
-    _res_.buffer = malloc(sizeof(V) * _self_->count);
-    if (!_res_.buffer)
-    {
-        _res_.super.flag = CVX_FLAG_ALLOC;
-        return _res_;
-    }
-
-    for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
-    {
-        if (_self_->vtabv && _self_->vtabv->clone)
-            _res_.buffer[_i_] = _self_->vtabv->clone(_self_->buffer[_i_]);
-        else
-            _res_.buffer[_i_] = _self_->buffer[_i_];
-    }
-
-    _res_.count = _self_->count;
-    _res_.capacity = _self_->count;
-
-    return _res_;
-}
-
-struct SNAME *FUNC(_new)(void)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->capacity = 0;
-    _res_->count = 0;
-    _res_->buffer = NULL;
-    _res_->vtabv = NULL;
-    _res_->HO = CVX_MAX_HEAP;
-
-    return _res_;
-}
-
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_, enum cvx_heap_order HO, size_t capacity)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    if (capacity > 0)
-    {
-        _res_->buffer = malloc(sizeof(V) * capacity);
-        if (!_res_->buffer)
-        {
-            free(_res_);
-            return NULL;
-        }
-        _res_->capacity = capacity;
-    }
+    self->vtabv = vtabv;
+    if (0 == capacity)
+        self->buffer = NULL;
     else
     {
-        _res_->capacity = 0;
-        _res_->buffer = NULL;
+        if (!FUNC(__assert_buffer)(self, capacity))
+            return;
     }
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->count = 0;
-    _res_->vtabv = _vtabv_;
-    _res_->HO = HO;
-
-    return _res_;
+    self->super.tag = TAG;
+    self->super.flag = CVX_FLAG_OK;
+    self->vtabv = vtabv;
+    self->HO = HO;
 }
 
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
 {
-    struct SNAME *_copy_ = FUNC(_new)();
-    if (!_copy_)
-        return NULL;
-
-    _copy_->vtabv = _orig_->vtabv;
-    _copy_->HO = _orig_->HO;
-
-    if (_orig_->count == 0)
+    FUNC(_init)(clone, orig->vtabv, orig->HO, orig->capacity);
+    if (clone->super.flag != CVX_FLAG_OK)
     {
-        _copy_->super.flag = CVX_FLAG_OK;
-        return _copy_;
+        orig->super.flag = clone->super.flag;
+        return;
     }
-
-    _copy_->buffer = malloc(sizeof(V) * _orig_->count);
-    if (!_copy_->buffer)
+    if (orig->count == 0 || orig->capacity == 0)
+        return;
+    for (size_t i = 0; i < orig->count; i++)
     {
-        free(_copy_);
-        return NULL;
+        clone->buffer[i] = (orig->vtabv && orig->vtabv->clone) ? orig->vtabv->clone(orig->buffer[i])
+                                                               : orig->buffer[i];
     }
-
-    for (size_t _i_ = 0; _i_ < _orig_->count; _i_++)
-    {
-        if (_orig_->vtabv && _orig_->vtabv->clone)
-            _copy_->buffer[_i_] = _orig_->vtabv->clone(_orig_->buffer[_i_]);
-        else
-            _copy_->buffer[_i_] = _orig_->buffer[_i_];
-    }
-
-    _copy_->count = _orig_->count;
-    _copy_->capacity = _orig_->count;
-    _copy_->super.flag = CVX_FLAG_OK;
-
-    return _copy_;
+    clone->count = orig->count;
+    clone->capacity = orig->count;
+    orig->super.flag = CVX_FLAG_OK;
 }
 
-void FUNC(_drop)(struct SNAME *_self_)
+void FUNC(_drop)(struct SNAME *self)
 {
-    if (_self_->vtabv && _self_->vtabv->drop)
+    if (!self || !self->buffer)
+        return;
+    if (self->vtabv && self->vtabv->drop)
     {
-        for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
-            _self_->vtabv->drop(_self_->buffer[_i_]);
+        for (size_t _i_ = 0; _i_ < self->count; _i_++)
+            self->vtabv->drop(self->buffer[_i_]);
     }
-
-    free(_self_->buffer);
-    free(_self_);
-}
-
-void FUNC(_clear)(struct SNAME *_self_)
-{
-    if (_self_->vtabv && _self_->vtabv->drop)
-    {
-        for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
-            _self_->vtabv->drop(_self_->buffer[_i_]);
-    }
-
-    free(_self_->buffer);
-    _self_->buffer = NULL;
-    _self_->capacity = 0;
-    _self_->count = 0;
-    _self_->super.flag = CVX_FLAG_OK;
+    free(self->buffer);
+    self->buffer = NULL;
+    self->capacity = 0;
+    self->count = 0;
 }
 
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_)
@@ -572,34 +430,38 @@ size_t FUNC(_iter_index)(struct ITERATOR *_iter_)
 ///
 ///
 
-bool FUNC(__assert_capacity)(struct SNAME *_self_)
+bool FUNC(__assert_capacity)(struct SNAME *self)
 {
-    if (_self_->count < _self_->capacity)
+    if (self->count < self->capacity)
         return true;
+    size_t capacity = (size_t)(self->capacity * (CVX_BUFFER_GROWTH_RATE));
+    if (capacity < CVX_BUFFER_MIN_SIZE)
+        capacity = CVX_BUFFER_MIN_SIZE;
+    return FUNC(__assert_buffer)(self, capacity);
+}
 
-    size_t _new_cap_ = (_self_->capacity == 0) ? 16 : _self_->capacity * 2;
-
-    if (!_self_->buffer)
+bool FUNC(__assert_buffer)(struct SNAME *self, size_t capacity)
+{
+    if (!self->buffer)
     {
-        _self_->buffer = malloc(sizeof(V) * _new_cap_);
-        if (!_self_->buffer)
+        self->buffer = malloc(sizeof(V) * capacity);
+        if (!self->buffer)
         {
-            _self_->super.flag = CVX_FLAG_ALLOC;
+            self->super.flag = CVX_FLAG_ALLOC;
             return false;
         }
     }
     else
     {
-        V *_new_buf_ = realloc(_self_->buffer, sizeof(V) * _new_cap_);
-        if (!_new_buf_)
+        V *new_buffer = realloc(self->buffer, sizeof(V) * capacity);
+        if (!new_buffer)
         {
-            _self_->super.flag = CVX_FLAG_ALLOC;
+            self->super.flag = CVX_FLAG_ALLOC;
             return false;
         }
-        _self_->buffer = _new_buf_;
+        self->buffer = new_buffer;
     }
-
-    _self_->capacity = _new_cap_;
+    self->capacity = capacity;
     return true;
 }
 
@@ -669,10 +531,8 @@ void FUNC(__float_down)(struct SNAME *_self_, size_t index)
 ///
 
 // clang-format off
-cvx_container *FUNC_PROXY(_new)(void) { return (cvx_container *)FUNC(_new)(); }
-cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_); }
+void FUNC_PROXY(_clone)(cvx_container *_orig_, cvx_container *_clone_) { CVX_CONTAINER_GUARDS(TAG, _orig_, ); FUNC(_clone)((struct SNAME *)_orig_, (struct SNAME *)_clone_); }
 void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); }
-void FUNC_PROXY(_clear)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_clear)((struct SNAME *)_col_); }
 enum cvx_flags FUNC_PROXY(_flag)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, CVX_FLAG_WRONG_TAG); return FUNC(_flag)((struct SNAME *)_col_); }
 size_t FUNC_PROXY(_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_count)((struct SNAME *)_col_); }
 size_t FUNC_PROXY(_capacity)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_capacity)((struct SNAME *)_col_); }
