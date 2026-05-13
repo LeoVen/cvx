@@ -73,18 +73,12 @@ struct ITERATOR
     struct SNAME *target;
 };
 
-// ---- Non-allocating initializers ----
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
-struct SNAME FUNC(_copy)(struct SNAME *_self_);
+// ---- Initializers ----
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv);
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
 
-// ---- Allocating initializers ----
-struct SNAME *FUNC(_new)(void);
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_);
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_);
-
-// ---- Destructors ----
+// ---- Destructor ----
 void FUNC(_drop)(struct SNAME *_self_);
-void FUNC(_clear)(struct SNAME *_self_);
 
 // ---- Getters ----
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
@@ -165,128 +159,59 @@ bool FUNC(__append)(struct SNAME *_self_, V _lo_, V _hi_);
 ///
 ///
 
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv)
 {
-    struct SNAME _res_ = (struct SNAME){ 0 };
-
-    if (!_vtabv_ || !_vtabv_->comp)
+    *self = (struct SNAME){ 0 };
+    if (!vtabv || !vtabv->comp)
     {
-        _res_.super.flag = CVX_FLAG_VTAB;
-        return _res_;
+        self->super.flag = CVX_FLAG_VTAB;
+        return;
     }
-
-    _res_.super.tag = TAG;
-    _res_.vtabv = _vtabv_;
-    return _res_;
+    self->super.tag = TAG;
+    self->super.flag = CVX_FLAG_OK;
+    self->vtabv = vtabv;
 }
 
-struct SNAME FUNC(_copy)(struct SNAME *_self_)
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
 {
-    struct SNAME _res_ = FUNC(_init)(_self_->vtabv);
-    _res_.super.flag = CVX_FLAG_OK;
+    FUNC(_init)(clone, orig->vtabv);
+    if (clone->super.flag == CVX_FLAG_VTAB)
+        return;
 
-    if (_self_->count == 0)
-        return _res_;
+    if (orig->count == 0)
+        return;
 
-    struct ENTRY *_buf_ = malloc(sizeof(struct ENTRY) * _self_->count);
+    struct ENTRY *_buf_ = malloc(sizeof(struct ENTRY) * orig->count);
     if (!_buf_)
     {
-        _res_.super.flag = CVX_FLAG_ALLOC;
-        return _res_;
+        clone->super.flag = CVX_FLAG_ALLOC;
+        orig->super.flag = CVX_FLAG_ALLOC;
+        return;
     }
 
-    for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
+    for (size_t _i_ = 0; _i_ < orig->count; _i_++)
     {
-        if (_self_->vtabv && _self_->vtabv->clone)
+        if (orig->vtabv && orig->vtabv->clone)
         {
-            _buf_[_i_].lo = _self_->vtabv->clone(_self_->buffer[_i_].lo);
-            _buf_[_i_].hi = _self_->vtabv->clone(_self_->buffer[_i_].hi);
+            _buf_[_i_].lo = orig->vtabv->clone(orig->buffer[_i_].lo);
+            _buf_[_i_].hi = orig->vtabv->clone(orig->buffer[_i_].hi);
         }
         else
         {
-            _buf_[_i_] = _self_->buffer[_i_];
+            _buf_[_i_] = orig->buffer[_i_];
         }
     }
 
-    _res_.buffer = _buf_;
-    _res_.count = _self_->count;
-    _res_.capacity = _self_->count;
-    return _res_;
-}
-
-struct SNAME *FUNC(_new)(void)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->capacity = 0;
-    _res_->count = 0;
-    _res_->vtabv = NULL;
-    _res_->buffer = NULL;
-    return _res_;
-}
-
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->capacity = 0;
-    _res_->count = 0;
-    _res_->vtabv = _vtabv_;
-    _res_->buffer = NULL;
-    return _res_;
-}
-
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
-{
-    struct SNAME *_res_ = FUNC(_new)();
-    if (!_res_)
-        return NULL;
-
-    _res_->vtabv = _orig_->vtabv;
-
-    if (_orig_->count == 0)
-    {
-        _res_->super.flag = CVX_FLAG_OK;
-        return _res_;
-    }
-
-    struct ENTRY *_buf_ = malloc(sizeof(struct ENTRY) * _orig_->count);
-    if (!_buf_)
-    {
-        FUNC(_drop)(_res_);
-        return NULL;
-    }
-
-    for (size_t _i_ = 0; _i_ < _orig_->count; _i_++)
-    {
-        if (_orig_->vtabv && _orig_->vtabv->clone)
-        {
-            _buf_[_i_].lo = _orig_->vtabv->clone(_orig_->buffer[_i_].lo);
-            _buf_[_i_].hi = _orig_->vtabv->clone(_orig_->buffer[_i_].hi);
-        }
-        else
-        {
-            _buf_[_i_] = _orig_->buffer[_i_];
-        }
-    }
-
-    _res_->buffer = _buf_;
-    _res_->count = _orig_->count;
-    _res_->capacity = _orig_->count;
-    _res_->super.flag = CVX_FLAG_OK;
-    return _res_;
+    clone->buffer = _buf_;
+    clone->count = orig->count;
+    clone->capacity = orig->count;
+    orig->super.flag = CVX_FLAG_OK;
 }
 
 void FUNC(_drop)(struct SNAME *_self_)
 {
+    if (!_self_)
+        return;
     if (_self_->vtabv && _self_->vtabv->drop)
     {
         for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
@@ -295,28 +220,10 @@ void FUNC(_drop)(struct SNAME *_self_)
             _self_->vtabv->drop(_self_->buffer[_i_].hi);
         }
     }
-
-    free(_self_->buffer);
-    free(_self_);
-}
-
-void FUNC(_clear)(struct SNAME *_self_)
-{
-    if (_self_->vtabv && _self_->vtabv->drop)
-    {
-        for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
-        {
-            _self_->vtabv->drop(_self_->buffer[_i_].lo);
-            _self_->vtabv->drop(_self_->buffer[_i_].hi);
-        }
-    }
-
     free(_self_->buffer);
     _self_->buffer = NULL;
     _self_->capacity = 0;
-
     _self_->count = 0;
-    _self_->super.flag = CVX_FLAG_OK;
 }
 
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_)
@@ -492,7 +399,7 @@ void FUNC(_remove)(struct SNAME *_self_, V _lo_, V _hi_)
     if (_has_left_)
     {
         _left_lo_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_self_->buffer[_start_].lo)
-                                          : _self_->buffer[_start_].lo;
+                                           : _self_->buffer[_start_].lo;
         // left_hi = _lo_ (caller-owned value, copy it to store independently).
         _left_hi_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_lo_) : _lo_;
     }
@@ -502,7 +409,7 @@ void FUNC(_remove)(struct SNAME *_self_, V _lo_, V _hi_)
         // right_lo = _hi_ (caller-owned value, copy it to store independently).
         _right_lo_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_hi_) : _hi_;
         _right_hi_ = (_self_->vtabv->clone) ? _self_->vtabv->clone(_self_->buffer[_last_].hi)
-                                           : _self_->buffer[_last_].hi;
+                                            : _self_->buffer[_last_].hi;
     }
 
     // Drop all overlapping entries.
@@ -633,9 +540,10 @@ struct SNAME *FUNC(_union)(struct SNAME *_left_, struct SNAME *_right_)
         return NULL;
     }
 
-    struct SNAME *_res_ = FUNC(_new_with)(_left_->vtabv);
+    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
     if (!_res_)
         return NULL;
+    FUNC(_init)(_res_, _left_->vtabv);
 
     size_t _i_ = 0, _j_ = 0;
     bool _active_ = false;
@@ -677,6 +585,7 @@ struct SNAME *FUNC(_union)(struct SNAME *_left_, struct SNAME *_right_)
             if (!FUNC(__append)(_res_, _cur_lo_, _cur_hi_))
             {
                 FUNC(_drop)(_res_);
+                free(_res_);
                 return NULL;
             }
             _cur_lo_ = _nlo_;
@@ -689,6 +598,7 @@ struct SNAME *FUNC(_union)(struct SNAME *_left_, struct SNAME *_right_)
         if (!FUNC(__append)(_res_, _cur_lo_, _cur_hi_))
         {
             FUNC(_drop)(_res_);
+            free(_res_);
             return NULL;
         }
     }
@@ -713,9 +623,10 @@ struct SNAME *FUNC(_intersect)(struct SNAME *_left_, struct SNAME *_right_)
         return NULL;
     }
 
-    struct SNAME *_res_ = FUNC(_new_with)(_left_->vtabv);
+    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
     if (!_res_)
         return NULL;
+    FUNC(_init)(_res_, _left_->vtabv);
 
     size_t _i_ = 0, _j_ = 0;
 
@@ -735,6 +646,7 @@ struct SNAME *FUNC(_intersect)(struct SNAME *_left_, struct SNAME *_right_)
             if (!FUNC(__append)(_res_, _lo_, _hi_))
             {
                 FUNC(_drop)(_res_);
+                free(_res_);
                 return NULL;
             }
         }
@@ -766,9 +678,10 @@ struct SNAME *FUNC(_diff)(struct SNAME *_left_, struct SNAME *_right_)
         return NULL;
     }
 
-    struct SNAME *_res_ = FUNC(_new_with)(_left_->vtabv);
+    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
     if (!_res_)
         return NULL;
+    FUNC(_init)(_res_, _left_->vtabv);
 
     size_t _j_ = 0; // global right pointer; only advances forward
 
@@ -791,6 +704,7 @@ struct SNAME *FUNC(_diff)(struct SNAME *_left_, struct SNAME *_right_)
                 if (!FUNC(__append)(_res_, _cur_lo_, _right_->buffer[_jj_].lo))
                 {
                     FUNC(_drop)(_res_);
+                    free(_res_);
                     return NULL;
                 }
             }
@@ -804,6 +718,7 @@ struct SNAME *FUNC(_diff)(struct SNAME *_left_, struct SNAME *_right_)
             if (!FUNC(__append)(_res_, _cur_lo_, _cur_hi_))
             {
                 FUNC(_drop)(_res_);
+                free(_res_);
                 return NULL;
             }
         }
@@ -823,12 +738,15 @@ struct SNAME *FUNC(_symdiff)(struct SNAME *_left_, struct SNAME *_right_)
     if (!_ba_)
     {
         FUNC(_drop)(_ab_);
+        free(_ab_);
         return NULL;
     }
 
     struct SNAME *_res_ = FUNC(_union)(_ab_, _ba_);
     FUNC(_drop)(_ab_);
+    free(_ab_);
     FUNC(_drop)(_ba_);
+    free(_ba_);
     return _res_;
 }
 
@@ -840,9 +758,10 @@ struct SNAME *FUNC(_compl)(struct SNAME *_self_, V _lo_, V _hi_)
         return NULL;
     }
 
-    struct SNAME *_res_ = FUNC(_new_with)(_self_->vtabv);
+    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
     if (!_res_)
         return NULL;
+    FUNC(_init)(_res_, _self_->vtabv);
 
     if (_self_->vtabv->comp(_lo_, _hi_) >= 0)
     {
@@ -870,6 +789,7 @@ struct SNAME *FUNC(_compl)(struct SNAME *_self_, V _lo_, V _hi_)
             if (!FUNC(__append)(_res_, _cur_, _gap_hi_))
             {
                 FUNC(_drop)(_res_);
+                free(_res_);
                 return NULL;
             }
         }
@@ -886,6 +806,7 @@ struct SNAME *FUNC(_compl)(struct SNAME *_self_, V _lo_, V _hi_)
         if (!FUNC(__append)(_res_, _cur_, _hi_))
         {
             FUNC(_drop)(_res_);
+            free(_res_);
             return NULL;
         }
     }
@@ -1137,11 +1058,8 @@ size_t FUNC(__lower_bound)(struct SNAME *_self_, V _lo_)
 ///
 
 // clang-format off
-cvx_container *FUNC_PROXY(_new)(void) { return (cvx_container *)FUNC(_new)(); }
-cvx_container *FUNC_PROXY(_new_with)(struct VTAB_V *_vtabv_) { return (cvx_container *)FUNC(_new_with)(_vtabv_); }
-cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_); }
-void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); }
-void FUNC_PROXY(_clear)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_clear)((struct SNAME *)_col_); }
+void FUNC_PROXY(_clone)(cvx_container *_orig_, cvx_container *_clone_) { CVX_CONTAINER_GUARDS(TAG, _orig_, ); FUNC(_clone)((struct SNAME *)_orig_, (struct SNAME *)_clone_); }
+void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); free(_col_); }
 size_t FUNC_PROXY(_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_count)((struct SNAME *)_col_); }
 bool FUNC_PROXY(_empty)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_empty)((struct SNAME *)_col_); }
 void FUNC_PROXY(_add)(cvx_container *_col_, V _lo_, V _hi_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_add)((struct SNAME *)_col_, _lo_, _hi_); }

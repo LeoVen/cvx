@@ -83,19 +83,9 @@ struct ITERATOR
     struct SNAME *target;
 };
 
-// ---- Non-allocating initializers ----
-struct SNAME FUNC(_init)(struct VTAB_K *_vtabk_, struct VTAB_V *_vtabv_);
-struct SNAME FUNC(_copy)(struct SNAME *_self_);
-
-// ---- Allocating initializers ----
-struct SNAME *FUNC(_new)(void);
-struct SNAME *FUNC(_new_with)(struct VTAB_K *_vtabk_, struct VTAB_V *_vtabv_);
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_);
-
-// ---- Destructors ----
+void FUNC(_init)(struct SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv);
 void FUNC(_drop)(struct SNAME *_self_);
-void FUNC(_clear)(struct SNAME *_self_);
-
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
 // ---- Getters ----
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
 size_t FUNC(_count)(struct SNAME *_self_);
@@ -146,133 +136,24 @@ size_t FUNC(__lower_bound_k)(struct SNAME *_self_, K _lo_);
 ///
 ///
 
-struct SNAME FUNC(_init)(struct VTAB_K *_vtabk_, struct VTAB_V *_vtabv_)
+void FUNC(_init)(struct SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv)
 {
-    struct SNAME _res_ = (struct SNAME){ 0 };
-
-    if (!_vtabk_ || !_vtabk_->comp)
+    *self = (struct SNAME){ 0 };
+    if (!vtabk || !vtabk->comp)
     {
-        _res_.super.flag = CVX_FLAG_VTAB;
-        return _res_;
+        self->super.flag = CVX_FLAG_VTAB;
+        return;
     }
-
-    _res_.super.tag = TAG;
-    _res_.super.flag = CVX_FLAG_OK;
-    _res_.vtabk = _vtabk_;
-    _res_.vtabv = _vtabv_;
-    return _res_;
-}
-
-struct SNAME FUNC(_copy)(struct SNAME *_self_)
-{
-    struct SNAME _res_ = FUNC(_init)(_self_->vtabk, _self_->vtabv);
-    _res_.super.flag = CVX_FLAG_OK;
-
-    if (_self_->count == 0)
-        return _res_;
-
-    struct ENTRY *_buf_ = malloc(sizeof(struct ENTRY) * _self_->count);
-    if (!_buf_)
-    {
-        _res_.super.flag = CVX_FLAG_ALLOC;
-        return _res_;
-    }
-
-    for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
-    {
-        _buf_[_i_].lo = (_self_->vtabk && _self_->vtabk->clone)
-                            ? _self_->vtabk->clone(_self_->buffer[_i_].lo)
-                            : _self_->buffer[_i_].lo;
-        _buf_[_i_].hi = (_self_->vtabk && _self_->vtabk->clone)
-                            ? _self_->vtabk->clone(_self_->buffer[_i_].hi)
-                            : _self_->buffer[_i_].hi;
-        _buf_[_i_].val = (_self_->vtabv && _self_->vtabv->clone)
-                             ? _self_->vtabv->clone(_self_->buffer[_i_].val)
-                             : _self_->buffer[_i_].val;
-    }
-
-    _res_.buffer = _buf_;
-    _res_.count = _self_->count;
-    _res_.capacity = _self_->count;
-    return _res_;
-}
-
-struct SNAME *FUNC(_new)(void)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->capacity = 0;
-    _res_->count = 0;
-    _res_->vtabk = NULL;
-    _res_->vtabv = NULL;
-    _res_->buffer = NULL;
-    return _res_;
-}
-
-struct SNAME *FUNC(_new_with)(struct VTAB_K *_vtabk_, struct VTAB_V *_vtabv_)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->capacity = 0;
-    _res_->count = 0;
-    _res_->vtabk = _vtabk_;
-    _res_->vtabv = _vtabv_;
-    _res_->buffer = NULL;
-    return _res_;
-}
-
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
-{
-    struct SNAME *_res_ = FUNC(_new)();
-    if (!_res_)
-        return NULL;
-
-    _res_->vtabk = _orig_->vtabk;
-    _res_->vtabv = _orig_->vtabv;
-
-    if (_orig_->count == 0)
-    {
-        _res_->super.flag = CVX_FLAG_OK;
-        return _res_;
-    }
-
-    struct ENTRY *_buf_ = malloc(sizeof(struct ENTRY) * _orig_->count);
-    if (!_buf_)
-    {
-        FUNC(_drop)(_res_);
-        return NULL;
-    }
-
-    for (size_t _i_ = 0; _i_ < _orig_->count; _i_++)
-    {
-        _buf_[_i_].lo = (_orig_->vtabk && _orig_->vtabk->clone)
-                            ? _orig_->vtabk->clone(_orig_->buffer[_i_].lo)
-                            : _orig_->buffer[_i_].lo;
-        _buf_[_i_].hi = (_orig_->vtabk && _orig_->vtabk->clone)
-                            ? _orig_->vtabk->clone(_orig_->buffer[_i_].hi)
-                            : _orig_->buffer[_i_].hi;
-        _buf_[_i_].val = (_orig_->vtabv && _orig_->vtabv->clone)
-                             ? _orig_->vtabv->clone(_orig_->buffer[_i_].val)
-                             : _orig_->buffer[_i_].val;
-    }
-
-    _res_->buffer = _buf_;
-    _res_->count = _orig_->count;
-    _res_->capacity = _orig_->count;
-    _res_->super.flag = CVX_FLAG_OK;
-    return _res_;
+    self->super.tag = TAG;
+    self->super.flag = CVX_FLAG_OK;
+    self->vtabk = vtabk;
+    self->vtabv = vtabv;
 }
 
 void FUNC(_drop)(struct SNAME *_self_)
 {
+    if (!_self_)
+        return;
     for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
     {
         if (_self_->vtabk && _self_->vtabk->drop)
@@ -283,30 +164,46 @@ void FUNC(_drop)(struct SNAME *_self_)
         if (_self_->vtabv && _self_->vtabv->drop)
             _self_->vtabv->drop(_self_->buffer[_i_].val);
     }
-
-    free(_self_->buffer);
-    free(_self_);
-}
-
-void FUNC(_clear)(struct SNAME *_self_)
-{
-    for (size_t _i_ = 0; _i_ < _self_->count; _i_++)
-    {
-        if (_self_->vtabk && _self_->vtabk->drop)
-        {
-            _self_->vtabk->drop(_self_->buffer[_i_].lo);
-            _self_->vtabk->drop(_self_->buffer[_i_].hi);
-        }
-        if (_self_->vtabv && _self_->vtabv->drop)
-            _self_->vtabv->drop(_self_->buffer[_i_].val);
-    }
-
     free(_self_->buffer);
     _self_->buffer = NULL;
     _self_->capacity = 0;
-
     _self_->count = 0;
-    _self_->super.flag = CVX_FLAG_OK;
+}
+
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
+{
+    FUNC(_init)(clone, orig->vtabk, orig->vtabv);
+    if (clone->super.flag == CVX_FLAG_VTAB)
+        return;
+
+    if (orig->count == 0)
+        return;
+
+    struct ENTRY *_buf_ = malloc(sizeof(struct ENTRY) * orig->count);
+    if (!_buf_)
+    {
+        clone->super.flag = CVX_FLAG_ALLOC;
+        orig->super.flag = CVX_FLAG_ALLOC;
+        return;
+    }
+
+    for (size_t _i_ = 0; _i_ < orig->count; _i_++)
+    {
+        _buf_[_i_].lo = (orig->vtabk && orig->vtabk->clone)
+                            ? orig->vtabk->clone(orig->buffer[_i_].lo)
+                            : orig->buffer[_i_].lo;
+        _buf_[_i_].hi = (orig->vtabk && orig->vtabk->clone)
+                            ? orig->vtabk->clone(orig->buffer[_i_].hi)
+                            : orig->buffer[_i_].hi;
+        _buf_[_i_].val = (orig->vtabv && orig->vtabv->clone)
+                             ? orig->vtabv->clone(orig->buffer[_i_].val)
+                             : orig->buffer[_i_].val;
+    }
+
+    clone->buffer = _buf_;
+    clone->count = orig->count;
+    clone->capacity = orig->count;
+    orig->super.flag = CVX_FLAG_OK;
 }
 
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_)
@@ -933,11 +830,8 @@ size_t FUNC(__lower_bound_k)(struct SNAME *_self_, K _lo_)
 ///
 
 // clang-format off
-cvx_container *FUNC_PROXY(_new)(void) { return (cvx_container *)FUNC(_new)(); }
-cvx_container *FUNC_PROXY(_new_with)(struct VTAB_K *_vtabk_, struct VTAB_V *_vtabv_) { return (cvx_container *)FUNC(_new_with)(_vtabk_, _vtabv_); }
-cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_); }
-void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); }
-void FUNC_PROXY(_clear)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_clear)((struct SNAME *)_col_); }
+void FUNC_PROXY(_clone)(cvx_container *_orig_, cvx_container *_clone_) { CVX_CONTAINER_GUARDS(TAG, _orig_, ); FUNC(_clone)((struct SNAME *)_orig_, (struct SNAME *)_clone_); }
+void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); free(_col_); }
 size_t FUNC_PROXY(_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_count)((struct SNAME *)_col_); }
 bool FUNC_PROXY(_empty)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_empty)((struct SNAME *)_col_); }
 void FUNC_PROXY(_add)(cvx_container *_col_, K _lo_, K _hi_, V _val_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_add)((struct SNAME *)_col_, _lo_, _hi_, _val_); }

@@ -1,3 +1,14 @@
+/// circular_buffer.h
+///
+/// Status
+///
+///   [x] concept
+///   [ ] v1
+///   [ ] tests
+///   [ ] refine
+///   [ ] stabilize
+///
+
 #include "cvx/fallback.h"
 
 // clang-format off
@@ -48,19 +59,10 @@ struct ITERATOR
     struct SNAME *target;
 };
 
-// Non-allocating initializers
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
-struct SNAME FUNC(_init_with)(struct VTAB_V *_vtabv_, size_t _capacity_);
-struct SNAME FUNC(_copy)(struct SNAME *_self_);
-
-// Allocating initializers
-struct SNAME *FUNC(_new)(void);
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_, size_t _capacity_);
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_);
-
-// Destructors
-void FUNC(_drop)(struct SNAME *_self_);
-void FUNC(_clear)(struct SNAME *_self_);
+// Initializers and destructors
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, size_t capacity);
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
+void FUNC(_drop)(struct SNAME *self);
 
 // Getters
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
@@ -100,209 +102,66 @@ void FUNC(_iter_go_to)(struct ITERATOR *_iter_, size_t _index_);
 V FUNC(_iter_value)(struct ITERATOR *_iter_);
 size_t FUNC(_iter_index)(struct ITERATOR *_iter_);
 
-/// Initialize a Circular Buffer (stack-allocated, no internal buffer).
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, size_t capacity)
 {
-    struct SNAME _res_ = (struct SNAME){ 0 };
-    _res_.super.tag = TAG;
-    _res_.vtabv = _vtabv_;
-
-    return _res_;
+    *self = (struct SNAME){ 0 };
+    self->super.tag = TAG;
+    self->super.flag = CVX_FLAG_OK;
+    self->vtabv = vtabv;
+    if (capacity == 0)
+        return;
+    self->buffer = calloc(capacity, sizeof(V));
+    if (!self->buffer)
+    {
+        self->super.flag = CVX_FLAG_ALLOC;
+        return;
+    }
+    self->capacity = capacity;
 }
 
-/// Initialize a Circular Buffer with a pre-allocated buffer of the given capacity.
-struct SNAME FUNC(_init_with)(struct VTAB_V *_vtabv_, size_t _capacity_)
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
 {
-    struct SNAME _res_ = (struct SNAME){ 0 };
-    _res_.super.tag = TAG;
-    _res_.vtabv = _vtabv_;
-
-    if (_capacity_ == 0)
-        return _res_;
-
-    _res_.buffer = calloc(_capacity_, sizeof(V));
-
-    if (!_res_.buffer)
+    *clone = (struct SNAME){ 0 };
+    clone->super.tag = TAG;
+    clone->super.flag = CVX_FLAG_OK;
+    clone->vtabv = orig->vtabv;
+    if (orig->count == 0)
+        return;
+    clone->buffer = malloc(orig->count * sizeof(V));
+    if (!clone->buffer)
     {
-        _res_.super.flag = CVX_FLAG_ALLOC;
-        return _res_;
+        clone->super.flag = CVX_FLAG_ALLOC;
+        orig->super.flag = CVX_FLAG_ALLOC;
+        return;
     }
-
-    _res_.capacity = _capacity_;
-
-    return _res_;
+    clone->capacity = orig->count;
+    clone->count = orig->count;
+    for (size_t i = 0; i < orig->count; i++)
+    {
+        size_t _phys_ = (orig->head + i) % orig->capacity;
+        clone->buffer[i] = (orig->vtabv && orig->vtabv->clone)
+                               ? orig->vtabv->clone(orig->buffer[_phys_])
+                               : orig->buffer[_phys_];
+    }
+    orig->super.flag = CVX_FLAG_OK;
 }
 
-/// Create a deep copy of the buffer by value.
-struct SNAME FUNC(_copy)(struct SNAME *_self_)
+void FUNC(_drop)(struct SNAME *self)
 {
-    struct SNAME _res_ = FUNC(_init)(_self_->vtabv);
-    _res_.super.flag = CVX_FLAG_OK;
+    if (!self || !self->buffer)
+        return;
 
-    if (_self_->count == 0)
-        return _res_;
-
-    _res_.buffer = malloc(_self_->capacity * sizeof(V));
-    if (!_res_.buffer)
+    if (self->vtabv && self->vtabv->drop)
     {
-        _res_.super.flag = CVX_FLAG_ALLOC;
-        return _res_;
+        for (size_t i = 0; i < self->count; i++)
+            self->vtabv->drop(self->buffer[(self->head + i) % self->capacity]);
     }
 
-    _res_.capacity = _self_->capacity;
-    _res_.count = _self_->count;
-    _res_.head = 0;
-
-    if (_self_->vtabv && _self_->vtabv->clone)
-    {
-        for (size_t i = 0; i < _self_->count; i++)
-        {
-            size_t _phys_ = (_self_->head + i) % _self_->capacity;
-            _res_.buffer[i] = _self_->vtabv->clone(_self_->buffer[_phys_]);
-        }
-    }
-    else
-    {
-        for (size_t i = 0; i < _self_->count; i++)
-        {
-            size_t _phys_ = (_self_->head + i) % _self_->capacity;
-            _res_.buffer[i] = _self_->buffer[_phys_];
-        }
-    }
-
-    return _res_;
-}
-
-/// Heap-allocate a Circular Buffer with capacity=0 and no vtabv.
-struct SNAME *FUNC(_new)(void)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->capacity = 0;
-    _res_->count = 0;
-    _res_->head = 0;
-    _res_->vtabv = NULL;
-    _res_->buffer = NULL;
-
-    return _res_;
-}
-
-/// Heap-allocate a Circular Buffer with a pre-allocated buffer.
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_, size_t _capacity_)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->count = 0;
-    _res_->head = 0;
-    _res_->vtabv = _vtabv_;
-
-    if (_capacity_ == 0)
-    {
-        _res_->capacity = 0;
-        _res_->buffer = NULL;
-        return _res_;
-    }
-
-    _res_->buffer = calloc(_capacity_, sizeof(V));
-
-    if (!_res_->buffer)
-    {
-        free(_res_);
-        return NULL;
-    }
-
-    _res_->capacity = _capacity_;
-
-    return _res_;
-}
-
-/// Heap-allocate a deep copy of the buffer.
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->vtabv = _orig_->vtabv;
-    _res_->count = 0;
-    _res_->head = 0;
-    _res_->capacity = 0;
-    _res_->buffer = NULL;
-
-    if (_orig_->count == 0)
-        return _res_;
-
-    _res_->buffer = malloc(_orig_->capacity * sizeof(V));
-    if (!_res_->buffer)
-    {
-        free(_res_);
-        return NULL;
-    }
-
-    _res_->capacity = _orig_->capacity;
-    _res_->count = _orig_->count;
-
-    if (_res_->vtabv && _res_->vtabv->clone)
-    {
-        for (size_t i = 0; i < _orig_->count; i++)
-        {
-            size_t _phys_ = (_orig_->head + i) % _orig_->capacity;
-            _res_->buffer[i] = _res_->vtabv->clone(_orig_->buffer[_phys_]);
-        }
-    }
-    else
-    {
-        for (size_t i = 0; i < _orig_->count; i++)
-        {
-            size_t _phys_ = (_orig_->head + i) % _orig_->capacity;
-            _res_->buffer[i] = _orig_->buffer[_phys_];
-        }
-    }
-
-    return _res_;
-}
-
-/// Drop all elements and free the buffer and the struct pointer.
-void FUNC(_drop)(struct SNAME *_self_)
-{
-    if (_self_->vtabv && _self_->vtabv->drop)
-    {
-        for (size_t i = 0; i < _self_->count; i++)
-            _self_->vtabv->drop(_self_->buffer[(_self_->head + i) % _self_->capacity]);
-    }
-
-    free(_self_->buffer);
-    free(_self_);
-}
-
-/// Drop all elements and free the buffer; the struct remains valid and empty.
-void FUNC(_clear)(struct SNAME *_self_)
-{
-    if (_self_->vtabv && _self_->vtabv->drop)
-    {
-        for (size_t i = 0; i < _self_->count; i++)
-            _self_->vtabv->drop(_self_->buffer[(_self_->head + i) % _self_->capacity]);
-    }
-
-    free(_self_->buffer);
-    _self_->buffer = NULL;
-    _self_->capacity = 0;
-    _self_->count = 0;
-    _self_->head = 0;
-    _self_->super.flag = CVX_FLAG_OK;
+    free(self->buffer);
+    self->buffer = NULL;
+    self->capacity = 0;
+    self->count = 0;
+    self->head = 0;
 }
 
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_)
@@ -709,10 +568,8 @@ size_t FUNC(_iter_index)(struct ITERATOR *_iter_)
 ///
 
 // clang-format off
-cvx_container *FUNC_PROXY(_new)(void) { return (cvx_container *)FUNC(_new)(); }
-cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_); }
+void FUNC_PROXY(_clone)(cvx_container *_orig_, cvx_container *_clone_) { CVX_CONTAINER_GUARDS(TAG, _orig_, ); FUNC(_clone)((struct SNAME *)_orig_, (struct SNAME *)_clone_); }
 void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); }
-void FUNC_PROXY(_clear)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_clear)((struct SNAME *)_col_); }
 enum cvx_flags FUNC_PROXY(_flag)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, CVX_FLAG_WRONG_TAG); return FUNC(_flag)((struct SNAME *)_col_); }
 size_t FUNC_PROXY(_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_count)((struct SNAME *)_col_); }
 size_t FUNC_PROXY(_capacity)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_capacity)((struct SNAME *)_col_); }

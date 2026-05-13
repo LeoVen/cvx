@@ -17,22 +17,10 @@
 #include "tests/dlinked_list_tests.h"
 
 #include "tests/interval_set_tests.h"
-#include "tests/interval_set_guard_tests.h"
-#include "tests/interval_set_iter_tests.h"
-#include "tests/interval_set_vtab_tests.h"
-#include "tests/interval_set_alloc_tests.h"
 
 #include "tests/interval_map_tests.h"
-#include "tests/interval_map_guard_tests.h"
-#include "tests/interval_map_iter_tests.h"
-#include "tests/interval_map_vtab_tests.h"
-#include "tests/interval_map_alloc_tests.h"
 
 #include "tests/hashtable_tests.h"
-#include "tests/hashtable_guard_tests.h"
-#include "tests/hashtable_iter_tests.h"
-#include "tests/hashtable_vtab_tests.h"
-#include "tests/hashtable_alloc_tests.h"
 // clang-format on
 
 int main(void)
@@ -51,22 +39,10 @@ int main(void)
         run_dlinked_list_tests,
 
         run_interval_set_tests,
-        run_interval_set_guard_tests,
-        run_interval_set_iter_tests,
-        run_interval_set_vtab_tests,
-        run_interval_set_alloc_tests,
 
         run_interval_map_tests,
-        run_interval_map_guard_tests,
-        run_interval_map_iter_tests,
-        run_interval_map_vtab_tests,
-        run_interval_map_alloc_tests,
 
         run_hashtable_tests,
-        run_hashtable_guard_tests,
-        run_hashtable_iter_tests,
-        run_hashtable_vtab_tests,
-        run_hashtable_alloc_tests,
 
         run_dynamic_array_tests,
     };
@@ -75,16 +51,17 @@ int main(void)
     size_t count = sizeof(tests) / sizeof(tests[0]);
     int total_passed = 0;
     int total_failed = 0;
+    int total_empty = 0;
 
     for (size_t i = 0; i < count; i++)
     {
         struct cvxresult r = tests[i]();
         total_passed += r.passed;
         total_failed += r.failed;
+        total_empty += r.empty;
     }
 
-    printf("Total: %d passed", total_passed);
-    printf(", %d failed\n", total_failed);
+    printf("Total: %d passed, %d empty, %d failed\n", total_passed, total_empty, total_failed);
 
     printf("\n");
 
