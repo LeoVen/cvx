@@ -5,7 +5,10 @@
 #include "tests/cvxtest.h"
 #include "tests/implementations.h"
 
-#define MAKE_DEQUE(name) struct deque_int name = dll_int_as_deque_int((cvx_container *)dll_int_new())
+#define MAKE_DEQUE(name) \
+    struct dlinked_int name##_; \
+    dll_int_init(&name##_, NULL); \
+    struct deque_int name = dll_int_as_deque_int((cvx_container *)&name##_)
 
 /* ---- push_front / count ---- */
 
@@ -241,21 +244,17 @@ static void test_dll_int_dq_clone(struct cvxtest *t)
     cvx_push_back(&d, 20);
     cvx_push_back(&d, 30);
 
-    struct dlinked_int *copy = (struct dlinked_int *)cvx_clone(&d);
-    CVXCHECK(t, copy != NULL);
-    if (!copy)
-    {
-        cvx_drop(&d);
-        return;
-    }
+    struct dlinked_int copy;
+    dll_int_clone((struct dlinked_int *)d.instance, &copy);
+    CVXCHECK(t, copy.super.flag == CVX_FLAG_OK);
 
     /* clone is independent: popping from original does not affect copy */
     cvx_pop_front(&d);
-    CVXCHECK(t, dll_int_count(copy) == 3);
-    CVXCHECK(t, dll_int_front(copy) == 10);
-    CVXCHECK(t, dll_int_back(copy) == 30);
+    CVXCHECK(t, dll_int_count(&copy) == 3);
+    CVXCHECK(t, dll_int_front(&copy) == 10);
+    CVXCHECK(t, dll_int_back(&copy) == 30);
 
-    dll_int_drop(copy);
+    dll_int_drop(&copy);
     cvx_drop(&d);
 }
 

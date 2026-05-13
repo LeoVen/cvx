@@ -12,7 +12,8 @@
     dll_int_push_back(col, 10); \
     dll_int_push_back(col, 20); \
     dll_int_push_back(col, 30); \
-    struct bidirectional_iter name = dll_int_iter_as_bidirectional_iter((cvx_container *)dll_int_iter_start(col))
+    struct bidirectional_iter name = \
+        dll_int_iter_as_bidirectional_iter((cvx_container *)dll_int_iter_start(col))
 
 /* Check the flag stored on the underlying iterator instance */
 #define CHECK_ITER_FLAG(t, iter, expected) \
@@ -112,7 +113,8 @@ static void test_bi_at_end_true(struct cvxtest *t)
 static void test_bi_at_start_and_end_empty(struct cvxtest *t)
 {
     struct dlinked_int *col = dll_int_new();
-    struct bidirectional_iter iter = dll_int_iter_as_bidirectional_iter((cvx_container *)dll_int_iter_start(col));
+    struct bidirectional_iter iter =
+        dll_int_iter_as_bidirectional_iter((cvx_container *)dll_int_iter_start(col));
 
     CVXCHECK(t, cvx_at_start(&iter) == true);
     CVXCHECK(t, cvx_at_end(&iter) == true);

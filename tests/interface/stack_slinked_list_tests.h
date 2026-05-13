@@ -6,7 +6,10 @@
 #include "tests/implementations.h"
 
 #undef MAKE_STACK
-#define MAKE_STACK(name) struct stack_int name = sll_int_as_stack_int((cvx_container *)sll_int_new())
+#define MAKE_STACK(name) \
+    struct slinked_int name##_; \
+    sll_int_init(&name##_, NULL); \
+    struct stack_int name = sll_int_as_stack_int((cvx_container *)&name##_)
 
 /* ---- push / count ---- */
 

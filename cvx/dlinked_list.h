@@ -55,18 +55,10 @@ struct ITERATOR
     struct NODE *cursor; // NULL when index == target->count (past-end position)
 };
 
-// Non-allocating initializers
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_);
-struct SNAME FUNC(_copy)(struct SNAME *_self_);
-
-// Allocating initializers
-struct SNAME *FUNC(_new)(void);
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_);
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_);
-
-// Destructors
-void FUNC(_drop)(struct SNAME *_self_);
-void FUNC(_clear)(struct SNAME *_self_);
+// Initializers and destructors
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv);
+void FUNC(_drop)(struct SNAME *self);
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
 
 // Getters
 size_t FUNC(_count)(struct SNAME *_self_);
@@ -106,179 +98,64 @@ void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_);
 V FUNC(_iter_value)(struct ITERATOR *_iter_);
 size_t FUNC(_iter_index)(struct ITERATOR *_iter_);
 
-struct SNAME FUNC(_init)(struct VTAB_V *_vtabv_)
+void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv)
 {
-    struct SNAME _res_ = (struct SNAME){ 0 };
-    _res_.super.tag = TAG;
-    _res_.vtabv = _vtabv_;
-    return _res_;
+    *self = (struct SNAME){ 0 };
+    self->vtabv = vtabv;
+    self->super.tag = TAG;
+    self->super.flag = CVX_FLAG_OK;
 }
 
-struct SNAME FUNC(_copy)(struct SNAME *_self_)
+void FUNC(_drop)(struct SNAME *self)
 {
-    struct SNAME _res_ = FUNC(_init)(_self_->vtabv);
-    _res_.super.flag = CVX_FLAG_OK;
+    if (!self)
+        return;
+    struct NODE *curr = self->head;
+    while (curr)
+    {
+        struct NODE *next = curr->next;
+        if (self->vtabv && self->vtabv->drop)
+            self->vtabv->drop(curr->value);
+        free(curr);
+        curr = next;
+    }
+    self->head = NULL;
+    self->tail = NULL;
+    self->count = 0;
+}
 
-    struct NODE *_curr_ = _self_->head;
+void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
+{
+    FUNC(_init)(clone, orig->vtabv);
+    struct NODE *_curr_ = orig->head;
     while (_curr_)
     {
-        struct NODE *_new_node_ = malloc(sizeof(struct NODE));
-        if (!_new_node_)
+        struct NODE *new_node = malloc(sizeof(struct NODE));
+        if (!new_node)
         {
-            struct NODE *_curr_ = _res_.head;
-            while (_curr_)
-            {
-                struct NODE *_next_ = _curr_->next;
-                if (_res_.vtabv && _res_.vtabv->drop)
-                    _res_.vtabv->drop(_curr_->value);
-                free(_curr_);
-                _curr_ = _next_;
-            }
-            _res_.head = NULL;
-            _res_.tail = NULL;
-            _res_.count = 0;
-            _res_.super.flag = CVX_FLAG_ALLOC;
-            return _res_;
+            FUNC(_drop)(clone);
+            clone->super.flag = CVX_FLAG_ALLOC;
+            orig->super.flag = CVX_FLAG_ALLOC;
+            return;
         }
-
-        _new_node_->next = NULL;
-        _new_node_->prev = _res_.tail;
-
-        if (_self_->vtabv && _self_->vtabv->clone)
-            _new_node_->value = _self_->vtabv->clone(_curr_->value);
-        else
-            _new_node_->value = _curr_->value;
-
-        if (!_res_.head)
+        new_node->next = NULL;
+        new_node->prev = clone->tail;
+        new_node->value = (clone->vtabv && clone->vtabv->clone) ? clone->vtabv->clone(_curr_->value)
+                                                                : _curr_->value;
+        if (!clone->head)
         {
-            _res_.head = _new_node_;
-            _res_.tail = _new_node_;
+            clone->head = new_node;
+            clone->tail = new_node;
         }
         else
         {
-            _res_.tail->next = _new_node_;
-            _res_.tail = _new_node_;
+            clone->tail->next = new_node;
+            clone->tail = new_node;
         }
-
-        _res_.count++;
+        clone->count++;
         _curr_ = _curr_->next;
     }
-
-    return _res_;
-}
-
-struct SNAME *FUNC(_new)(void)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->head = NULL;
-    _res_->tail = NULL;
-    _res_->count = 0;
-    _res_->vtabv = NULL;
-
-    return _res_;
-}
-
-struct SNAME *FUNC(_new_with)(struct VTAB_V *_vtabv_)
-{
-    struct SNAME *_res_ = malloc(sizeof(struct SNAME));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->head = NULL;
-    _res_->tail = NULL;
-    _res_->count = 0;
-    _res_->vtabv = _vtabv_;
-
-    return _res_;
-}
-
-struct SNAME *FUNC(_clone)(struct SNAME *_orig_)
-{
-    struct SNAME *_copy_ = FUNC(_new)();
-    if (!_copy_)
-        return NULL;
-
-    _copy_->vtabv = _orig_->vtabv;
-
-    struct NODE *_curr_ = _orig_->head;
-    while (_curr_)
-    {
-        struct NODE *_new_node_ = malloc(sizeof(struct NODE));
-        if (!_new_node_)
-        {
-            FUNC(_drop)(_copy_);
-            _orig_->super.flag = CVX_FLAG_ALLOC;
-            return NULL;
-        }
-
-        _new_node_->next = NULL;
-        _new_node_->prev = _copy_->tail;
-
-        if (_copy_->vtabv && _copy_->vtabv->clone)
-            _new_node_->value = _copy_->vtabv->clone(_curr_->value);
-        else
-            _new_node_->value = _curr_->value;
-
-        if (!_copy_->head)
-        {
-            _copy_->head = _new_node_;
-            _copy_->tail = _new_node_;
-        }
-        else
-        {
-            _copy_->tail->next = _new_node_;
-            _copy_->tail = _new_node_;
-        }
-
-        _copy_->count++;
-        _curr_ = _curr_->next;
-    }
-
-    _orig_->super.flag = CVX_FLAG_ALLOC;
-    _copy_->super.flag = CVX_FLAG_OK;
-    return _copy_;
-}
-
-void FUNC(_drop)(struct SNAME *_self_)
-{
-    struct NODE *_curr_ = _self_->head;
-    while (_curr_)
-    {
-        struct NODE *_next_ = _curr_->next;
-        if (_self_->vtabv && _self_->vtabv->drop)
-            _self_->vtabv->drop(_curr_->value);
-        free(_curr_);
-        _curr_ = _next_;
-    }
-
-    free(_self_);
-}
-
-void FUNC(_clear)(struct SNAME *_self_)
-{
-    struct NODE *_curr_ = _self_->head;
-    while (_curr_)
-    {
-        struct NODE *_next_ = _curr_->next;
-        if (_self_->vtabv && _self_->vtabv->drop)
-            _self_->vtabv->drop(_curr_->value);
-        free(_curr_);
-        _curr_ = _next_;
-    }
-
-    _self_->head = NULL;
-    _self_->tail = NULL;
-    _self_->count = 0;
-    _self_->super.flag = CVX_FLAG_OK;
+    orig->super.flag = CVX_FLAG_OK;
 }
 
 size_t FUNC(_count)(struct SNAME *_self_)
@@ -719,11 +596,8 @@ size_t FUNC(_iter_index)(struct ITERATOR *_iter_)
 ///
 
 // clang-format off
-cvx_container *FUNC_PROXY(_new)(void) { return (cvx_container *)FUNC(_new)(); }
-cvx_container *FUNC_PROXY(_new_with)(struct VTAB_V *_vtabv_) { return (cvx_container *)FUNC(_new_with)(_vtabv_); }
-cvx_container *FUNC_PROXY(_clone)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_clone)((struct SNAME *)_col_); }
+void FUNC_PROXY(_clone)(cvx_container *_orig_, cvx_container *_clone_) { CVX_CONTAINER_GUARDS(TAG, _orig_, ); FUNC(_clone)((struct SNAME *)_orig_, (struct SNAME *)_clone_); }
 void FUNC_PROXY(_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_drop)((struct SNAME *)_col_); }
-void FUNC_PROXY(_clear)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_clear)((struct SNAME *)_col_); }
 size_t FUNC_PROXY(_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, 0); return FUNC(_count)((struct SNAME *)_col_); }
 bool FUNC_PROXY(_empty)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, false); return FUNC(_empty)((struct SNAME *)_col_); }
 V FUNC_PROXY(_front)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_front)((struct SNAME *)_col_); }
@@ -761,7 +635,6 @@ struct ITERATOR FUNC_PROXY(_iter_init_end)(cvx_container *_col_) { struct ITERAT
 #ifdef IMPL_STACK
 #define INTERFACE IMPL_STACK
 
-#define IMPL_NEW FUNC_PROXY(_new)
 #define IMPL_DROP FUNC_PROXY(_drop)
 #define IMPL_CLONE FUNC_PROXY(_clone)
 #define IMPL_PUSH FUNC_PROXY(_push_front)
@@ -773,7 +646,6 @@ struct ITERATOR FUNC_PROXY(_iter_init_end)(cvx_container *_col_) { struct ITERAT
 #include "cvx/interface/stack_cast.h"
 #undef IMPL_STACK
 
-#undef IMPL_NEW
 #undef IMPL_DROP
 #undef IMPL_CLONE
 #undef IMPL_PUSH
@@ -786,9 +658,7 @@ struct ITERATOR FUNC_PROXY(_iter_init_end)(cvx_container *_col_) { struct ITERAT
 #ifdef IMPL_QUEUE
 #define INTERFACE IMPL_QUEUE
 
-#define IMPL_NEW FUNC_PROXY(_new)
 #define IMPL_DROP FUNC_PROXY(_drop)
-#define IMPL_CLONE FUNC_PROXY(_clone)
 #define IMPL_ENQUEUE FUNC_PROXY(_push_back)
 #define IMPL_DEQUEUE FUNC_PROXY(_pop_front)
 #define IMPL_COUNT FUNC_PROXY(_count)
@@ -796,9 +666,7 @@ struct ITERATOR FUNC_PROXY(_iter_init_end)(cvx_container *_col_) { struct ITERAT
 #include "cvx/interface/queue_cast.h"
 #undef IMPL_QUEUE
 
-#undef IMPL_NEW
 #undef IMPL_DROP
-#undef IMPL_CLONE
 #undef IMPL_ENQUEUE
 #undef IMPL_DEQUEUE
 #undef IMPL_COUNT
@@ -807,8 +675,6 @@ struct ITERATOR FUNC_PROXY(_iter_init_end)(cvx_container *_col_) { struct ITERAT
 #ifdef IMPL_DEQUE
 #define INTERFACE IMPL_DEQUE
 
-#define IMPL_NEW FUNC_PROXY(_new)
-#define IMPL_CLONE FUNC_PROXY(_clone)
 #define IMPL_DROP FUNC_PROXY(_drop)
 #define IMPL_PUSH_FRONT FUNC_PROXY(_push_front)
 #define IMPL_PUSH_BACK FUNC_PROXY(_push_back)
@@ -821,8 +687,6 @@ struct ITERATOR FUNC_PROXY(_iter_init_end)(cvx_container *_col_) { struct ITERAT
 #include "cvx/interface/deque_cast.h"
 #undef IMPL_DEQUE
 
-#undef IMPL_NEW
-#undef IMPL_CLONE
 #undef IMPL_DROP
 #undef IMPL_PUSH_FRONT
 #undef IMPL_PUSH_BACK

@@ -17,18 +17,8 @@
 #include "tests/dynamic_array_tests.h"
 
 #include "tests/slinked_list_tests.h"
-#include "tests/slinked_list_guard_tests.h"
-#include "tests/slinked_list_iter_tests.h"
-#include "tests/slinked_list_vtab_tests.h"
-#include "tests/slinked_list_alloc_tests.h"
-#include "tests/iter/slinked_list_iter_forward.h"
 
 #include "tests/dlinked_list_tests.h"
-#include "tests/dlinked_list_guard_tests.h"
-#include "tests/dlinked_list_iter_tests.h"
-#include "tests/dlinked_list_vtab_tests.h"
-#include "tests/dlinked_list_alloc_tests.h"
-#include "tests/iter/dlinked_list_iter_bidirectional.h"
 
 #include "tests/interval_set_tests.h"
 #include "tests/interval_set_guard_tests.h"
@@ -65,18 +55,8 @@ int main(void)
         run_stack_slinked_list_tests,
 
         run_slinked_list_tests,
-        run_slinked_list_guard_tests,
-        run_slinked_list_iter_tests,
-        run_slinked_list_vtab_tests,
-        run_slinked_list_alloc_tests,
-        run_slinked_list_iter_forward_tests,
 
         run_dlinked_list_tests,
-        run_dlinked_list_guard_tests,
-        run_dlinked_list_iter_tests,
-        run_dlinked_list_vtab_tests,
-        run_dlinked_list_alloc_tests,
-        run_dlinked_list_iter_bidirectional_tests,
 
         run_interval_set_tests,
         run_interval_set_guard_tests,
