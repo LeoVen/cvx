@@ -2,7 +2,7 @@
 ///
 /// Status
 ///
-///   [ ] concept
+///   [x] concept
 ///   [ ] v1
 ///   [ ] tests
 ///   [ ] refine
@@ -19,9 +19,11 @@
 ///     ...
 /// }
 ///
-/// Parameters:
-/// - NULLCHECKS: if enabled, items are checked against NULL and skipped if so
+/// Parameters
+///
+/// - SPARSE: if set, items are checked against SPARSE and skipped if so
 /// - CIRCULAR: if enabled, the pointer wraps around the buffer's capacity
+///
 
 #include "cvx/fallback.h"
 
@@ -46,34 +48,82 @@
 #define ITERATOR CVX_(SNAME, _iter)
 #define ITER_TAG (TAG * CVX_ITER_TAG_MULT)
 
-struct ITERATOR
+struct SNAME
 {
     cvx_container super;
     size_t capacity;
     size_t pointer;
     size_t index;
+    size_t count;
+#ifdef CIRCULAR
+    size_t head;
+#endif
     T *buffer;
 };
 
-/**
- * Create a new Buffer Iterator
- *
- * @param buffer A pointer to the start of the buffer
- * @param capacity Total buffer capacity
- * @param index Where to start iteration
- *
- * @return A stack allocated buffer iterator
- */
-struct ITERATOR FUNC(_init_iter)(T *buffer, size_t capacity, size_t index)
+#ifdef CIRCULAR
+struct SNAME FUNC(_init)(T *buffer, size_t capacity, size_t count, size_t head)
+#else
+struct SNAME FUNC(_init)(T *buffer, size_t capacity, size_t count)
+#endif
 {
-    struct ITERATOR result = { 0 };
-    result.buffer = buffer;
-    result.capacity = capacity;
-    result.pointer = index;
-    return (struct ITERATOR){
+    struct SNAME result = {
         .buffer = buffer,
         .capacity = capacity,
+        .count = count,
         .index = 0,
+#ifdef CIRCULAR
+        .head = head,
+        .pointer = head,
+#else
+        .pointer = 0,
+#endif
         .super = { .flag = CVX_FLAG_OK, .tag = ITER_TAG },
     };
+#ifdef SPARSE
+    while (result.pointer < result.capacity && result.buffer[result.pointer] == SPARSE)
+        result.pointer++;
+#endif
+    return result;
 }
+
+bool FUNC(_at_end)(struct SNAME *self)
+{
+    return self->index == self->count;
+}
+
+bool FUNC(_at_start)(struct SNAME *self)
+{
+    return self->index == 0;
+}
+
+void FUNC(_next)(struct SNAME *self)
+{
+    if (FUNC(_at_end)(self))
+        return;
+#ifdef CIRCULAR
+    self->pointer = (self->pointer + 1) % self->capacity;
+#elif defined(SPARSE)
+    self->pointer++;
+    while (self->pointer < self->capacity && self->buffer[self->pointer] == SPARSE)
+        self->pointer++;
+#else
+    self->pointer++;
+#endif
+    self->index++;
+}
+
+size_t FUNC(_index)(struct SNAME *self)
+{
+    return self->index;
+}
+
+T FUNC(_value)(struct SNAME *self)
+{
+    return self->buffer[self->pointer];
+}
+
+#ifdef CIRCULAR
+#undef CIRCULAR
+#endif
+#include "cvx/undef.h"
