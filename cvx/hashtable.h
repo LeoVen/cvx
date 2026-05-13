@@ -1,3 +1,18 @@
+/// hashtable.h
+///
+/// Status
+///
+///   [x] concept
+///   [x] v1
+///   [ ] tests
+///   [ ] refine
+///   [ ] stabilize
+///
+/// TO-DOs
+///
+///   - Implemnt OPTs, so the hashtable can be customized with linear-probing
+///     or separate chaining.
+///
 /// Open-addressing, linear-probing hashtable with robin hood insertion.
 ///
 /// Keys are hashed with vtabk->hash and compared with vtabk->comp.

@@ -1,3 +1,16 @@
+/// interval_set.h
+///
+/// Status
+///
+///   [x] concept
+///   [ ] v1
+///   [ ] tests
+///   [ ] refine
+///   [ ] stabilize
+///
+/// Interval set with right-open intervals [lo, hi).
+///
+
 #include "cvx/fallback.h"
 #include "cvx/flags.h"
 

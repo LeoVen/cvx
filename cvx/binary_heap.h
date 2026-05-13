@@ -1,6 +1,12 @@
 /// binary_heap.h
 ///
-/// Status: refine
+/// Status
+///
+///   [x] concept
+///   [x] v1
+///   [ ] tests
+///   [ ] refine
+///   [ ] stabilize
 ///
 /// This is a Binary Heap implementation that uses a contiguous array to store
 /// its elements. The indices are a simulated to form a binary tree.

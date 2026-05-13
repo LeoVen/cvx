@@ -1,3 +1,13 @@
+/// interval_map.h
+///
+/// Status
+///
+///   [x] concept
+///   [ ] v1
+///   [ ] tests
+///   [ ] refine
+///   [ ] stabilize
+///
 /// Interval map with right-open intervals [lo, hi).
 ///
 /// Maps each [lo, hi) → V, with no overlapping intervals.  On _add, existing
