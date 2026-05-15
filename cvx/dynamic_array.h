@@ -461,8 +461,6 @@ struct IT_SNAME FUNC(_iter_end)(struct SNAME *self)
 {
     return FUNC(_iter__end)(self->buffer, self->capacity, self->count);
 }
-// TODO:
-// change _start and _end functions if they are embedded -> the DS itself will then define these
 #endif
 
 #include "cvx/undef.h"

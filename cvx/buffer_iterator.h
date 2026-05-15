@@ -100,8 +100,6 @@ struct BI_SNAME
     V *buffer;
 };
 
-// TODO:
-// change _start and _end functions if they are embedded -> the DS itself will then define these
 #ifdef CIRCULAR
 struct BI_SNAME BI_FUNC(BI_FN_START)(V *buffer, size_t capacity, size_t count, size_t head);
 #else
