@@ -35,6 +35,11 @@
 #define TAG 99
 #endif
 
+// Iterators implementation
+#ifndef ITERATOR
+#define ITERATOR
+#endif
+
 // Interface macros
 #ifndef INTERFACE
 #define INTERFACE cvx_fallback_interface

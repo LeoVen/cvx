@@ -1,25 +1,25 @@
 #include <stdio.h>
 
-#define T int
-#define PFX bi
+#define V int
+#define PFX bi_iter
 #define SNAME bufiter
 #define TAG 10
 #include "cvx/buffer_iterator.h"
 typedef struct bufiter bufiter;
 
-#define T int
-#define PFX ci
+#define V int
+#define PFX ci_iter
 #define SNAME citer
 #define TAG 10
 #define CIRCULAR
 #include "cvx/buffer_iterator.h"
 typedef struct citer citer;
 
-#define T int
-#define PFX si
+#define V int
+#define PFX si_iter
 #define SNAME siter
 #define TAG 10
-#define SPARSE 0
+#define SPARSE(item) item == 0
 #include "cvx/buffer_iterator.h"
 typedef struct siter siter;
 
@@ -38,23 +38,33 @@ int main(void)
 
     printf("Linear Buffer Iterator:\n");
 
-    for (bufiter iter = bi_init(items, size, 50); !bi_at_end(&iter); bi_next(&iter))
+    for (bufiter iterf = bi_iter_start(items, size, 50), iterb = bi_iter_end(items, size, 50);
+         !bi_iter_at_end(&iterf) && !bi_iter_at_start(&iterb);
+         bi_iter_next(&iterf), bi_iter_prev(&iterb))
     {
-        printf("[%2zu] = %2d\n", bi_index(&iter), bi_value(&iter));
+        printf("[%2zu] = %2d\t[%2zu] = %2d\n", bi_iter_index(&iterf), bi_iter_value(&iterf),
+               bi_iter_index(&iterb), bi_iter_value(&iterb));
     }
 
     printf("\nCircular Buffer Iterator:\n");
 
-    for (citer iter = ci_init(items, size, 50, 75); !ci_at_end(&iter); ci_next(&iter))
+    for (citer iterf = ci_iter_start(items, size, 50, 75), iterb = ci_iter_end(items, size, 50, 25);
+         !ci_iter_at_end(&iterf) && !ci_iter_at_start(&iterb);
+         ci_iter_next(&iterf), ci_iter_prev(&iterb))
     {
-        printf("[%2zu] = %2d\n", ci_index(&iter), ci_value(&iter));
+        printf("[%2zu] = %2d\t[%2zu] = %2d\n", ci_iter_index(&iterf), ci_iter_value(&iterf),
+               ci_iter_index(&iterb), ci_iter_value(&iterb));
     }
 
     printf("\nSparse Buffer Iterator:\n");
 
-    for (siter iter = si_init(items, size, size - not_counted); !si_at_end(&iter); si_next(&iter))
+    for (siter iterf = si_iter_start(items, size, size - not_counted),
+               iterb = si_iter_end(items, size, size - not_counted);
+         !si_iter_at_end(&iterf) && !si_iter_at_start(&iterb);
+         si_iter_next(&iterf), si_iter_prev(&iterb))
     {
-        printf("[%2zu] = %2d\n", si_index(&iter), si_value(&iter));
+        printf("[%2zu] = %2d\t[%2zu] = %2d\n", si_iter_index(&iterf), si_iter_value(&iterf),
+               si_iter_index(&iterb), si_iter_value(&iterb));
     }
 
     printf("\n");

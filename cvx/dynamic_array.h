@@ -33,8 +33,6 @@
 
 #define FUNC(X) CVX_(PFX, X)
 #define FUNC_PROXY(X) CVX_(PFX, CVX_(__proxy, X))
-#define ITERATOR CVX_(SNAME, _iter)
-#define ITER_TAG (TAG * CVX_ITER_TAG_MULT)
 #define VTAB_V CVX_(SNAME, _vtabv)
 
 struct VTAB_V
@@ -49,13 +47,6 @@ struct SNAME
     size_t count;
     struct VTAB_V *vtabv;
     V *buffer;
-};
-
-struct ITERATOR
-{
-    cvx_container super;
-    size_t index;
-    struct SNAME *target;
 };
 
 // Initializers and destructors
@@ -91,28 +82,6 @@ void FUNC(_sort)(struct SNAME *_self_);
 // cvx_contaier *FUNC(_sublist)(cvx_container *_col_, size_t from, size_t to);
 // bool FUNC(_contains)(cvx_container *_col_, V item);
 // void FUNC(_index_of)(cvx_container *_col_, V item, size_t *out);
-
-// Iterators
-struct ITERATOR FUNC(_iter_init_start)(struct SNAME *_target_);
-struct ITERATOR FUNC(_iter_init_end)(struct SNAME *_target_);
-struct ITERATOR *FUNC(_iter_start)(struct SNAME *_target_);
-struct ITERATOR *FUNC(_iter_end)(struct SNAME *_target_);
-void FUNC(_iter_drop)(struct ITERATOR *_iter_);
-// Iterator state
-bool FUNC(_iter_at_start)(struct ITERATOR *_iter_);
-bool FUNC(_iter_at_end)(struct ITERATOR *_iter_);
-size_t FUNC(_iter_count)(struct ITERATOR *_iter_);
-// Iterator movement
-void FUNC(_iter_to_start)(struct ITERATOR *_iter_);
-void FUNC(_iter_to_end)(struct ITERATOR *_iter_);
-void FUNC(_iter_next)(struct ITERATOR *_iter_);
-void FUNC(_iter_prev)(struct ITERATOR *_iter_);
-void FUNC(_iter_forward)(struct ITERATOR *_iter_, size_t _steps_);
-void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_);
-void FUNC(_iter_go_to)(struct ITERATOR *_iter_, size_t _index_);
-// Iterator access
-V FUNC(_iter_value)(struct ITERATOR *_iter_);
-size_t FUNC(_iter_index)(struct ITERATOR *_iter_);
 
 // Private functions
 bool FUNC(__assert_capacity)(struct SNAME *_self_);
@@ -244,6 +213,8 @@ void FUNC(_push_front)(struct SNAME *_self_, V _item_)
 
 void FUNC(_push_at)(struct SNAME *_self_, V _item_, size_t _index_)
 {
+    // TODO: allow negative indices
+    // e.g. if negative -> insert at self->capacity + index
     if (_index_ > _self_->count)
     {
         _self_->super.flag = CVX_FLAG_RANGE;
@@ -290,6 +261,8 @@ V FUNC(_pop_front)(struct SNAME *_self_)
 
 V FUNC(_pop_at)(struct SNAME *_self_, size_t _index_)
 {
+    // TODO: allow negative indices
+    // e.g. if negative -> insert at self->capacity + index
     if (_self_->count == 0)
     {
         _self_->super.flag = CVX_FLAG_EMPTY;
@@ -428,169 +401,6 @@ void FUNC(_swap)(struct SNAME *_self_, size_t _idx1_, size_t _idx2_)
 
 ///
 ///
-/// ITERATOR
-///
-///
-
-struct ITERATOR FUNC(_iter_init_start)(struct SNAME *_target_)
-{
-    struct ITERATOR _res_ = { 0 };
-
-    _res_.super.tag = ITER_TAG;
-    _res_.target = _target_;
-    _res_.index = 0;
-    _res_.super.flag = CVX_FLAG_OK;
-
-    return _res_;
-}
-
-struct ITERATOR FUNC(_iter_init_end)(struct SNAME *_target_)
-{
-    struct ITERATOR _res_ = { 0 };
-
-    _res_.super.tag = ITER_TAG;
-    _res_.target = _target_;
-    _res_.index = _target_->count;
-    _res_.super.flag = CVX_FLAG_OK;
-
-    return _res_;
-}
-
-struct ITERATOR *FUNC(_iter_start)(struct SNAME *_target_)
-{
-    struct ITERATOR *_res_ = malloc(sizeof(struct ITERATOR));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = ITER_TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->index = 0;
-    _res_->target = _target_;
-
-    return _res_;
-}
-
-struct ITERATOR *FUNC(_iter_end)(struct SNAME *_target_)
-{
-    struct ITERATOR *_res_ = malloc(sizeof(struct ITERATOR));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = ITER_TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->target = _target_;
-    _res_->index = _target_->count;
-
-    return _res_;
-}
-
-void FUNC(_iter_drop)(struct ITERATOR *_iter_)
-{
-    free(_iter_);
-}
-
-bool FUNC(_iter_at_start)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->index == 0;
-}
-
-bool FUNC(_iter_at_end)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->index == _iter_->target->count;
-}
-
-size_t FUNC(_iter_count)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->target->count;
-}
-
-void FUNC(_iter_to_start)(struct ITERATOR *_iter_)
-{
-    _iter_->index = 0;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_to_end)(struct ITERATOR *_iter_)
-{
-    _iter_->index = _iter_->target->count;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_next)(struct ITERATOR *_iter_)
-{
-    if (_iter_->index >= _iter_->target->count)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return;
-    }
-
-    _iter_->index++;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_prev)(struct ITERATOR *_iter_)
-{
-    if (_iter_->index == 0)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return;
-    }
-
-    _iter_->index--;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_forward)(struct ITERATOR *_iter_, size_t _steps_)
-{
-    size_t _remaining_ = _iter_->target->count - _iter_->index;
-    _iter_->index += (_steps_ < _remaining_) ? _steps_ : _remaining_;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_)
-{
-    _iter_->index -= (_steps_ < _iter_->index) ? _steps_ : _iter_->index;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_go_to)(struct ITERATOR *_iter_, size_t _index_)
-{
-    if (_index_ > _iter_->target->count)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return;
-    }
-
-    _iter_->index = _index_;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-// Iterator access
-V FUNC(_iter_value)(struct ITERATOR *_iter_)
-{
-    if (_iter_->index >= _iter_->target->count)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return (V){ 0 };
-    }
-
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->target->buffer[_iter_->index];
-}
-
-size_t FUNC(_iter_index)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->index;
-}
-
-///
-///
 /// PRIVATE FUNCTIONS
 ///
 ///
@@ -629,5 +439,30 @@ bool FUNC(__assert_buffer)(struct SNAME *self, size_t capacity)
     self->capacity = capacity;
     return true;
 }
+
+///
+///
+/// ITERATOR
+///
+///
+#ifdef ITERATOR
+#define EMBEDDED
+#define IT_V V
+#define IT_SNAME CVX_(SNAME, _iter)
+#define IT_PFX CVX_(PFX, _iter)
+#define IT_TAG (TAG * 10)
+#include "cvx/buffer_iterator.h"
+#define IT_SNAME CVX_(SNAME, _iter)
+struct IT_SNAME FUNC(_iter_start)(struct SNAME *self)
+{
+    return FUNC(_iter__start)(self->buffer, self->capacity, self->count);
+}
+struct IT_SNAME FUNC(_iter_end)(struct SNAME *self)
+{
+    return FUNC(_iter__end)(self->buffer, self->capacity, self->count);
+}
+// TODO:
+// change _start and _end functions if they are embedded -> the DS itself will then define these
+#endif
 
 #include "cvx/undef.h"
