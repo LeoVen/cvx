@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>cvx: cvx</title>
+<title>CVX: cvx</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">cvx
+   <div id="projectname">CVX
    </div>
   </td>
  </tr>
@@ -113,7 +113,7 @@ Quick start</h1>
 <div class="line"><span class="preprocessor">#define PFX        ml             </span><span class="comment">// prefix to all functions</span></div>
 <div class="line"><span class="preprocessor">#define TAG        1              </span><span class="comment">// unique tag for this implementation</span></div>
 <div class="line"><span class="preprocessor">#define IMPL_STACK stack          </span><span class="comment">// generates the ml_as_stack() &quot;cast&quot;</span></div>
-<div class="line"><span class="preprocessor">#include &quot;cvx/dynamic_array.h&quot;</span></div>
+<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="dynamic__array_8h.html">cvx/dynamic_array.h</a>&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#include &quot;<a class="code" href="interface__macros_8h.html">cvx/interface_macros.h</a>&quot;</span> <span class="comment">// utility macros when working with interfaces</span></div>
 <div class="line"> </div>
@@ -130,6 +130,7 @@ Quick start</h1>
 <div class="line"> </div>
 <div class="line">    <a class="code hl_define" href="interface__macros_8h.html#a60298c043ef47dd2cc7fdf0ad55d2cfb">cvx_drop</a>(&amp;s);</div>
 <div class="line">}</div>
+<div class="ttc" id="adynamic__array_8h_html"><div class="ttname"><a href="dynamic__array_8h.html">dynamic_array.h</a></div><div class="ttdoc">An array that gets reallocated as needed.</div></div>
 <div class="ttc" id="ainterface__macros_8h_html"><div class="ttname"><a href="interface__macros_8h.html">interface_macros.h</a></div></div>
 <div class="ttc" id="ainterface__macros_8h_html_a2cb9c5d7b9f36c7deabf8206025bfce9"><div class="ttname"><a href="interface__macros_8h.html#a2cb9c5d7b9f36c7deabf8206025bfce9">cvx_pop</a></div><div class="ttdeci">#define cvx_pop(ds)</div><div class="ttdef"><b>Definition</b> interface_macros.h:21</div></div>
 <div class="ttc" id="ainterface__macros_8h_html_a60298c043ef47dd2cc7fdf0ad55d2cfb"><div class="ttname"><a href="interface__macros_8h.html#a60298c043ef47dd2cc7fdf0ad55d2cfb">cvx_drop</a></div><div class="ttdeci">#define cvx_drop(ds)</div><div class="ttdef"><b>Definition</b> interface_macros.h:10</div></div>
@@ -145,9 +146,9 @@ Available implementations</h2>
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Header   </th><th class="markdownTableHeadNone">Description   </th><th class="markdownTableHeadNone">Interfaces   </th><th class="markdownTableHeadNone">Iterators    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>cvx/dynamic_array.h</code>   </td><td class="markdownTableBodyNone">Growable contiguous array. O(1) amortized push/pop at back, O(n) at front.   </td><td class="markdownTableBodyNone"><code>stack</code>   </td><td class="markdownTableBodyNone"><code>random_access_iterator</code>    </td></tr>
+<td class="markdownTableBodyNone"><code><a class="el" href="dynamic__array_8h.html" title="An array that gets reallocated as needed.">cvx/dynamic_array.h</a></code>   </td><td class="markdownTableBodyNone">Growable contiguous array. O(1) amortized push/pop at back, O(n) at front.   </td><td class="markdownTableBodyNone"><code>stack</code>   </td><td class="markdownTableBodyNone"><code>random_access_iterator</code>    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>cvx/slinked_list.h</code>   </td><td class="markdownTableBodyNone">Singly linked list with head and tail pointers. O(1) push/pop at front; O(n) at back.   </td><td class="markdownTableBodyNone"><code>stack</code>, <code>queue</code>   </td><td class="markdownTableBodyNone"><code>forward_iterator</code>   </td></tr>
+<td class="markdownTableBodyNone"><code><a class="el" href="slinked__list_8h.html">cvx/slinked_list.h</a></code>   </td><td class="markdownTableBodyNone">Singly linked list with head and tail pointers. O(1) push/pop at front; O(n) at back.   </td><td class="markdownTableBodyNone"><code>stack</code>, <code>queue</code>   </td><td class="markdownTableBodyNone"><code>forward_iterator</code>   </td></tr>
 </table>
 <h2><a class="anchor" id="autotoc_md11"></a>
 Available interfaces</h2>
@@ -212,7 +213,7 @@ User type virtual tables</h2>
 <div class="line"><span class="preprocessor">#define SNAME     str_array</span></div>
 <div class="line"><span class="preprocessor">#define PFX       sa</span></div>
 <div class="line"><span class="preprocessor">#define TAG       1</span></div>
-<div class="line"><span class="preprocessor">#include &quot;cvx/dynamic_array.h&quot;</span></div>
+<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="dynamic__array_8h.html">cvx/dynamic_array.h</a>&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">char</span> *str_copy(<span class="keywordtype">char</span> *s) { <span class="keywordflow">return</span> strdup(s); }</div>
 <div class="line"><span class="keywordtype">void</span>  str_drop(<span class="keywordtype">char</span> *s) { free(s); }</div>
@@ -235,7 +236,7 @@ User type virtual tables</h2>
 <div class="line">    sa_drop(col);   <span class="comment">// calls str_drop on each element, then frees the array</span></div>
 <div class="line">    sa_drop(clone);</div>
 <div class="line">}</div>
-<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:135</div></div>
+<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:134</div></div>
 </div><!-- fragment --><p>For key-value structures a matching <code>struct &lt;SNAME&gt;_vtabk</code> is generated for the key type, with the same set of fields.</p>
 <h1><a class="anchor" id="autotoc_md17"></a>
 Interfaces</h1>
@@ -249,13 +250,13 @@ Declaring an interface</h2>
 <div class="line"><span class="comment">// produces: struct stack { cvx_container *instance; struct stack_vtable *vtable; }</span></div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md19"></a>
 Casting an implementation to an interface</h2>
-<p>Define <code>IMPL_&lt;<a class="el" href="structINTERFACE.html">INTERFACE</a>&gt;</code> when you want to be able to cast an implementation to an interface:</p>
+<p>Define <code>IMPL_&lt;INTERFACE&gt;</code> when you want to be able to cast an implementation to an interface:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#define V         int</span></div>
 <div class="line"><span class="preprocessor">#define SNAME     my_list</span></div>
 <div class="line"><span class="preprocessor">#define PFX       ml</span></div>
 <div class="line"><span class="preprocessor">#define TAG       1</span></div>
 <div class="line"><span class="preprocessor">#define IMPL_STACK stack   </span><span class="comment">// must match the INTERFACE name declared above</span></div>
-<div class="line"><span class="preprocessor">#include &quot;cvx/dynamic_array.h&quot;</span></div>
+<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="dynamic__array_8h.html">cvx/dynamic_array.h</a>&quot;</span></div>
 <div class="line"><span class="comment">// generates: struct stack ml_as_stack(cvx_container *instance)</span></div>
 </div><!-- fragment --><p>Then cast at construction time:</p>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>stack s = ml_as_stack(ml_new_with(8));</div>
@@ -277,9 +278,9 @@ Error handling</h1>
 <div class="line"><span class="comment">// or via an interface:</span></div>
 <div class="line"><a class="code hl_define" href="interface__macros_8h.html#a2cb9c5d7b9f36c7deabf8206025bfce9">cvx_pop</a>(&amp;s, &amp;out);</div>
 <div class="line"><span class="keywordflow">if</span> (<a class="code hl_define" href="interface__macros_8h.html#ae10638b116788953e39ddd93c3390345">cvx_flag</a>(&amp;s) != <a class="code hl_enumvalue" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a>) { <span class="comment">/* handle error */</span> }</div>
-<div class="ttc" id="abinary__heap_8h_html_a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d"><div class="ttname"><a href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a></div><div class="ttdeci">@ CVX_FLAG_OK</div><div class="ttdoc">No errors.</div><div class="ttdef"><b>Definition</b> binary_heap.h:79</div></div>
+<div class="ttc" id="abinary__heap_8h_html_a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d"><div class="ttname"><a href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a></div><div class="ttdeci">@ CVX_FLAG_OK</div><div class="ttdoc">No errors.</div><div class="ttdef"><b>Definition</b> binary_heap.h:78</div></div>
 <div class="ttc" id="ainterface__macros_8h_html_ae10638b116788953e39ddd93c3390345"><div class="ttname"><a href="interface__macros_8h.html#ae10638b116788953e39ddd93c3390345">cvx_flag</a></div><div class="ttdeci">#define cvx_flag(ds)</div><div class="ttdef"><b>Definition</b> interface_macros.h:13</div></div>
-<div class="ttc" id="astructcvx__container_html_af81e481cd8a5f440e2f536f60f892154"><div class="ttname"><a href="structcvx__container.html#af81e481cd8a5f440e2f536f60f892154">cvx_container::flag</a></div><div class="ttdeci">enum cvx_flags flag</div><div class="ttdef"><b>Definition</b> binary_heap.h:137</div></div>
+<div class="ttc" id="astructcvx__container_html_af81e481cd8a5f440e2f536f60f892154"><div class="ttname"><a href="structcvx__container.html#af81e481cd8a5f440e2f536f60f892154">cvx_container::flag</a></div><div class="ttdeci">enum cvx_flags flag</div><div class="ttdef"><b>Definition</b> binary_heap.h:136</div></div>
 </div><!-- fragment --><table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Flag   </th><th class="markdownTableHeadNone">Value   </th><th class="markdownTableHeadNone">Meaning    </th></tr>

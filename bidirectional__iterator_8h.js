@@ -1,5 +1,5 @@
 var bidirectional__iterator_8h =
 [
-    [ "INTERFACE_vtable", "structINTERFACE__vtable.html", "structINTERFACE__vtable" ],
-    [ "INTERFACE", "structINTERFACE.html", "structINTERFACE" ]
+    [ "cvx_fallback_interface_vtable", "structcvx__fallback__interface__vtable.html", "structcvx__fallback__interface__vtable" ],
+    [ "cvx_fallback_interface", "structcvx__fallback__interface.html", "structcvx__fallback__interface" ]
 ];

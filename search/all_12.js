@@ -8,8 +8,8 @@ var searchData=
   ['testing_5',['Testing',['../index.html#autotoc_md27',1,'']]],
   ['to_20an_20interface_6',['Casting an implementation to an interface',['../index.html#autotoc_md19',1,'']]],
   ['to_20dos_7',['TO-DOs',['../hashtable_8h.html#autotoc_md4',1,'']]],
-  ['to_5fend_8',['to_end',['../structINTERFACE__vtable.html#af5824ffc96b00f407a313fc97d0e8b18',1,'INTERFACE_vtable']]],
-  ['to_5fstart_9',['to_start',['../structINTERFACE__vtable.html#acfe447a731652797d64ab69132016c9e',1,'INTERFACE_vtable']]],
+  ['to_5fend_8',['to_end',['../structcvx__fallback__interface__vtable.html#af706bfa56350d10a2404925e359474ae',1,'cvx_fallback_interface_vtable']]],
+  ['to_5fstart_9',['to_start',['../structcvx__fallback__interface__vtable.html#aebb25b45044fb2b6d5f7c33c7ecdee46',1,'cvx_fallback_interface_vtable']]],
   ['tt_20cvx_5fflag_5fwrong_5ftag_20tt_10',['Tags and &lt;tt&gt;CVX_FLAG_WRONG_TAG&lt;/tt&gt;',['../index.html#autotoc_md22',1,'']]],
   ['type_20virtual_20tables_11',['User type virtual tables',['../index.html#autotoc_md16',1,'']]]
 ];

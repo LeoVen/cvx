@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['replace_0',['replace',['../structINTERFACE__vtable.html#aedfc1e3d7ea6d418187455ca73de0c9c',1,'INTERFACE_vtable']]]
+  ['replace_0',['replace',['../structcvx__fallback__interface__vtable.html#acb025479592728412660460abe6990f4',1,'cvx_fallback_interface_vtable']]]
 ];

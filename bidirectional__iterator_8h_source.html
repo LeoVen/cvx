@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>cvx: cvx/iter/bidirectional_iterator.h Source File</title>
+<title>CVX: cvx/iter/bidirectional_iterator.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">cvx
+   <div id="projectname">CVX
    </div>
   </td>
  </tr>
@@ -113,26 +113,26 @@ $(document).ready(function(){initNavTree('bidirectional__iterator_8h_source.html
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">struct </span>VTABLE(INTERFACE)</div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>{</div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="comment">// constructors and destructors</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#a99854936810852eb3fe9f12bd5938290">   17</a></span>    <a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *(*start)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#a97a5be28b6ddef64b363fd853cc4307c">   18</a></span>    <a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *(*end)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a8cf5904c776fb5caf31270add8d4b6ee">   17</a></span>    <a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *(*start)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a5b218c12f7fda13339b5589fb38cc0fc">   18</a></span>    <a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *(*end)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    void (*drop)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="comment">// state</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#a62dafaf8766e7ff0fbc805fc5563fac3">   21</a></span>    bool (*at_start)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#a60d85a5dd7bbdd652dd87bb3c7e83c25">   22</a></span>    bool (*at_end)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#acf92df5d65c996d15228afad12a5fc2b">   21</a></span>    bool (*at_start)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a595fab7ba778c3e3676bf17860a7def7">   22</a></span>    bool (*at_end)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    size_t (*count)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="comment">// movement</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#acfe447a731652797d64ab69132016c9e">   25</a></span>    void (*to_start)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#af5824ffc96b00f407a313fc97d0e8b18">   26</a></span>    void (*to_end)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#a5ea8b0d1286abc757508cd52f7fbab32">   27</a></span>    void (*next)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#aa54ca6bb942b2b320b2dac64b91b14d7">   28</a></span>    void (*prev)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#ad79abd21bfaa12a2a4f5608ccb9dc1a9">   29</a></span>    void (*forward)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *, <span class="keywordtype">size_t</span> steps);</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#ad24634a650a8ed5222950cef09a33a00">   30</a></span>    void (*backward)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *, <span class="keywordtype">size_t</span> steps);</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#aebb25b45044fb2b6d5f7c33c7ecdee46">   25</a></span>    void (*to_start)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#af706bfa56350d10a2404925e359474ae">   26</a></span>    void (*to_end)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a631cc9b52a89e2686e553c3487984134">   27</a></span>    void (*next)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a76f026354b7f4caf259d4dda575f9dbe">   28</a></span>    void (*prev)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a9a47e8145699bf664bf4995e774f0966">   29</a></span>    void (*forward)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *, <span class="keywordtype">size_t</span> steps);</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a2f7c0de44ccf2e55145d656b8b789207">   30</a></span>    void (*backward)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *, <span class="keywordtype">size_t</span> steps);</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="comment">// access</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#aeea867fcce8fc9cc6dd137e4ce9cae4c">   32</a></span>    V (*value)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="structINTERFACE__vtable.html#add99899e6d16aaba704547342c0ccafc">   33</a></span>    size_t (*index)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a296ada19930d80c90deca267a47baeac">   32</a></span>    V (*value)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="structcvx__fallback__interface__vtable.html#a87dd9a0371bbc09533949ba93679f7f2">   33</a></span>    size_t (*index)(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *);</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>};</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">struct </span><a class="code hl_struct" href="structINTERFACE.html">INTERFACE</a></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">struct </span>INTERFACE</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>{</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *instance;</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keyword">struct </span>VTABLE(INTERFACE) * vtable;</div>
@@ -140,8 +140,7 @@ $(document).ready(function(){initNavTree('bidirectional__iterator_8h_source.html
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#undef INTERFACE</span></div>
 <div class="ttc" id="acore_8h_html"><div class="ttname"><a href="core_8h.html">core.h</a></div></div>
-<div class="ttc" id="astructINTERFACE_html"><div class="ttname"><a href="structINTERFACE.html">INTERFACE</a></div><div class="ttdef"><b>Definition</b> deque.h:30</div></div>
-<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:135</div></div>
+<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:134</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

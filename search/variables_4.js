@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['end_0',['end',['../structINTERFACE__vtable.html#a97a5be28b6ddef64b363fd853cc4307c',1,'INTERFACE_vtable']]],
-  ['enqueue_1',['enqueue',['../structINTERFACE__vtable.html#ac17be52a65c58678d74c05a6a6e0fbef',1,'INTERFACE_vtable']]]
+  ['end_0',['end',['../structcvx__fallback__interface__vtable.html#a5b218c12f7fda13339b5589fb38cc0fc',1,'cvx_fallback_interface_vtable']]],
+  ['enqueue_1',['enqueue',['../structcvx__fallback__interface__vtable.html#aa773816d0aa1cf5f6f60cab585aae3af',1,'cvx_fallback_interface_vtable']]]
 ];

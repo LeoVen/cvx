@@ -1,5 +1,5 @@
 var deque__cast_8h =
 [
-    [ "_as_INTERFACE", "deque__cast_8h.html#ab9d7a260232fb54f3e134f8f3ffdd740", null ],
-    [ "cvx_vtables_SNAME_as_INTERFACE", "deque__cast_8h.html#a7e0fad1a52b865b27f5b3b3b6a76628e", null ]
+    [ "_as_cvx_fallback_interface", "deque__cast_8h.html#a70445bf401235bc1e7a9e5ab74324d24", null ],
+    [ "cvx_vtables_cvx_fallback_as_cvx_fallback_interface", "deque__cast_8h.html#adeff61e2eacb73a4d902b364a6b44734", null ]
 ];

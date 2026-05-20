@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>cvx: cvx/interface/queue_cast.h Source File</title>
+<title>CVX: cvx/interface/queue_cast.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -25,7 +25,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">cvx
+   <div id="projectname">CVX
    </div>
   </td>
  </tr>
@@ -120,7 +120,7 @@ $(document).ready(function(){initNavTree('queue__cast_8h_source.html',''); initR
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;<a class="code" href="core_8h.html">cvx/core.h</a>&quot;</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
 <div class="foldopen" id="foldopen00023" data-start="{" data-end="};">
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="queue__cast_8h.html#a7e0fad1a52b865b27f5b3b3b6a76628e">   23</a></span><span class="keyword">struct </span>VTABLE(INTERFACE) <a class="code hl_define" href="core_8h.html#a741153a7f64913f7136de57137b2a733">GLOBAL_VTABLE</a>(SNAME, _as_, <a class="code hl_struct" href="structINTERFACE.html">INTERFACE</a>) = {</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="queue__cast_8h.html#adeff61e2eacb73a4d902b364a6b44734">   23</a></span><span class="keyword">struct </span>VTABLE(INTERFACE) <a class="code hl_define" href="core_8h.html#a741153a7f64913f7136de57137b2a733">GLOBAL_VTABLE</a>(SNAME, _as_, INTERFACE) = {</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    .drop = IMPL_DROP,</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    .enqueue = IMPL_ENQUEUE,</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    .dequeue = IMPL_DEQUEUE,</div>
@@ -129,10 +129,10 @@ $(document).ready(function(){initNavTree('queue__cast_8h_source.html',''); initR
 </div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
 <div class="foldopen" id="foldopen00030" data-start="{" data-end="}">
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="queue__cast_8h.html#ab0f650506bcbb849bf364db5339d2d04">   30</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structINTERFACE.html">INTERFACE</a> FUNC(<a class="code hl_define" href="core_8h.html#a30fa55876d7d18737091b2ec0d609a53">CVX_</a>(_as_, <a class="code hl_struct" href="structINTERFACE.html">INTERFACE</a>))(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *instance)</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="queue__cast_8h.html#aeed0c3dafcb710c3e80049ccbdc7c542">   30</a></span><span class="keyword">struct </span>INTERFACE FUNC(<a class="code hl_define" href="core_8h.html#a30fa55876d7d18737091b2ec0d609a53">CVX_</a>(_as_, INTERFACE))(<a class="code hl_struct" href="structcvx__container.html">cvx_container</a> *instance)</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordflow">return</span> (<span class="keyword">struct</span> <a class="code hl_struct" href="structINTERFACE.html">INTERFACE</a>){</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        .<a class="code hl_variable" href="structINTERFACE.html#ae608e1c49ba63f965407ff953d2b39b0">vtable</a> = &amp;<a class="code hl_define" href="core_8h.html#a741153a7f64913f7136de57137b2a733">GLOBAL_VTABLE</a>(SNAME, _as_, <a class="code hl_struct" href="structINTERFACE.html">INTERFACE</a>),</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordflow">return</span> (<span class="keyword">struct</span> INTERFACE){</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        .vtable = &amp;<a class="code hl_define" href="core_8h.html#a741153a7f64913f7136de57137b2a733">GLOBAL_VTABLE</a>(SNAME, _as_, INTERFACE),</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        .instance = instance,</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    };</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>}</div>
@@ -142,9 +142,7 @@ $(document).ready(function(){initNavTree('queue__cast_8h_source.html',''); initR
 <div class="ttc" id="acore_8h_html"><div class="ttname"><a href="core_8h.html">core.h</a></div></div>
 <div class="ttc" id="acore_8h_html_a30fa55876d7d18737091b2ec0d609a53"><div class="ttname"><a href="core_8h.html#a30fa55876d7d18737091b2ec0d609a53">CVX_</a></div><div class="ttdeci">#define CVX_(A, B)</div><div class="ttdef"><b>Definition</b> core.h:10</div></div>
 <div class="ttc" id="acore_8h_html_a741153a7f64913f7136de57137b2a733"><div class="ttname"><a href="core_8h.html#a741153a7f64913f7136de57137b2a733">GLOBAL_VTABLE</a></div><div class="ttdeci">#define GLOBAL_VTABLE(SNAME, X, NAME)</div><div class="ttdef"><b>Definition</b> core.h:13</div></div>
-<div class="ttc" id="astructINTERFACE_html"><div class="ttname"><a href="structINTERFACE.html">INTERFACE</a></div><div class="ttdef"><b>Definition</b> deque.h:30</div></div>
-<div class="ttc" id="astructINTERFACE_html_ae608e1c49ba63f965407ff953d2b39b0"><div class="ttname"><a href="structINTERFACE.html#ae608e1c49ba63f965407ff953d2b39b0">INTERFACE::vtable</a></div><div class="ttdeci">struct INTERFACE_vtable * vtable</div><div class="ttdef"><b>Definition</b> deque.h:32</div></div>
-<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:135</div></div>
+<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:134</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

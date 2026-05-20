@@ -1,9 +1,9 @@
 var searchData=
 [
   ['val_0',['val',['../structinterval__map__entry.html#a9d78249a30d4ef0a7e6f4698d00fbac7',1,'interval_map_entry::val'],['../structhashtable__entry.html#a758b1315171c576ec9195ad0c2de0300',1,'hashtable_entry::val']]],
-  ['value_1',['value',['../structdlinked__list__node.html#aca604c2bcbab8b1d14521594b2be7168',1,'dlinked_list_node::value'],['../structslinked__list__node.html#a32b1632645e4b52313959f01b8a7467d',1,'slinked_list_node::value'],['../structINTERFACE__vtable.html#aeea867fcce8fc9cc6dd137e4ce9cae4c',1,'INTERFACE_vtable::value']]],
+  ['value_1',['value',['../structdlinked__list__node.html#aca604c2bcbab8b1d14521594b2be7168',1,'dlinked_list_node::value'],['../structslinked__list__node.html#a32b1632645e4b52313959f01b8a7467d',1,'slinked_list_node::value'],['../structcvx__fallback__interface__vtable.html#a296ada19930d80c90deca267a47baeac',1,'cvx_fallback_interface_vtable::value']]],
   ['virtual_20tables_2',['User type virtual tables',['../index.html#autotoc_md16',1,'']]],
   ['vtabk_3',['vtabk',['../structinterval__map.html#a7c326ad22ca2f383d287c1e124a7ff2b',1,'interval_map::vtabk'],['../structhashtable.html#aa22e16fee21457aa2b832766b97f2ce8',1,'hashtable::vtabk']]],
-  ['vtable_4',['vtable',['../structINTERFACE.html#ae608e1c49ba63f965407ff953d2b39b0',1,'INTERFACE::vtable'],['../core_8h.html#a6a6f0f326970377726aec219cfbaa677',1,'VTABLE:&#160;core.h']]],
+  ['vtable_4',['vtable',['../structcvx__fallback__interface.html#a889d66ed8984f4077a2f2b41f37f72e2',1,'cvx_fallback_interface::vtable'],['../core_8h.html#a6a6f0f326970377726aec219cfbaa677',1,'VTABLE:&#160;core.h']]],
   ['vtabv_5',['vtabv',['../structbinary__heap.html#afc67e071d6235dd4942b89a2e9c1587b',1,'binary_heap::vtabv'],['../structcircular__buffer.html#a5c9e987298cb3a85e6508076c0144188',1,'circular_buffer::vtabv'],['../structdlinked__list.html#a58113b82fa446c64f11f232e05135e52',1,'dlinked_list::vtabv'],['../structdynamic__array.html#a83b1a08b8d01191cfa14b2e80a1873ab',1,'dynamic_array::vtabv'],['../structhashtable.html#a83bea89ca875c5e1970ff068f9c75164',1,'hashtable::vtabv'],['../structinterval__map.html#a00b93ff7f528ce225671e7f5d5d7bd18',1,'interval_map::vtabv'],['../structinterval__set.html#adaecd5f5a2f382f4d398e3c0b86184c6',1,'interval_set::vtabv'],['../structslinked__list.html#ad895826fbcc959763358a81b8982ddb7',1,'slinked_list::vtabv']]]
 ];

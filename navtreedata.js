@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "cvx", "index.html", [
+  [ "CVX", "index.html", [
     [ "Quick start", "index.html#autotoc_md7", null ],
     [ "Available Implementations and Interfaces", "index.html#autotoc_md9", [
       [ "Available implementations", "index.html#autotoc_md10", null ],
@@ -72,10 +72,10 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"dlinked__list_8h.html#a363d5432241382812e755e9cc215d7a5a9824c2a93b24295ed8c22ca34ef77967",
-"index.html#autotoc_md10",
-"slinked__list_8h.html#a394dc1cf07d266b1690f3296a2a949e8",
-"structslinked__list.html#acd4e9a72b09d2abdf8f43fa28ae5d815"
+"dlinked__list_8h.html#a363d5432241382812e755e9cc215d7a5ab8d1298f72d0fe9389cf8d3a2fec381f",
+"hashtable_8h.html#ad25317a5ffc13f32a076f8e4e34ded70a59c187a9582371ecad33d4c788939faf",
+"slinked__list_8h.html#a1db18eec8215029940bdb1480ba5097a",
+"structinterval__set.html#a6761c85ca1ac2a42990a679e6920680f"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
