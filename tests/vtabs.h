@@ -21,7 +21,7 @@ int int_comp(int a, int b)
     return a - b;
 }
 
-int int_copy(int a)
+int int_clone(int a)
 {
     cvx_counter_vtab_copy += 1;
     return a;
