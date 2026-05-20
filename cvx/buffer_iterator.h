@@ -47,7 +47,7 @@
 #ifndef TAG
 #error "cvx/buffer_iterator.h requires TAG to be defined (a unique integer tag, e.g. #define TAG 1)"
 #endif
-#else
+#else // EMBEDDED
 #ifndef IT_V
 #error "cvx/buffer_iterator.h requires IT_V to be defined (the element type, e.g. #define IT_V int)"
 #endif
@@ -60,7 +60,7 @@
 #ifndef IT_TAG
 #error "cvx/buffer_iterator.h requires IT_TAG to be defined (a unique integer tag, e.g. #define IT_TAG 1)"
 #endif
-#endif
+#endif // EMBEDDED
 // Options
 #if defined(SPARSE) && defined(CIRCULAR)
 #error "cvx/buffer_iterator.h can only define one macro option at a time"
@@ -284,3 +284,4 @@ V BI_FUNC(_value)(struct BI_SNAME *self)
 #ifndef EMBEDDED
 #include "cvx/undef.h"
 #endif
+#undef EMBEDDED

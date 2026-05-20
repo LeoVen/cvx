@@ -1,27 +1,31 @@
-/// hashtable.h
-///
-/// Status
-///
-///   [x] concept
-///   [x] v1
-///   [ ] tests
-///   [ ] refine
-///   [ ] stabilize
-///
-/// TO-DOs
-///
-///   - Implemnt OPTs, so the hashtable can be customized with linear-probing
-///     or separate chaining.
-///
-/// Open-addressing, linear-probing hashtable with robin hood insertion.
-///
-/// Keys are hashed with vtabk->hash and compared with vtabk->comp.
-/// Both are required; vtabk->clone / vtabk->drop and vtabv->clone / vtabv->drop
-/// are optional.
-///
-/// Capacity is always a prime number.  A resize is triggered whenever
-/// count >= capacity * load (default load = 0.7).  Deletions use tombstones;
-/// tombstones are purged on resize.
+/**
+ * @file hashtable.h
+ * @author Leonardo Vencovsky
+ * @brief A configurable hashtable that maps K -> V
+ * @version 0.0.1
+ *
+ * ## Required Macros
+ * - **K**: Type name of keys in the map.
+ * - **V**: Type name of values in the map.
+ * - **SNAME**: Prefix of all declared structs (e.g. `struct SNAME`, `struct SNAME_vtabv`, etc.).
+ * - **PFX**: Prefix of all functions, including implementation detail ones.
+ * - **TAG**: A unique integer tag that identifies this data structure.
+ *
+ * ## Implementation
+ *
+ * Open-addressing, linear-probing hashtable with robin hood insertion.
+ *
+ * Keys are hashed with vtabk->hash and compared with vtabk->comp.
+ * Both are required; vtabk->clone / vtabk->drop and vtabv->clone / vtabv->drop
+ * are optional.
+ *
+ * Capacity is always a prime number.  A resize is triggered whenever `count >= capacity * load`
+ * (default load = 0.7).  Deletions use tombstones, which are purged on resize.
+ *
+ * ## TO-DOs
+ * - Implement OPTs, so the hashtable can be customized with linear-probing or
+ *   separate chaining.
+ */
 
 #include "cvx/fallback.h"
 

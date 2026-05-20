@@ -1,12 +1,12 @@
-/// This file defines a bunch of macros only when I'm using clangd LSP.
-/// This is enabled by defining CVX_ENABLE_FALLBACK.
-///
-/// Since I'm writing templating headers, clangd doesn't understand where macros
-/// like V and SNAME are defined. Basically, the header files aren't stand-alone
-/// and I need to include this file at the top of every templating header file
-/// so that I get decent LSP features.
-///
-/// It is not ideal, but I think it works for now.
+// This file defines a bunch of macros only when I'm using clangd LSP.
+// This is enabled by defining CVX_ENABLE_FALLBACK.
+//
+// Since I'm writing templating headers, clangd doesn't understand where macros
+// like V and SNAME are defined. Basically, the header files aren't stand-alone
+// and I need to include this file at the top of every templating header file
+// so that I get decent LSP features.
+//
+// It is not ideal, but I think it works for now.
 #ifndef CVX_FALLBACK_H
 #define CVX_FALLBACK_H
 

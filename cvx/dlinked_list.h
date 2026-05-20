@@ -1,15 +1,15 @@
-/// dlinked_list.h
-///
-/// Status
-///
-///   [x] concept
-///   [x] v1
-///   [ ] tests
-///   [ ] refine
-///   [ ] stabilize
-///
-/// A doubly-linked list container.
-///
+/**
+ * @file dlinked_list.h
+ * @author Leonardo Vencovsky
+ * @brief An array that gets reallocated as needed.
+ * @version 0.0.1
+ *
+ * ## Required Macros
+ * - **V**: Type name of the array buffer.
+ * - **SNAME**: Prefix of all declared structs (e.g. `struct SNAME`, `struct SNAME_vtabv`, etc.).
+ * - **PFX**: Prefix of all functions, including implementation detail ones.
+ * - **TAG**: A unique integer tag that identifies this data structure.
+ */
 
 #include "cvx/fallback.h"
 
