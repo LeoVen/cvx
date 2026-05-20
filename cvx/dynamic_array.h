@@ -54,37 +54,78 @@ void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, size_t capacity);
 void FUNC(_drop)(struct SNAME *self);
 void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
 // Getters
-enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
-size_t FUNC(_count)(struct SNAME *_self_);
-size_t FUNC(_capacity)(struct SNAME *_self_);
+enum cvx_flags FUNC(_flag)(struct SNAME *self);
+size_t FUNC(_count)(struct SNAME *self);
+size_t FUNC(_capacity)(struct SNAME *self);
 // Operations
-bool FUNC(_empty)(struct SNAME *_self_);
-bool FUNC(_full)(struct SNAME *_self_);
-V FUNC(_front)(struct SNAME *_self_);
-V FUNC(_back)(struct SNAME *_self_);
-V FUNC(_get)(struct SNAME *_self_, size_t _index_);
-void FUNC(_push_front)(struct SNAME *_self_, V _item_);
-void FUNC(_push_at)(struct SNAME *_self_, V _item_, size_t _index_);
-void FUNC(_push_back)(struct SNAME *_self_, V _item_);
-V FUNC(_pop_front)(struct SNAME *_self_);
-V FUNC(_pop_at)(struct SNAME *_self_, size_t _index_);
-V FUNC(_pop_back)(struct SNAME *_self_);
-V FUNC(_replace_front)(struct SNAME *_self_, V _new_);
-V FUNC(_replace_back)(struct SNAME *_self_, V _new_);
-void FUNC(_swap)(struct SNAME *_self_, size_t _idx1_, size_t _idx2_);
+bool FUNC(_empty)(struct SNAME *self);
+bool FUNC(_full)(struct SNAME *self);
+V FUNC(_front)(struct SNAME *self);
+V FUNC(_back)(struct SNAME *self);
+V FUNC(_get)(struct SNAME *self, size_t index);
+/**
+ * @brief Inserts an element at position 0.
+ * @note If the buffer is full, it gets reallocated. The new buffer's size
+ * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
+ * @param self a non-NULL pointer to a initialized dynamic array
+ * @param item the item to be inserted at the front
+ *
+ * **Error Handling**
+ * - `CVX_FLAG_ALLOC` - if reallocation of the buffer fails
+ */
+void FUNC(_push_front)(struct SNAME *self, V item);
+/**
+ * @brief Inserts an `item` at position `index`.
+ * @note If the buffer is full, it gets reallocated. The new buffer's size
+ * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
+ * @param self a non-NULL pointer to a initialized dynamic array
+ * @param item the item to be inserted at `index`
+ * @param index must be 0 <= index <= count
+ *
+ * **Error Handling**
+ * - `CVX_FLAG_ALLOC` - if reallocation of the buffer fails
+ */
+void FUNC(_push_at)(struct SNAME *self, V item, size_t index);
+/**
+ * @brief Inserts an element at the last position.
+ * @note If the buffer is full, it gets reallocated. The new buffer's size
+ * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
+ * @param self a non-NULL pointer to a initialized dynamic array
+ * @param item the item to be inserted at the back
+ *
+ * **Error Handling**
+ * - `CVX_FLAG_ALLOC` - if reallocation of the buffer fails
+ */
+void FUNC(_push_back)(struct SNAME *self, V item);
+/**
+ * @brief Removes an item at the index 0.
+ * @note `_pop*` functions do not cause the buffer to shrink.
+ * @param self a non-NULL pointer to a initialized dynamic array
+ * @return the item at position 0, or a "0" initialized item if the array
+ * is empty.
+ *
+ * **Error Handling**
+ * - `CVX_FLAG_EMPTY` - if there are no items in the dynamic array.
+ */
+V FUNC(_pop_front)(struct SNAME *self);
+V FUNC(_pop_at)(struct SNAME *self, size_t index);
+V FUNC(_pop_back)(struct SNAME *self);
+V FUNC(_replace_front)(struct SNAME *self, V _new_);
+V FUNC(_replace_back)(struct SNAME *self, V _new_);
+void FUNC(_swap)(struct SNAME *self, size_t idx1, size_t idx2);
 // Extras
-int FUNC(_compare)(struct SNAME *_left_, struct SNAME *_right_);
-void FUNC(_sort)(struct SNAME *_self_);
+int FUNC(_compare)(struct SNAME *left, struct SNAME *right);
+void FUNC(_sort)(struct SNAME *self);
 
 // TODO:
 // void FUNC(_seq_push_front)(cvx_container *_col_, V *values, size_t size);
 // void FUNC(_seq_push_back)(cvx_container *_col_, V *values, size_t size);
 // cvx_contaier *FUNC(_sublist)(cvx_container *_col_, size_t from, size_t to);
 // bool FUNC(_contains)(cvx_container *_col_, V item);
-// void FUNC(_index_of)(cvx_container *_col_, V item, size_t *out);
+// void FUNC(indexof)(cvx_container *_col_, V item, size_t *out);
 
 // Private functions
-bool FUNC(__assert_capacity)(struct SNAME *_self_);
+bool FUNC(__assert_capacity)(struct SNAME *self);
 bool FUNC(__assert_buffer)(struct SNAME *self, size_t capacity);
 
 void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, size_t capacity)
@@ -136,267 +177,265 @@ void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone)
     clone->count = orig->count;
 }
 
-enum cvx_flags FUNC(_flag)(struct SNAME *_self_)
+enum cvx_flags FUNC(_flag)(struct SNAME *self)
 {
-    return _self_->super.flag;
+    return self->super.flag;
 }
 
-size_t FUNC(_count)(struct SNAME *_self_)
+size_t FUNC(_count)(struct SNAME *self)
 {
-    return _self_->count;
+    return self->count;
 }
 
-size_t FUNC(_capacity)(struct SNAME *_self_)
+size_t FUNC(_capacity)(struct SNAME *self)
 {
-    return _self_->capacity;
+    return self->capacity;
 }
 
-bool FUNC(_empty)(struct SNAME *_self_)
+bool FUNC(_empty)(struct SNAME *self)
 {
-    return _self_->count == 0;
+    return self->count == 0;
 }
 
-bool FUNC(_full)(struct SNAME *_self_)
+bool FUNC(_full)(struct SNAME *self)
 {
-    return _self_->count >= _self_->capacity;
+    return self->count >= self->capacity;
 }
 
-V FUNC(_front)(struct SNAME *_self_)
+V FUNC(_front)(struct SNAME *self)
 {
-    if (_self_->count == 0 || _self_->buffer == NULL)
+    if (self->count == 0 || self->buffer == NULL)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    _self_->super.flag = CVX_FLAG_OK;
-    return _self_->buffer[0];
+    self->super.flag = CVX_FLAG_OK;
+    return self->buffer[0];
 }
 
-V FUNC(_back)(struct SNAME *_self_)
+V FUNC(_back)(struct SNAME *self)
 {
-    if (_self_->count == 0 || _self_->buffer == NULL)
+    if (self->count == 0 || self->buffer == NULL)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    _self_->super.flag = CVX_FLAG_OK;
-    return _self_->buffer[_self_->count - 1];
+    self->super.flag = CVX_FLAG_OK;
+    return self->buffer[self->count - 1];
 }
 
-V FUNC(_get)(struct SNAME *_self_, size_t _index_)
+V FUNC(_get)(struct SNAME *self, size_t index)
 {
-    if (_index_ >= _self_->count)
+    if (index >= self->count)
     {
-        _self_->super.flag = CVX_FLAG_RANGE;
+        self->super.flag = CVX_FLAG_RANGE;
         return (V){ 0 };
     }
 
-    _self_->super.flag = CVX_FLAG_OK;
-    return _self_->buffer[_index_];
+    self->super.flag = CVX_FLAG_OK;
+    return self->buffer[index];
 }
 
-void FUNC(_push_front)(struct SNAME *_self_, V _item_)
+void FUNC(_push_front)(struct SNAME *self, V item)
 {
-    if (!FUNC(__assert_capacity)(_self_))
+    if (!FUNC(__assert_capacity)(self))
         return;
 
-    if (_self_->count > 0)
+    if (self->count > 0)
     {
-        memmove(_self_->buffer + 1, _self_->buffer, _self_->count * sizeof(V));
+        memmove(self->buffer + 1, self->buffer, self->count * sizeof(V));
     }
 
-    _self_->buffer[0] = _item_;
-    _self_->count++;
+    self->buffer[0] = item;
+    self->count++;
 }
 
-void FUNC(_push_at)(struct SNAME *_self_, V _item_, size_t _index_)
+void FUNC(_push_at)(struct SNAME *self, V item, size_t index)
 {
     // TODO: allow negative indices
     // e.g. if negative -> insert at self->capacity + index
-    if (_index_ > _self_->count)
+    if (index > self->count)
     {
-        _self_->super.flag = CVX_FLAG_RANGE;
+        self->super.flag = CVX_FLAG_RANGE;
         return;
     }
 
-    if (!FUNC(__assert_capacity)(_self_))
+    if (!FUNC(__assert_capacity)(self))
         return;
 
-    memmove(_self_->buffer + _index_ + 1, _self_->buffer + _index_,
-            (_self_->count - _index_) * sizeof(V));
+    memmove(self->buffer + index + 1, self->buffer + index, (self->count - index) * sizeof(V));
 
-    _self_->buffer[_index_] = _item_;
-    _self_->count++;
-    _self_->super.flag = CVX_FLAG_OK;
+    self->buffer[index] = item;
+    self->count++;
+    self->super.flag = CVX_FLAG_OK;
 }
 
-void FUNC(_push_back)(struct SNAME *_self_, V _item_)
+void FUNC(_push_back)(struct SNAME *self, V item)
 {
-    if (!FUNC(__assert_capacity)(_self_))
+    if (!FUNC(__assert_capacity)(self))
         return;
 
-    _self_->buffer[_self_->count++] = _item_;
+    self->buffer[self->count++] = item;
 }
 
-V FUNC(_pop_front)(struct SNAME *_self_)
+V FUNC(_pop_front)(struct SNAME *self)
 {
-    if (_self_->count == 0)
+    if (self->count == 0)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    V _val_ = _self_->buffer[0];
+    V _val_ = self->buffer[0];
 
-    memmove(_self_->buffer, _self_->buffer + 1, (_self_->count - 1) * sizeof(V));
+    memmove(self->buffer, self->buffer + 1, (self->count - 1) * sizeof(V));
 
-    _self_->buffer[_self_->count - 1] = (V){ 0 };
-    _self_->count--;
-    _self_->super.flag = CVX_FLAG_OK;
+    self->buffer[self->count - 1] = (V){ 0 };
+    self->count--;
+    self->super.flag = CVX_FLAG_OK;
 
     return _val_;
 }
 
-V FUNC(_pop_at)(struct SNAME *_self_, size_t _index_)
+V FUNC(_pop_at)(struct SNAME *self, size_t index)
 {
     // TODO: allow negative indices
     // e.g. if negative -> insert at self->capacity + index
-    if (_self_->count == 0)
+    if (self->count == 0)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    if (_index_ >= _self_->count)
+    if (index >= self->count)
     {
-        _self_->super.flag = CVX_FLAG_RANGE;
+        self->super.flag = CVX_FLAG_RANGE;
         return (V){ 0 };
     }
 
-    V _val_ = _self_->buffer[_index_];
+    V _val_ = self->buffer[index];
 
-    memmove(_self_->buffer + _index_, _self_->buffer + _index_ + 1,
-            (_self_->count - _index_ - 1) * sizeof(V));
+    memmove(self->buffer + index, self->buffer + index + 1, (self->count - index - 1) * sizeof(V));
 
-    _self_->buffer[_self_->count - 1] = (V){ 0 };
-    _self_->count--;
-    _self_->super.flag = CVX_FLAG_OK;
+    self->buffer[self->count - 1] = (V){ 0 };
+    self->count--;
+    self->super.flag = CVX_FLAG_OK;
 
     return _val_;
 }
 
-V FUNC(_pop_back)(struct SNAME *_self_)
+V FUNC(_pop_back)(struct SNAME *self)
 {
-    if (_self_->count == 0)
+    if (self->count == 0)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    V _val_ = _self_->buffer[_self_->count - 1];
+    V _val_ = self->buffer[self->count - 1];
 
-    _self_->buffer[_self_->count - 1] = (V){ 0 };
-    _self_->count--;
-    _self_->super.flag = CVX_FLAG_OK;
+    self->buffer[self->count - 1] = (V){ 0 };
+    self->count--;
+    self->super.flag = CVX_FLAG_OK;
 
     return _val_;
 }
 
-V FUNC(_replace_front)(struct SNAME *_self_, V _new_)
+V FUNC(_replace_front)(struct SNAME *self, V _new_)
 {
-    if (_self_->count == 0)
+    if (self->count == 0)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    V _old_ = _self_->buffer[0];
-    _self_->buffer[0] = _new_;
-    _self_->super.flag = CVX_FLAG_OK;
+    V _old_ = self->buffer[0];
+    self->buffer[0] = _new_;
+    self->super.flag = CVX_FLAG_OK;
 
     return _old_;
 }
 
-V FUNC(_replace_back)(struct SNAME *_self_, V _new_)
+V FUNC(_replace_back)(struct SNAME *self, V _new_)
 {
-    if (_self_->count == 0)
+    if (self->count == 0)
     {
-        _self_->super.flag = CVX_FLAG_EMPTY;
+        self->super.flag = CVX_FLAG_EMPTY;
         return (V){ 0 };
     }
 
-    V _old_ = _self_->buffer[_self_->count - 1];
-    _self_->buffer[_self_->count - 1] = _new_;
-    _self_->super.flag = CVX_FLAG_OK;
+    V _old_ = self->buffer[self->count - 1];
+    self->buffer[self->count - 1] = _new_;
+    self->super.flag = CVX_FLAG_OK;
 
     return _old_;
 }
 
-int FUNC(_compare)(struct SNAME *_left_, struct SNAME *_right_)
+int FUNC(_compare)(struct SNAME *left, struct SNAME *right)
 {
     CVX_VTAB_COMP(cmp_func, V) = NULL;
 
-    if (_left_->vtabv && _left_->vtabv->comp)
-        cmp_func = _left_->vtabv->comp;
-    else if (_right_->vtabv && _right_->vtabv->comp)
-        cmp_func = _right_->vtabv->comp;
+    if (left->vtabv && left->vtabv->comp)
+        cmp_func = left->vtabv->comp;
+    else if (right->vtabv && right->vtabv->comp)
+        cmp_func = right->vtabv->comp;
     else
     {
-        _left_->super.flag = CVX_FLAG_VTAB;
-        _right_->super.flag = CVX_FLAG_VTAB;
+        left->super.flag = CVX_FLAG_VTAB;
+        right->super.flag = CVX_FLAG_VTAB;
         return 0;
     }
 
-    size_t _min_ = _left_->count < _right_->count ? _left_->count : _right_->count;
+    size_t _min_ = left->count < right->count ? left->count : right->count;
 
     for (size_t i = 0; i < _min_; i++)
     {
-        size_t cmp = cmp_func(_left_->buffer[i], _right_->buffer[i]);
+        size_t cmp = cmp_func(left->buffer[i], right->buffer[i]);
         if (cmp != 0)
             return cmp;
     }
 
-    return _left_->count - _right_->count;
+    return left->count - right->count;
 }
 
-void FUNC(_sort)(struct SNAME *_self_)
+void FUNC(_sort)(struct SNAME *self)
 {
-    if (!_self_->vtabv || !_self_->vtabv->comp)
+    if (!self->vtabv || !self->vtabv->comp)
     {
-        _self_->super.flag = CVX_FLAG_VTAB;
+        self->super.flag = CVX_FLAG_VTAB;
         return;
     }
 
-    if (_self_->count <= 1)
+    if (self->count <= 1)
         return;
 
     // TODO: optimize
-    for (size_t i = 0; i < _self_->count - 1; i++)
+    for (size_t i = 0; i < self->count - 1; i++)
     {
-        for (size_t j = 0; j < _self_->count - 1 - i; j++)
+        for (size_t j = 0; j < self->count - 1 - i; j++)
         {
-            if (_self_->vtabv->comp(_self_->buffer[j], _self_->buffer[j + 1]) > 0)
-                FUNC(_swap)(_self_, j, j + 1);
+            if (self->vtabv->comp(self->buffer[j], self->buffer[j + 1]) > 0)
+                FUNC(_swap)(self, j, j + 1);
         }
     }
 }
 
-void FUNC(_swap)(struct SNAME *_self_, size_t _idx1_, size_t _idx2_)
+void FUNC(_swap)(struct SNAME *self, size_t idx1, size_t idx2)
 {
-    if (_idx1_ > _self_->count || _idx2_ > _self_->count)
+    if (idx1 > self->count || idx2 > self->count)
     {
-        _self_->super.flag = CVX_FLAG_RANGE;
+        self->super.flag = CVX_FLAG_RANGE;
         return;
     }
 
-    if (_idx1_ == _idx2_)
+    if (idx1 == idx2)
         return;
 
-    V _tmp_ = _self_->buffer[_idx1_];
-    _self_->buffer[_idx1_] = _self_->buffer[_idx2_];
-    _self_->buffer[_idx2_] = _tmp_;
+    V tmp = self->buffer[idx1];
+    self->buffer[idx1] = self->buffer[idx2];
+    self->buffer[idx2] = tmp;
 }
 
 ///

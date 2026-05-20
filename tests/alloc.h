@@ -4,26 +4,26 @@
 #include <stdlib.h>
 
 // Counts successful allocations since last reset.
-int cvx_malloc_fail_counter = 0;
+int cvx_alloc_fail_counter = 0;
 // Fail once counter reaches this value. -1 = disabled.
-int cvx_malloc_fail_after = -1;
+int cvx_alloc_fail_after = -1;
 
 static inline void *cvx_malloc(size_t size)
 {
-    if (cvx_malloc_fail_after >= 0 && cvx_malloc_fail_counter >= cvx_malloc_fail_after)
+    if (cvx_alloc_fail_after >= 0 && cvx_alloc_fail_counter >= cvx_alloc_fail_after)
         return NULL;
 
-    cvx_malloc_fail_counter++;
+    cvx_alloc_fail_counter++;
 
     return malloc(size);
 }
 
 static inline void *cvx_realloc(void *ptr, size_t size)
 {
-    if (cvx_malloc_fail_after >= 0 && cvx_malloc_fail_counter >= cvx_malloc_fail_after)
+    if (cvx_alloc_fail_after >= 0 && cvx_alloc_fail_counter >= cvx_alloc_fail_after)
         return NULL;
 
-    cvx_malloc_fail_counter++;
+    cvx_alloc_fail_counter++;
 
     return realloc(ptr, size);
 }
@@ -41,27 +41,27 @@ static inline void *cvx_realloc(void *ptr, size_t size)
 #define CVX_MALLOC_FAIL_NEXT() \
     do \
     { \
-        cvx_malloc_fail_after = 0; \
-        cvx_malloc_fail_counter = 0; \
+        cvx_alloc_fail_after = 0; \
+        cvx_alloc_fail_counter = 0; \
     } while (0)
 
 // Let n allocations succeed, then fail on the (n+1)-th.
 #define CVX_MALLOC_FAIL_AFTER(n) \
     do \
     { \
-        cvx_malloc_fail_after = (n); \
-        cvx_malloc_fail_counter = 0; \
+        cvx_alloc_fail_after = (n); \
+        cvx_alloc_fail_counter = 0; \
     } while (0)
 
 // Disable failure injection and reset counter.
 #define CVX_MALLOC_RESET() \
     do \
     { \
-        cvx_malloc_fail_after = -1; \
-        cvx_malloc_fail_counter = 0; \
+        cvx_alloc_fail_after = -1; \
+        cvx_alloc_fail_counter = 0; \
     } while (0)
 
 // Number of successful allocations since last reset.
-#define CVX_MALLOC_COUNT() cvx_malloc_fail_counter
+#define CVX_MALLOC_COUNT() cvx_alloc_fail_counter
 
 #endif /* CVX_ALLOC_TEST_H */

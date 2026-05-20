@@ -4,6 +4,7 @@
 #include "cvx/flags.h"
 #include "cvxtest.h"
 #include "implementations.h"
+#include "tests/alloc.h"
 #include <stdlib.h>
 
 static void test_da_init(struct cvxtest *t)
@@ -22,6 +23,16 @@ static void test_da_init(struct cvxtest *t)
     CVXCHECK(t, da_capacity(&arr) == 16);
     CVXCHECK(t, da_count(&arr) == 0);
     da_drop(&arr);
+    // Alloc fail
+    CVX_MALLOC_FAIL_NEXT();
+    da_init(&arr, NULL, 10);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_ALLOC);
+    CVX_MALLOC_RESET();
+    // Does not try to alloc when capacity == 0
+    CVX_MALLOC_FAIL_NEXT();
+    da_init(&arr, NULL, 0);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    CVX_MALLOC_RESET();
 }
 
 static void test_da_drop(struct cvxtest *t)
@@ -43,6 +54,8 @@ static void test_da_drop(struct cvxtest *t)
         if (choice == 2)
             da_clone(&arr, &clone);
     }
+    // Drop of null pointer is checked
+    da_drop(NULL);
 }
 
 static void test_da_clone(struct cvxtest *t)
@@ -203,6 +216,15 @@ static void test_da_push_front(struct cvxtest *t)
     CVXCHECK(t, arr.buffer[2] == 2);
     CVXCHECK(t, da_count(&arr) == 3);
     da_drop(&arr);
+    // Alloc fail
+    da_init(&arr, NULL, 2);
+    da_push_front(&arr, 1);
+    da_push_front(&arr, 2);
+    CVX_MALLOC_FAIL_NEXT();
+    da_push_front(&arr, 3);
+    CVX_MALLOC_RESET();
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_ALLOC);
+    da_drop(&arr);
 }
 
 static void test_da_push_at(struct cvxtest *t)
@@ -225,6 +247,15 @@ static void test_da_push_at(struct cvxtest *t)
     da_push_at(&arr, 99, 5);
     CVXCHECK(t, arr.super.flag == CVX_FLAG_RANGE);
     da_drop(&arr);
+    // Alloc fail
+    da_init(&arr, NULL, 2);
+    da_push_at(&arr, 1, 0);
+    da_push_at(&arr, 2, 1);
+    CVX_MALLOC_FAIL_NEXT();
+    da_push_at(&arr, 3, 0);
+    CVX_MALLOC_RESET();
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_ALLOC);
+    da_drop(&arr);
 }
 
 static void test_da_push_back(struct cvxtest *t)
@@ -246,6 +277,15 @@ static void test_da_push_back(struct cvxtest *t)
     CVXCHECK(t, da_count(&arr) == 20);
     CVXCHECK(t, da_capacity(&arr) >= 20);
     CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    da_drop(&arr);
+    // Alloc fail
+    da_init(&arr, NULL, 2);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    CVX_MALLOC_FAIL_NEXT();
+    da_push_back(&arr, 3);
+    CVX_MALLOC_RESET();
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_ALLOC);
     da_drop(&arr);
 }
 
