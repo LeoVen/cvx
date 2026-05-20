@@ -106,6 +106,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/output/html
           publish_branch: documentation
+          cname: cvx.leoven.dev
 
   coverage:
     name: Coverage
