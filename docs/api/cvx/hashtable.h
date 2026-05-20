@@ -1,4 +1,3 @@
-/** @file */
 #define K TKey
 #define V TVal
 #define SNAME hashtable

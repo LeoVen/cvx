@@ -1,4 +1,3 @@
-/** @file */
 #define V TVal
 #define SNAME circular_buffer
 #define PFX cb

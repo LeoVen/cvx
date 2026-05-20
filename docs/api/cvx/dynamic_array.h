@@ -1,4 +1,3 @@
-/** @file */
 #define V TVal
 #define SNAME dynamic_array
 #define PFX da

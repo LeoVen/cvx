@@ -1,4 +1,3 @@
-/** @file */
 #define V TVal
 #define SNAME binary_heap
 #define PFX bh

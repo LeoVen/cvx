@@ -1,4 +1,3 @@
-/** @file */
 #define V TVal
 #define SNAME interval_set
 #define PFX is
