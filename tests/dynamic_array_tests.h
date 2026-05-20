@@ -41,6 +41,12 @@ static void test_da_drop(struct cvxtest *t)
     struct dynamic_array arr;
     da_init(&arr, NULL, 0);
     da_drop(&arr);
+    // Drop non-null buffer
+    da_init(&arr, NULL, 200);
+    CVXCHECK(t, arr.buffer != NULL);
+    da_drop(&arr);
+    CVXCHECK(t, arr.super.flag == CVX_FLAG_OK);
+    CVXCHECK(t, arr.buffer == NULL);
     // Random combination of _init, _drop, _clone on empty _init should always work
     struct dynamic_array clone;
     da_init(&arr, NULL, 0);
@@ -56,6 +62,20 @@ static void test_da_drop(struct cvxtest *t)
     }
     // Drop of null pointer is checked
     da_drop(NULL);
+    // vtabv->drop called for each element
+    da_init(&arr, &(struct dynamic_array_vtabv){ .drop = int_drop }, 0);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    CVX_TEST_COUNTER_DROP_RESET();
+    da_drop(&arr);
+    CVX_TEST_COUNTER_DROP(t, 2);
+    // vtabv->drop not called for each element because drop == NULL
+    da_init(&arr, &(struct dynamic_array_vtabv){ .drop = NULL }, 0);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    CVX_TEST_COUNTER_DROP_RESET();
+    da_drop(&arr);
+    CVX_TEST_COUNTER_DROP(t, 0);
 }
 
 static void test_da_clone(struct cvxtest *t)
@@ -75,6 +95,7 @@ static void test_da_clone(struct cvxtest *t)
         da_push_back(&arr, i);
     da_clone(&arr, &clone);
     CVXCHECK(t, clone.count == 20);
+    CVXCHECK(t, clone.capacity == arr.capacity);
     CVXCHECK(t, clone.buffer != NULL);
     for (int i = 0; i < 20; i++)
         CVXCHECK(t, clone.buffer[i] == i);
@@ -93,6 +114,14 @@ static void test_da_clone(struct cvxtest *t)
         CVXCHECK(t, clone.buffer[i] == i);
     da_drop(&arr);
     da_drop(&clone);
+    // Does not clone with vtabv->clone because it is NULL
+    da_init(&arr, &(struct dynamic_array_vtabv){ .clone = NULL }, 0);
+    da_push_back(&arr, 1);
+    da_push_back(&arr, 2);
+    CVX_TEST_COUNTER_CLONE_RESET();
+    da_clone(&arr, &clone);
+    CVX_TEST_COUNTER_CLONE(t, 0);
+    da_drop(&arr);
 }
 
 static void test_da_flag(struct cvxtest *t)
