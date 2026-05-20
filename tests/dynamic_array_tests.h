@@ -122,6 +122,7 @@ static void test_da_clone(struct cvxtest *t)
     da_clone(&arr, &clone);
     CVX_TEST_COUNTER_CLONE(t, 0);
     da_drop(&arr);
+    da_drop(&clone);
 }
 
 static void test_da_flag(struct cvxtest *t)

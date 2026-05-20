@@ -1,5 +1,6 @@
 cc := "gcc"
-cflags := "-I . -Wall -Wextra -Wpedantic -fsanitize=address,undefined"
+cflags := "-I . -Wall -Wextra -Wpedantic -ggdb -fsanitize=address,undefined"
+cflags_valgrind := "-I . -Wall -Wextra -Wpedantic -ggdb"
 
 watch file:
 	mkdir -p ./bin
@@ -19,10 +20,14 @@ run file:
 	mkdir -p ./bin
 	{{cc}} -I . -Wall -Wextra -fsanitize=address -g -o ./bin/{{file}} {{file}}.c && ./bin/{{file}}
 
+valgrind-init:
+	docker build -t cvx-valgrind -f Dockerfile.valgrind .
+
 valgrind path_to_file:
 	mkdir -p ./bin
-	docker build -t cvx-valgrind -f Dockerfile.valgrind --build-arg SOURCE_FILE={{path_to_file}} .
-	docker run --rm cvx-valgrind
+	docker run --rm -v "$(pwd):/cvx" cvx-valgrind sh -c \
+		"gcc {{cflags_valgrind}} {{path_to_file}} -o bin/valgrind_target && \
+		valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 bin/valgrind_target"
 
 coverage:
 	mkdir -p bin coverage
@@ -42,4 +47,7 @@ setup:
 
 valgrind_all:
 	find . -type f -name "*.c" | xargs -I {} sh -c 'just valgrind {} || exit 255'
+
+check_examples:
+	find ./examples -type f -name "*.c" | xargs -I {} sh -c 'just valgrind {} || exit 255'
 

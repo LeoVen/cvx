@@ -6,16 +6,3 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /cvx
-
-COPY . .
-
-ARG SOURCE_FILE=tests.c
-
-RUN mkdir -p bin && gcc -Wall -Wextra -g -O0 -I . "${SOURCE_FILE}" -o bin/program
-
-CMD ["valgrind", \
-     "--leak-check=full", \
-     "--show-leak-kinds=all", \
-     "--track-origins=yes", \
-     "--error-exitcode=1", \
-     "bin/program"]
