@@ -85,6 +85,28 @@ jobs:
             "./bin/$name"
           done
 
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Doxygen
+        run: sudo apt-get install -y doxygen
+
+      - name: Generate docs
+        run: doxygen docs/Doxyfile
+
+      - name: Deploy to documentation branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/output/html
+          publish_branch: documentation
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest

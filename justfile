@@ -9,6 +9,9 @@ example file:
 	mkdir -p ./bin
 	watchexec -f "*.c" -f "*.h" -d 500ms -r -c -- "{{cc}} {{cflags}} examples/{{file}}.c -o ./bin/{{file}} && ./bin/{{file}}"
 
+docs:
+	doxygen docs/Doxyfile
+
 format:
 	find . -name "*.h" -o -name "*.c" -type f | xargs clang-format --style=file --verbose -i
 
