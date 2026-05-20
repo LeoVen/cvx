@@ -29,7 +29,8 @@ static struct interval_map_vtabv *im_vtabv = &(struct interval_map_vtabv){
 
 int main(void)
 {
-    struct interval i0 = iset_init(is_vtab);
+    struct interval i0;
+    iset_init(&i0, is_vtab);
 
     if (iset_flag(&i0) != CVX_FLAG_OK)
     {
@@ -59,10 +60,11 @@ int main(void)
         printf("[%d, %d)\n", e.lo, e.hi);
     }
 
-    iset_clear(&i0);
+    iset_drop(&i0);
     printf("\n");
 
-    struct interval_map imap = imap_init(im_vtabk, im_vtabv);
+    struct interval_map imap;
+    imap_init(&imap, im_vtabk, im_vtabv);
 
     imap_add(&imap, 10, 20, "t1");
     imap_add(&imap, 15, 20, "t1");
@@ -80,7 +82,7 @@ int main(void)
         printf("[%d, %d): %s\n", e.lo, e.hi, e.val);
     }
 
-    imap_clear(&imap);
+    imap_drop(&imap);
 
     return 0;
 }

@@ -18,19 +18,20 @@ static struct pqueue_vtabv *vtab = &(struct pqueue_vtabv){
 
 int main(void)
 {
-    pqueue *queue = pq_new_with(vtab, CVX_MIN_HEAP, 0);
+    pqueue queue;
+    pq_init(&queue, vtab, CVX_MIN_HEAP, 0);
 
     for (int i = 0; i < 100; i++)
     {
-        pq_push(queue, rand() % 512);
+        pq_push(&queue, rand() % 512);
     }
 
-    while (pq_count(queue) > 0)
+    while (pq_count(&queue) > 0)
     {
-        printf("%d ", pq_pop(queue));
+        printf("%d ", pq_pop(&queue));
     }
 
-    pq_drop(queue);
+    pq_drop(&queue);
 
     return 0;
 }

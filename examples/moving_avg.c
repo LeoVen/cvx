@@ -41,20 +41,22 @@ int main(void)
 {
     srand(time(NULL));
 
-    struct slist *list = sl_new();
-    struct queue queue = sl_as_queue((cvx_container *)list);
+    struct slist list;
+    sl_init(&list, NULL);
 
     // Initial data
     for (int i = 0; i < 256; i++)
     {
-        sl_push_back(list, rand() % 256);
+        sl_push_back(&list, rand() % 256);
     }
+
+    struct queue queue = sl_as_queue((cvx_container *)&list);
 
     size_t num_items = cvx_count(&queue);
 
     for (int i = 0; i < 1000; i++)
     {
-        struct slist_iter sl_iter = sl_iter_init_start(list);
+        struct slist_iter sl_iter = sl_iter_init_start(&list);
         struct iterator iter = sl_iter_as_iterator((cvx_container *)(&sl_iter));
 
         int sum = get_sum(&iter);

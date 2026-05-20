@@ -12,24 +12,27 @@ char *str_copy(char *s)
 {
     return strdup(s);
 }
+
 void str_drop(char *s)
 {
     free(s);
 }
 
+static struct str_array_vtabv *cbs =
+    &(struct str_array_vtabv){ .clone = str_copy, .drop = str_drop };
+
 int main(void)
 {
-    struct str_array_vtabv cbs = { clone = str_copy, .drop = str_drop };
-
-    struct str_array *col = sa_new_with(&cbs, 8);
+    struct str_array arr, *col = &arr, clone;
+    sa_init(&arr, cbs, 0);
 
     sa_push_back(col, strdup("hello"));
     sa_push_back(col, strdup("world"));
 
-    struct str_array *clone = sa_clone(col);
+    sa_clone(col, &clone);
 
-    printf("%s %s\n", sa_get(col, 0), sa_get(clone, 1));
+    printf("%s %s\n", sa_get(col, 0), sa_get(&clone, 1));
 
     sa_drop(col); // calls str_drop on each element, then frees the array and `col` pointer
-    sa_drop(clone);
+    sa_drop(&clone);
 }

@@ -29,17 +29,28 @@ struct
     struct stack *to;
 } print_aux = { 0 };
 
-#define list_nth(s, i) ((struct list *)(s->instance))->buffer[i]
-#define linked_nth(s, i) (ll_get((struct llist *)(s)->instance, cvx_count(s) - i - 1))
+int get_nth(struct stack *st, int nth)
+{
+    if (cvx_tag(st) == 1)
+    {
+        return (l_get((struct list *)(st->instance), nth));
+    }
+    else if (cvx_tag(st) == 2)
+    {
+        return ll_get((struct llist *)(st)->instance, cvx_count(st) - nth - 1);
+    }
+    printf("Unknown tag %d\n", cvx_tag(st));
+    exit(1);
+}
 
 void print_stacks(void)
 {
     for (int i = 9; i >= 0; i--)
     {
         // NOTE: We are cheating a lot here just to print the stacks
-        int ia = list_nth(print_aux.from, i);
-        int ib = list_nth(print_aux.aux, i);
-        int ic = linked_nth(print_aux.to, i);
+        int ia = get_nth(print_aux.from, i);
+        int ib = get_nth(print_aux.aux, i);
+        int ic = get_nth(print_aux.to, i);
 
         printf("| %c | %c | %c |\n", ia == 0 ? 32 : ia + 48, ib == 0 ? 32 : ib + 48,
                ic == 0 ? 32 : ic + 48);
@@ -69,12 +80,23 @@ void hanoi(int n, struct stack *from, struct stack *aux, struct stack *to)
 
 int main(void)
 {
-    struct stack from = l_as_stack((cvx_container *)l_new_with(NULL, 10));
-    struct stack to = ll_as_stack((cvx_container *)ll_new());
-    struct stack aux = l_as_stack((cvx_container *)l_new_with(NULL, 10));
+    struct llist l1;
+    struct list l2, l3;
+    l_init(&l2, NULL, 10);
+    l_init(&l3, NULL, 10);
+    ll_init(&l1, NULL);
+
+    printf("%zu\n", l_capacity(&l2));
+    printf("%zu\n", l_capacity(&l3));
+
+    struct stack from = ll_as_stack((cvx_container *)(&l1));
+    struct stack to = l_as_stack((cvx_container *)(&l2));
+    struct stack aux = l_as_stack((cvx_container *)(&l3));
 
     for (int i = disks; i >= 1; i--)
         cvx_push(&from, i);
+
+    printf("%zu\n", cvx_count(&from));
 
     print_aux.from = &from;
     print_aux.aux = &aux;

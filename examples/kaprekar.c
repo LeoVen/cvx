@@ -20,15 +20,19 @@ static struct string_vtabv *string_vtab = &(struct string_vtabv){
     .comp = char_comp,
 };
 
+void s_free(string_ptr str);
+string_ptr s_new(void);
+
 #define V struct string *
 #define SNAME entry_list
 #define PFX l
 #define TAG 10
+#define ITERATOR
 #include "cvx/dynamic_array.h"
 typedef struct entry_list entry_list;
 typedef struct entry_list *entry_list_ptr;
 static struct entry_list_vtabv *entry_vtab = &(struct entry_list_vtabv){
-    .drop = s_drop,
+    .drop = s_free,
     .comp = s_compare,
 };
 
@@ -44,17 +48,31 @@ int main(void)
 {
     for (int i = MIN_NUMBER; i <= MAX_NUMBER; i++)
     {
-        struct entry_list entries = l_init(entry_vtab);
+        struct entry_list entries;
+        l_init(&entries, entry_vtab, 0);
         l_push_back(&entries, to_string(i));
 
         kaprekar(&entries);
 
         print_entry(&entries);
 
-        l_clear(&entries);
+        l_drop(&entries);
     }
 
     return 0;
+}
+
+string_ptr s_new(void)
+{
+    string_ptr r = malloc(sizeof(struct string));
+    s_init(r, string_vtab, 0);
+    return r;
+}
+
+void s_free(string_ptr str)
+{
+    s_drop(str);
+    free(str);
 }
 
 void kaprekar(struct entry_list *entries)
@@ -70,10 +88,12 @@ void kaprekar(struct entry_list *entries)
         string_ptr last = l_back(entries);
 
         // make two copies of original, one sorted, one reverse
-        string_ptr ascending = s_clone(last);
+        string_ptr ascending = s_new();
+        s_clone(last, ascending);
         s_sort(ascending); // digits are in ascending order
 
-        string_ptr descending = s_clone(ascending);
+        string_ptr descending = s_new();
+        s_clone(ascending, descending);
         for (size_t si = 0; si < s_count(descending) / 2; si++)
         {
             s_swap(descending, si, s_count(descending) - si - 1);
@@ -85,6 +105,8 @@ void kaprekar(struct entry_list *entries)
 
         s_drop(ascending);
         s_drop(descending);
+        free(ascending);
+        free(descending);
 
         string_ptr res_str = to_string(result);
         // pad left
@@ -93,7 +115,10 @@ void kaprekar(struct entry_list *entries)
 
         // Early stop
         if (s_compare(last, res_str) == 0)
+        {
             s_drop(res_str);
+            free(res_str);
+        }
         else
             l_push_back(entries, res_str);
     }
@@ -101,7 +126,7 @@ void kaprekar(struct entry_list *entries)
 
 string_ptr to_string(int number)
 {
-    string_ptr res = s_new_with(string_vtab, 16);
+    string_ptr res = s_new();
 
     if (number == 0)
     {
@@ -182,7 +207,7 @@ void print_entry(struct entry_list *entry)
         return;
     }
 
-    struct entry_list_iter iter = l_iter_init_start(entry);
+    struct entry_list_iter iter = l_iter_start(entry);
 
     string_ptr s = l_iter_value(&iter);
     to_c_string(s, c_str, max_len);
