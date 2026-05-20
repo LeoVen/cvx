@@ -504,4 +504,57 @@ struct IT_SNAME FUNC(_iter_end)(struct SNAME *self)
 }
 #endif
 
+///
+///
+/// PROXIES
+///
+///
+
+// clang-format off
+void FUNC_PROXY(_drop)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, ); FUNC(_drop)((struct SNAME *)col); }
+void FUNC_PROXY(_clone)(cvx_container *orig, cvx_container *clone) { CVX_CONTAINER_GUARDS(TAG, orig, ); FUNC(_clone)((struct SNAME *)orig, (struct SNAME *)clone); }
+enum cvx_flags FUNC_PROXY(_flag)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, CVX_FLAG_WRONG_TAG); return FUNC(_flag)((struct SNAME *)col); }
+size_t FUNC_PROXY(_count)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, 0); return FUNC(_count)((struct SNAME *)col); }
+size_t FUNC_PROXY(_capacity)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, 0); return FUNC(_capacity)((struct SNAME *)col); }
+bool FUNC_PROXY(_empty)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, false); return FUNC(_empty)((struct SNAME *)col); }
+bool FUNC_PROXY(_full)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, false); return FUNC(_full)((struct SNAME *)col); }
+V FUNC_PROXY(_front)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_front)((struct SNAME *)col); }
+V FUNC_PROXY(_back)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_back)((struct SNAME *)col); }
+V FUNC_PROXY(_get)(cvx_container *col, size_t index) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_get)((struct SNAME *)col, index); }
+void FUNC_PROXY(_push_front)(cvx_container *col, V item) { CVX_CONTAINER_GUARDS(TAG, col, ); FUNC(_push_front)((struct SNAME *)col, item); }
+void FUNC_PROXY(_push_at)(cvx_container *col, V item, size_t index) { CVX_CONTAINER_GUARDS(TAG, col, ); FUNC(_push_at)((struct SNAME *)col, item, index); }
+void FUNC_PROXY(_push_back)(cvx_container *col, V item) { CVX_CONTAINER_GUARDS(TAG, col, ); FUNC(_push_back)((struct SNAME *)col, item); }
+V FUNC_PROXY(_pop_front)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_pop_front)((struct SNAME *)col); }
+V FUNC_PROXY(_pop_at)(cvx_container *col, size_t index) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_pop_at)((struct SNAME *)col, index); }
+V FUNC_PROXY(_pop_back)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_pop_back)((struct SNAME *)col); }
+V FUNC_PROXY(_replace_front)(cvx_container *col, V new) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_replace_front)((struct SNAME *)col, new); }
+V FUNC_PROXY(_replace_back)(cvx_container *col, V new) { CVX_CONTAINER_GUARDS(TAG, col, (V){ 0 }); return FUNC(_replace_back)((struct SNAME *)col, new); }
+void FUNC_PROXY(_swap)(cvx_container *col, size_t idx1, size_t idx2) { CVX_CONTAINER_GUARDS(TAG, col, ); FUNC(_swap)((struct SNAME *)col, idx1, idx2); }
+int FUNC_PROXY(_compare)(cvx_container *left, struct SNAME *right) { CVX_CONTAINER_GUARDS(TAG, left, 0); return FUNC(_compare)((struct SNAME *)left, right); }
+void FUNC_PROXY(_sort)(cvx_container *col) { CVX_CONTAINER_GUARDS(TAG, col, ); FUNC(_sort)((struct SNAME *)col); }
+// clang-format on
+
+#ifdef IMPL_STACK
+#define INTERFACE IMPL_STACK
+
+#define IMPL_DROP FUNC_PROXY(_drop)
+#define IMPL_CLONE FUNC_PROXY(_clone)
+#define IMPL_PUSH FUNC_PROXY(_push_back)
+#define IMPL_POP FUNC_PROXY(_pop_back)
+#define IMPL_COUNT FUNC_PROXY(_count)
+#define IMPL_PEEK FUNC_PROXY(_back)
+#define IMPL_REPLACE FUNC_PROXY(_replace_back)
+
+#include "cvx/interface/stack_cast.h"
+#undef IMPL_STACK
+
+#undef IMPL_DROP
+#undef IMPL_CLONE
+#undef IMPL_PUSH
+#undef IMPL_POP
+#undef IMPL_COUNT
+#undef IMPL_PEEK
+#undef IMPL_REPLACE
+#endif
+
 #include "cvx/undef.h"
