@@ -492,7 +492,7 @@ bool FUNC(__assert_buffer)(struct SNAME *self, size_t capacity)
 #define IT_SNAME CVX_(SNAME, _iter)
 #define IT_PFX CVX_(PFX, _iter)
 #define IT_TAG (TAG * CVX_ITER_TAG_MULT)
-#include "cvx/buffer_iterator.h"
+#include "cvx/array_iterator.h"
 #define IT_SNAME CVX_(SNAME, _iter)
 struct IT_SNAME FUNC(_iter_start)(struct SNAME *self)
 {

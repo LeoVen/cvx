@@ -4,7 +4,7 @@
 #define PFX bi_iter
 #define SNAME bufiter
 #define TAG 10
-#include "cvx/buffer_iterator.h"
+#include "cvx/array_iterator.h"
 typedef struct bufiter bufiter;
 
 #define V int
@@ -12,7 +12,7 @@ typedef struct bufiter bufiter;
 #define SNAME citer
 #define TAG 10
 #define CIRCULAR
-#include "cvx/buffer_iterator.h"
+#include "cvx/array_iterator.h"
 typedef struct citer citer;
 
 #define V int
@@ -20,7 +20,7 @@ typedef struct citer citer;
 #define SNAME siter
 #define TAG 10
 #define SPARSE(item) item == 0
-#include "cvx/buffer_iterator.h"
+#include "cvx/array_iterator.h"
 typedef struct siter siter;
 
 int main(void)

@@ -1131,7 +1131,7 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = cvx/binary_heap.h \
-                         cvx/buffer_iterator.h \
+                         cvx/array_iterator.h \
                          cvx/circular_buffer.h \
                          cvx/dlinked_list.h \
                          cvx/dynamic_array.h \
