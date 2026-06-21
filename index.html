@@ -97,7 +97,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p><b>Implementations</b> are data structures that provide a wide range of operations, even if they are sometimes slow. These are generalist containers.</p>
 <p><b>Interfaces</b> are abstractions that can be implemented by multiple data structures. They define a set of functions in a <code>vtable</code> and you can "cast" an implementation type to an interface type.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md7"></a>
+<h1><a class="anchor" id="autotoc_md21"></a>
 Quick start</h1>
 <p>Check out the examples folder to see more examples.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;stdio.h&gt;</span></div>
@@ -138,9 +138,9 @@ Quick start</h1>
 <div class="ttc" id="ainterface__macros_8h_html_ac3790976b0df1b5c3551742c1b3ead55"><div class="ttname"><a href="interface__macros_8h.html#ac3790976b0df1b5c3551742c1b3ead55">cvx_peek</a></div><div class="ttdeci">#define cvx_peek(ds)</div><div class="ttdef"><b>Definition</b> interface_macros.h:18</div></div>
 <div class="ttc" id="astack_8h_html"><div class="ttname"><a href="stack_8h.html">stack.h</a></div></div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md9"></a>
+<h1><a class="anchor" id="autotoc_md23"></a>
 Available Implementations and Interfaces</h1>
-<h2><a class="anchor" id="autotoc_md10"></a>
+<h2><a class="anchor" id="autotoc_md24"></a>
 Available implementations</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -150,7 +150,7 @@ Available implementations</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code><a class="el" href="slinked__list_8h.html">cvx/slinked_list.h</a></code>   </td><td class="markdownTableBodyNone">Singly linked list with head and tail pointers. O(1) push/pop at front; O(n) at back.   </td><td class="markdownTableBodyNone"><code>stack</code>, <code>queue</code>   </td><td class="markdownTableBodyNone"><code>forward_iterator</code>   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md11"></a>
+<h2><a class="anchor" id="autotoc_md25"></a>
 Available interfaces</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -160,7 +160,7 @@ Available interfaces</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code><a class="el" href="queue_8h.html">cvx/interface/queue.h</a></code>   </td><td class="markdownTableBodyNone"><code>enqueue</code>, <code>dequeue</code>, <code>count</code>, <code>new</code>, <code>clone</code>, <code>drop</code>   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md26"></a>
 Available iterators</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -173,10 +173,10 @@ Available iterators</h2>
 <td class="markdownTableBodyNone"><code><a class="el" href="random__access__iterator_8h.html">cvx/iter/random_access_iterator.h</a></code>   </td><td class="markdownTableBodyNone"><code>start</code>, <code>end</code>, <code>drop</code>, <code>at_start</code>, <code>at_end</code>, <code>count</code>, <code>to_start</code>, <code>to_end</code>, <code>next</code>, <code>prev</code>, <code>forward</code>, <code>backward</code>, <code>go_to</code>, <code>value</code>, <code>index</code>   </td></tr>
 </table>
 <hr  />
-<h1><a class="anchor" id="autotoc_md14"></a>
+<h1><a class="anchor" id="autotoc_md28"></a>
 Implementations</h1>
 <p>An implementation is instantiated by defining a set of macros and then including a header. Each <code>#include</code> produces a new and independent concrete type.</p>
-<h2><a class="anchor" id="autotoc_md15"></a>
+<h2><a class="anchor" id="autotoc_md29"></a>
 Macros</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -193,7 +193,7 @@ Macros</h2>
 <td class="markdownTableBodyNone"><code>TAG</code>   </td><td class="markdownTableBodyNone">yes   </td><td class="markdownTableBodyNone">A unique integer that identifies this container type at runtime. Must be distinct from every other <code>TAG</code> in the same program.   </td></tr>
 </table>
 <p>All macros are automatically undefined after the <code>#include</code> via <code>undef.h</code>, so there is no risk of them leaking into subsequent templates.</p>
-<h2><a class="anchor" id="autotoc_md16"></a>
+<h2><a class="anchor" id="autotoc_md30"></a>
 User type virtual tables</h2>
 <p>Each instantiated container generates a <code>struct &lt;SNAME&gt;_vtabv</code> type that holds optional (some times mandatory) function pointers for element operations. You create one and pass it to the constructor. A <code>NULL</code> value is allowed when no callbacks are needed.</p>
 <div class="fragment"><div class="line"><span class="comment">// The generated vtabv struct has these fields</span></div>
@@ -236,19 +236,19 @@ User type virtual tables</h2>
 <div class="line">    sa_drop(col);   <span class="comment">// calls str_drop on each element, then frees the array</span></div>
 <div class="line">    sa_drop(clone);</div>
 <div class="line">}</div>
-<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> binary_heap.h:134</div></div>
+<div class="ttc" id="astructcvx__container_html"><div class="ttname"><a href="structcvx__container.html">cvx_container</a></div><div class="ttdef"><b>Definition</b> array_iterator.h:135</div></div>
 </div><!-- fragment --><p>For key-value structures a matching <code>struct &lt;SNAME&gt;_vtabk</code> is generated for the key type, with the same set of fields.</p>
-<h1><a class="anchor" id="autotoc_md17"></a>
+<h1><a class="anchor" id="autotoc_md31"></a>
 Interfaces</h1>
 <p>An interface is a <code>struct</code> type consisting of an <code>instance</code> pointer and a <code>vtable</code> pointer. Multiple data structures can implement one interface.</p>
 <p>Usually, when working with this pattern, you have <code>void *</code> pointers. This library instead uses a <code><a class="el" href="structcvx__container.html">cvx_container</a></code> type, which holds extra information for error handling.</p>
-<h2><a class="anchor" id="autotoc_md18"></a>
+<h2><a class="anchor" id="autotoc_md32"></a>
 Declaring an interface</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#define V         int</span></div>
 <div class="line"><span class="preprocessor">#define INTERFACE stack</span></div>
 <div class="line"><span class="preprocessor">#include &quot;cvx/intf/stack.h&quot;</span></div>
 <div class="line"><span class="comment">// produces: struct stack { cvx_container *instance; struct stack_vtable *vtable; }</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md19"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md33"></a>
 Casting an implementation to an interface</h2>
 <p>Define <code>IMPL_&lt;INTERFACE&gt;</code> when you want to be able to cast an implementation to an interface:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#define V         int</span></div>
@@ -264,23 +264,23 @@ Casting an implementation to an interface</h2>
 <div class="fragment"><div class="line"><span class="keyword">struct </span>stack array_stack  = ml_as_stack(ml_new_with(8));</div>
 <div class="line"><span class="keyword">struct </span>stack linked_stack = sl_as_stack(sl_new());</div>
 <div class="line"><span class="comment">// both satisfy `struct stack` - pass either to the same function</span></div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md20"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md34"></a>
 Interface macros</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;cvx/interface_macros&quot;</span></div>
 </div><!-- fragment --><p>It is annoying to call functions from interfaces via the <code>vtable</code>. For example, given that <code>s</code> is a stack, to push an item you need to: <code>s-&gt;vtable-&gt;push(s-&gt;instance, item)</code>.</p>
 <p>Instead you can use these macros and simply: <code><a class="el" href="interface__macros_8h.html#a82417305487cc736061cdf1e52af99ab">cvx_push(s, item)</a></code>. Neat!</p>
-<h1><a class="anchor" id="autotoc_md21"></a>
+<h1><a class="anchor" id="autotoc_md35"></a>
 Error handling</h1>
 <p>Every <code><a class="el" href="structcvx__container.html">cvx_container</a></code> carries a <code>flag</code> field of type <code>enum cvx_flags</code>. Functions set this field instead of returning error codes, so the caller can inspect it after any operation.</p>
 <div class="fragment"><div class="line">sc_pop_back(col, &amp;out);</div>
-<div class="line"><span class="keywordflow">if</span> (col-&gt;<a class="code hl_variable" href="structcvx__container.html#af81e481cd8a5f440e2f536f60f892154">flag</a> != <a class="code hl_enumvalue" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a>) { <span class="comment">/* handle error */</span> }</div>
+<div class="line"><span class="keywordflow">if</span> (col-&gt;<a class="code hl_variable" href="structcvx__container.html#af81e481cd8a5f440e2f536f60f892154">flag</a> != <a class="code hl_enumvalue" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a>) { <span class="comment">/* handle error */</span> }</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// or via an interface:</span></div>
 <div class="line"><a class="code hl_define" href="interface__macros_8h.html#a2cb9c5d7b9f36c7deabf8206025bfce9">cvx_pop</a>(&amp;s, &amp;out);</div>
-<div class="line"><span class="keywordflow">if</span> (<a class="code hl_define" href="interface__macros_8h.html#ae10638b116788953e39ddd93c3390345">cvx_flag</a>(&amp;s) != <a class="code hl_enumvalue" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a>) { <span class="comment">/* handle error */</span> }</div>
-<div class="ttc" id="abinary__heap_8h_html_a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d"><div class="ttname"><a href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a></div><div class="ttdeci">@ CVX_FLAG_OK</div><div class="ttdoc">No errors.</div><div class="ttdef"><b>Definition</b> binary_heap.h:78</div></div>
+<div class="line"><span class="keywordflow">if</span> (<a class="code hl_define" href="interface__macros_8h.html#ae10638b116788953e39ddd93c3390345">cvx_flag</a>(&amp;s) != <a class="code hl_enumvalue" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a>) { <span class="comment">/* handle error */</span> }</div>
+<div class="ttc" id="aarray__iterator_8h_html_a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d"><div class="ttname"><a href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d">CVX_FLAG_OK</a></div><div class="ttdeci">@ CVX_FLAG_OK</div><div class="ttdoc">No errors.</div><div class="ttdef"><b>Definition</b> array_iterator.h:79</div></div>
 <div class="ttc" id="ainterface__macros_8h_html_ae10638b116788953e39ddd93c3390345"><div class="ttname"><a href="interface__macros_8h.html#ae10638b116788953e39ddd93c3390345">cvx_flag</a></div><div class="ttdeci">#define cvx_flag(ds)</div><div class="ttdef"><b>Definition</b> interface_macros.h:13</div></div>
-<div class="ttc" id="astructcvx__container_html_af81e481cd8a5f440e2f536f60f892154"><div class="ttname"><a href="structcvx__container.html#af81e481cd8a5f440e2f536f60f892154">cvx_container::flag</a></div><div class="ttdeci">enum cvx_flags flag</div><div class="ttdef"><b>Definition</b> binary_heap.h:136</div></div>
+<div class="ttc" id="astructcvx__container_html_af81e481cd8a5f440e2f536f60f892154"><div class="ttname"><a href="structcvx__container.html#af81e481cd8a5f440e2f536f60f892154">cvx_container::flag</a></div><div class="ttdeci">enum cvx_flags flag</div><div class="ttdef"><b>Definition</b> array_iterator.h:137</div></div>
 </div><!-- fragment --><table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Flag   </th><th class="markdownTableHeadNone">Value   </th><th class="markdownTableHeadNone">Meaning    </th></tr>
@@ -305,11 +305,11 @@ Error handling</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>CVX_FLAG_ERROR</code>   </td><td class="markdownTableBodyNone">9   </td><td class="markdownTableBodyNone">Generic or unknown error   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md22"></a>
+<h2><a class="anchor" id="autotoc_md36"></a>
 Tags and &lt;tt&gt;CVX_FLAG_WRONG_TAG&lt;/tt&gt;</h2>
 <p>Every implementation must be given a <b>unique <code>TAG</code></b> integer. The tag is embedded in <code><a class="el" href="structcvx__container.html#abab0a09846437e730c916bac3ca3a1a6">cvx_container.tag</a></code> at construction and checked at the start of every function. Passing the wrong container to a function (e.g. a linked list where a dynamic array is expected) sets <code>CVX_FLAG_WRONG_TAG</code> and returns immediately rather than corrupting memory.</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md24"></a>
+<h1><a class="anchor" id="autotoc_md38"></a>
 Installing dependencies</h1>
 <p>Required tooling</p>
 <ul>
@@ -334,7 +334,7 @@ Installing dependencies</h1>
 </ul>
 </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md25"></a>
+<h1><a class="anchor" id="autotoc_md39"></a>
 Building and running</h1>
 <p>There is no build process. This is a header-only library.</p>
 <p>The project uses <a href="https://github.com/casey/just"><code>just</code></a> as a command runner and <a href="https://github.com/watchexec/watchexec"><code>watchexec</code></a> for live reloading.</p>
@@ -347,7 +347,7 @@ Building and running</h1>
 <div class="line"># Auto-format all .c and .h files with clang-format</div>
 <div class="line">just format</div>
 </div><!-- fragment --><hr  />
-<h1><a class="anchor" id="autotoc_md27"></a>
+<h1><a class="anchor" id="autotoc_md41"></a>
 Testing</h1>
 <p>Tests live in <code>tests/</code> as header-only files and are included in <code>tests.c</code>.</p>
 <div class="fragment"><div class="line">gcc -Wall -Wextra -I . tests.c -o bin/tests &amp;&amp; ./bin/tests</div>

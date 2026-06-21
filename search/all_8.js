@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['handling_0',['Error handling',['../index.html#autotoc_md21',1,'']]],
+  ['handling_0',['Error handling',['../index.html#autotoc_md35',1,'']]],
   ['hash_1',['hash',['../structslinked__list__vtabv.html#ad5608cd69cac55bc909bb1ddda497853',1,'slinked_list_vtabv::hash'],['../structinterval__set__vtabv.html#afbc87270b0e55a1774e977eea8912ba4',1,'interval_set_vtabv::hash'],['../structbinary__heap__vtabv.html#a8e992200c611d2cb07c4e20fca9fb1da',1,'binary_heap_vtabv::hash'],['../structcircular__buffer__vtabv.html#a441b6dc36dce13cc646bcb1002dfe092',1,'circular_buffer_vtabv::hash'],['../structdlinked__list__vtabv.html#ada1335f10d025c49e4856b947722f427',1,'dlinked_list_vtabv::hash'],['../structdynamic__array__vtabv.html#a4fa6d66fef26a76f45bc4721c555a5da',1,'dynamic_array_vtabv::hash'],['../structhashtable__vtabk.html#af497e4277759231711a74d4a52c2bdd2',1,'hashtable_vtabk::hash'],['../structhashtable__vtabv.html#ac5079658348f34623c8b90638c54f6eb',1,'hashtable_vtabv::hash'],['../structinterval__map__vtabk.html#a748c6293a9a78e61197df1d0a2484e4c',1,'interval_map_vtabk::hash'],['../structinterval__map__vtabv.html#ac6853cdb3e32b526dd3dc89031ca9232',1,'interval_map_vtabv::hash']]],
   ['hashtable_2',['hashtable',['../structhashtable.html',1,'']]],
   ['hashtable_2eh_3',['hashtable.h',['../hashtable_8h.html',1,'']]],
@@ -12,7 +12,7 @@ var searchData=
   ['hashtable_5fiter_9',['hashtable_iter',['../structhashtable__iter.html',1,'']]],
   ['hashtable_5fvtabk_10',['hashtable_vtabk',['../structhashtable__vtabk.html',1,'']]],
   ['hashtable_5fvtabv_11',['hashtable_vtabv',['../structhashtable__vtabv.html',1,'']]],
-  ['head_12',['head',['../structslinked__list.html#a3726d7eebbb5bedde2dc05234b3ae8ee',1,'slinked_list::head'],['../structdlinked__list.html#ae06811648d8d8a31d25e014337be32a4',1,'dlinked_list::head'],['../structcircular__buffer.html#af7a0ea1ff9bd42771fbb51e84d79b891',1,'circular_buffer::head']]],
+  ['head_12',['head',['../structcircular__buffer.html#af7a0ea1ff9bd42771fbb51e84d79b891',1,'circular_buffer::head'],['../structslinked__list.html#a3726d7eebbb5bedde2dc05234b3ae8ee',1,'slinked_list::head'],['../structdlinked__list.html#ae06811648d8d8a31d25e014337be32a4',1,'dlinked_list::head'],['../structcircular__buffer__iter.html#a215a593fa40011866fe99fd228c88647',1,'circular_buffer_iter::head']]],
   ['hi_13',['hi',['../structinterval__set__entry.html#a84147879587aa02c2b3fd3e01eb0eb34',1,'interval_set_entry::hi'],['../structinterval__map__entry.html#a00e91c710d57f7b642a04a0854b6e6b4',1,'interval_map_entry::hi']]],
   ['ho_14',['HO',['../structbinary__heap.html#adc357066ab5178eee5ddd23a92ead662',1,'binary_heap']]],
   ['ht_5f_5fget_5fentry_15',['ht__get_entry',['../hashtable_8h.html#ab8cefed645b8f4b94f5c3f4c645f2fe2',1,'hashtable.h']]],

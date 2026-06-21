@@ -1,9 +1,9 @@
 var annotated_dup =
 [
+    [ "array_iterator", "structarray__iterator.html", "structarray__iterator" ],
     [ "binary_heap", "structbinary__heap.html", "structbinary__heap" ],
     [ "binary_heap_iter", "structbinary__heap__iter.html", "structbinary__heap__iter" ],
     [ "binary_heap_vtabv", "structbinary__heap__vtabv.html", "structbinary__heap__vtabv" ],
-    [ "buffer_iterator", "structbuffer__iterator.html", "structbuffer__iterator" ],
     [ "circular_buffer", "structcircular__buffer.html", "structcircular__buffer" ],
     [ "circular_buffer_iter", "structcircular__buffer__iter.html", "structcircular__buffer__iter" ],
     [ "circular_buffer_vtabv", "structcircular__buffer__vtabv.html", "structcircular__buffer__vtabv" ],

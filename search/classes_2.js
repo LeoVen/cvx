@@ -1,10 +1,9 @@
 var searchData=
 [
-  ['dlinked_5flist_0',['dlinked_list',['../structdlinked__list.html',1,'']]],
-  ['dlinked_5flist_5fiter_1',['dlinked_list_iter',['../structdlinked__list__iter.html',1,'']]],
-  ['dlinked_5flist_5fnode_2',['dlinked_list_node',['../structdlinked__list__node.html',1,'']]],
-  ['dlinked_5flist_5fvtabv_3',['dlinked_list_vtabv',['../structdlinked__list__vtabv.html',1,'']]],
-  ['dynamic_5farray_4',['dynamic_array',['../structdynamic__array.html',1,'']]],
-  ['dynamic_5farray_5fiter_5',['dynamic_array_iter',['../structdynamic__array__iter.html',1,'']]],
-  ['dynamic_5farray_5fvtabv_6',['dynamic_array_vtabv',['../structdynamic__array__vtabv.html',1,'']]]
+  ['circular_5fbuffer_0',['circular_buffer',['../structcircular__buffer.html',1,'']]],
+  ['circular_5fbuffer_5fiter_1',['circular_buffer_iter',['../structcircular__buffer__iter.html',1,'']]],
+  ['circular_5fbuffer_5fvtabv_2',['circular_buffer_vtabv',['../structcircular__buffer__vtabv.html',1,'']]],
+  ['cvx_5fcontainer_3',['cvx_container',['../structcvx__container.html',1,'']]],
+  ['cvx_5ffallback_5finterface_4',['cvx_fallback_interface',['../structcvx__fallback__interface.html',1,'']]],
+  ['cvx_5ffallback_5finterface_5fvtable_5',['cvx_fallback_interface_vtable',['../structcvx__fallback__interface__vtable.html',1,'']]]
 ];

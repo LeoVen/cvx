@@ -163,7 +163,7 @@ Functions</h2></td></tr>
 <tr class="separator:a1b3eb7c642a4fae6ec42903f30f1bfcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67e6c5e6bd961c46896450d17bd7422b" id="r_a67e6c5e6bd961c46896450d17bd7422b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable_8h.html#a67e6c5e6bd961c46896450d17bd7422b">ht_drop</a> (struct <a class="el" href="structhashtable.html">hashtable</a> *self)</td></tr>
 <tr class="separator:a67e6c5e6bd961c46896450d17bd7422b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1f5df0893d4ab7b45c52c015e9e97bf" id="r_aa1f5df0893d4ab7b45c52c015e9e97bf"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable_8h.html#aa1f5df0893d4ab7b45c52c015e9e97bf">ht_flag</a> (struct <a class="el" href="structhashtable.html">hashtable</a> *_self_)</td></tr>
+<tr class="memitem:aa1f5df0893d4ab7b45c52c015e9e97bf" id="r_aa1f5df0893d4ab7b45c52c015e9e97bf"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable_8h.html#aa1f5df0893d4ab7b45c52c015e9e97bf">ht_flag</a> (struct <a class="el" href="structhashtable.html">hashtable</a> *_self_)</td></tr>
 <tr class="separator:aa1f5df0893d4ab7b45c52c015e9e97bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad53866343ab25c6160848d9f67bfdc32" id="r_ad53866343ab25c6160848d9f67bfdc32"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="hashtable_8h.html#ad53866343ab25c6160848d9f67bfdc32">ht_count</a> (struct <a class="el" href="structhashtable.html">hashtable</a> *_self_)</td></tr>
 <tr class="separator:ad53866343ab25c6160848d9f67bfdc32"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -285,7 +285,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p>A configurable hashtable that maps K -&gt; V. </p>
 <dl class="section author"><dt>Author</dt><dd>Leonardo Vencovsky </dd></dl>
 <dl class="section version"><dt>Version</dt><dd>0.0.1</dd></dl>
-<h2><a class="anchor" id="autotoc_md2"></a>
+<h2><a class="anchor" id="autotoc_md16"></a>
 Required Macros</h2>
 <ul>
 <li><b>K</b>: Type name of keys in the map.</li>
@@ -294,12 +294,12 @@ Required Macros</h2>
 <li><b>PFX</b>: Prefix of all functions, including implementation detail ones.</li>
 <li><b>TAG</b>: A unique integer tag that identifies this data structure.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md3"></a>
+<h2><a class="anchor" id="autotoc_md17"></a>
 Implementation</h2>
 <p>Open-addressing, linear-probing hashtable with robin hood insertion.</p>
 <p>Keys are hashed with vtabk-&gt;hash and compared with vtabk-&gt;comp. Both are required; vtabk-&gt;clone / vtabk-&gt;drop and vtabv-&gt;clone / vtabv-&gt;drop are optional.</p>
 <p>Capacity is always a prime number. A resize is triggered whenever <code>count &gt;= capacity * load</code> (default load = 0.7). Deletions use tombstones, which are purged on resize.</p>
-<h2><a class="anchor" id="autotoc_md4"></a>
+<h2><a class="anchor" id="autotoc_md18"></a>
 TO-DOs</h2>
 <ul>
 <li>Implement OPTs, so the hashtable can be customized with linear-probing or separate chaining. </li>
@@ -327,7 +327,7 @@ TO-DOs</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a></td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -368,7 +368,7 @@ TO-DOs</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#ad25317a5ffc13f32a076f8e4e34ded70">cvx_heap_order</a></td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#ad25317a5ffc13f32a076f8e4e34ded70">cvx_heap_order</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1206,7 +1206,7 @@ TO-DOs</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a> ht_flag </td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a> ht_flag </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structhashtable.html">hashtable</a> *&#160;</td>
           <td class="paramname"><em>_self_</em></td><td>)</td>

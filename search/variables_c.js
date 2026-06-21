@@ -3,7 +3,7 @@ var searchData=
   ['peek_0',['peek',['../structcvx__fallback__interface__vtable.html#ab41d6314e30c7db9ad094a2ccbd6422c',1,'cvx_fallback_interface_vtable']]],
   ['peek_5fback_1',['peek_back',['../structcvx__fallback__interface__vtable.html#ad35cb79b5247c46dab82a8c50c76e9a6',1,'cvx_fallback_interface_vtable']]],
   ['peek_5ffront_2',['peek_front',['../structcvx__fallback__interface__vtable.html#a0d394335b3c3951a4e595e0dd796bfde',1,'cvx_fallback_interface_vtable']]],
-  ['pointer_3',['pointer',['../structbuffer__iterator.html#ad767181fd79cce9a9d9a03f45ad2c54f',1,'buffer_iterator::pointer'],['../structdynamic__array__iter.html#a5b52c9690b04347a4d52a4dfaef42c38',1,'dynamic_array_iter::pointer']]],
+  ['pointer_3',['pointer',['../structarray__iterator.html#ad8b2c53dc3786e2ae3a6425458f693fe',1,'array_iterator::pointer'],['../structcircular__buffer__iter.html#aef2a81bc12704b8d6ecc870d4059cb8d',1,'circular_buffer_iter::pointer'],['../structdynamic__array__iter.html#a5b52c9690b04347a4d52a4dfaef42c38',1,'dynamic_array_iter::pointer']]],
   ['pop_4',['pop',['../structcvx__fallback__interface__vtable.html#a02d2b41e7ad6402197c6755715483122',1,'cvx_fallback_interface_vtable']]],
   ['pop_5fback_5',['pop_back',['../structcvx__fallback__interface__vtable.html#a1f3160be40372cf25e313de2c5854d68',1,'cvx_fallback_interface_vtable']]],
   ['pop_5ffront_6',['pop_front',['../structcvx__fallback__interface__vtable.html#a661eb15d25e47455c7723d4fb2448cd5',1,'cvx_fallback_interface_vtable']]],

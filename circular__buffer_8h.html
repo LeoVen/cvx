@@ -98,6 +98,9 @@ $(document).ready(function(){initNavTree('circular__buffer_8h.html',''); initRes
 </div><!--header-->
 <div class="contents">
 
+<p>A fixed-sized array where inserts and deletes wrap around the ends.  
+<a href="#details">More...</a></p>
+
 <p><a href="circular__buffer_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -134,7 +137,7 @@ Enumerations</h2></td></tr>
 , <a class="el" href="circular__buffer_8h.html#a363d5432241382812e755e9cc215d7a5aef6c3d8a3a55dd4d2e0b307e07ab37a3">CVX_FLAG_ERROR</a> = 10
 <br />
  }</td></tr>
-<tr class="memdesc:a363d5432241382812e755e9cc215d7a5"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="circular__buffer_8h.html">circular_buffer.h</a>  <a href="circular__buffer_8h.html#a363d5432241382812e755e9cc215d7a5">More...</a><br /></td></tr>
+<tr class="memdesc:a363d5432241382812e755e9cc215d7a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Status and error flags for the CVX library.  <a href="circular__buffer_8h.html#a363d5432241382812e755e9cc215d7a5">More...</a><br /></td></tr>
 <tr class="separator:a363d5432241382812e755e9cc215d7a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad25317a5ffc13f32a076f8e4e34ded70" id="r_ad25317a5ffc13f32a076f8e4e34ded70"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ad25317a5ffc13f32a076f8e4e34ded70">cvx_heap_order</a> { <a class="el" href="circular__buffer_8h.html#ad25317a5ffc13f32a076f8e4e34ded70a085e65a71657a9b7ad03ac7d2574dae6">CVX_MAX_HEAP</a> = 1
 , <a class="el" href="circular__buffer_8h.html#ad25317a5ffc13f32a076f8e4e34ded70a59c187a9582371ecad33d4c788939faf">CVX_MIN_HEAP</a> = -1
@@ -150,7 +153,7 @@ Functions</h2></td></tr>
 <tr class="separator:ac3182cf285632ae5402cefa2e6ac84ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fd0fc2f0d9e4401b3fee0ff7f88d1b7" id="r_a2fd0fc2f0d9e4401b3fee0ff7f88d1b7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a2fd0fc2f0d9e4401b3fee0ff7f88d1b7">cb_drop</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *self)</td></tr>
 <tr class="separator:a2fd0fc2f0d9e4401b3fee0ff7f88d1b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a57f60f9948ae407f1dbc5ef4ac1ce0" id="r_a7a57f60f9948ae407f1dbc5ef4ac1ce0"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a7a57f60f9948ae407f1dbc5ef4ac1ce0">cb_flag</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_self_)</td></tr>
+<tr class="memitem:a7a57f60f9948ae407f1dbc5ef4ac1ce0" id="r_a7a57f60f9948ae407f1dbc5ef4ac1ce0"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a7a57f60f9948ae407f1dbc5ef4ac1ce0">cb_flag</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_self_)</td></tr>
 <tr class="separator:a7a57f60f9948ae407f1dbc5ef4ac1ce0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd8f599ec69eacd59b83556cac2435d0" id="r_acd8f599ec69eacd59b83556cac2435d0"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#acd8f599ec69eacd59b83556cac2435d0">cb_count</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_self_)</td></tr>
 <tr class="separator:acd8f599ec69eacd59b83556cac2435d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,47 +189,42 @@ Functions</h2></td></tr>
 <tr class="memitem:a5de064504b6b2fcf13fad2cbca259326" id="r_a5de064504b6b2fcf13fad2cbca259326"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a5de064504b6b2fcf13fad2cbca259326">cb_linearize</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_self_)</td></tr>
 <tr class="memdesc:a5de064504b6b2fcf13fad2cbca259326"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rearrange the internal buffer so elements are contiguous starting at index 0.  <br /></td></tr>
 <tr class="separator:a5de064504b6b2fcf13fad2cbca259326"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a605b2c76534175441ce55369f18994d0" id="r_a605b2c76534175441ce55369f18994d0"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a605b2c76534175441ce55369f18994d0">cb_iter_init_start</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_target_)</td></tr>
-<tr class="memdesc:a605b2c76534175441ce55369f18994d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">ITERATOR.  <br /></td></tr>
-<tr class="separator:a605b2c76534175441ce55369f18994d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3247c06d7b12e6e08072ea36da856289" id="r_a3247c06d7b12e6e08072ea36da856289"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a3247c06d7b12e6e08072ea36da856289">cb_iter_init_end</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_target_)</td></tr>
-<tr class="separator:a3247c06d7b12e6e08072ea36da856289"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac362263f4f0433a9f41e7079d16bdf47" id="r_ac362263f4f0433a9f41e7079d16bdf47"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ac362263f4f0433a9f41e7079d16bdf47">cb_iter_start</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_target_)</td></tr>
-<tr class="separator:ac362263f4f0433a9f41e7079d16bdf47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67c8720de743618dbee4e85187fca813" id="r_a67c8720de743618dbee4e85187fca813"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a67c8720de743618dbee4e85187fca813">cb_iter_end</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *_target_)</td></tr>
-<tr class="separator:a67c8720de743618dbee4e85187fca813"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4a05fcf6c78b5a37450aa8eddf61aae" id="r_ae4a05fcf6c78b5a37450aa8eddf61aae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ae4a05fcf6c78b5a37450aa8eddf61aae">cb_iter_drop</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:ae4a05fcf6c78b5a37450aa8eddf61aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae98ac6892a777b52d2f364524ad103c0" id="r_ae98ac6892a777b52d2f364524ad103c0"><td class="memItemLeft" align="right" valign="top">_Bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ae98ac6892a777b52d2f364524ad103c0">cb_iter_at_start</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:ae98ac6892a777b52d2f364524ad103c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a427741822113154c650393d54476086c" id="r_a427741822113154c650393d54476086c"><td class="memItemLeft" align="right" valign="top">_Bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a427741822113154c650393d54476086c">cb_iter_at_end</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:a427741822113154c650393d54476086c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba3a4332955452df8a8963a1dc8a5caf" id="r_aba3a4332955452df8a8963a1dc8a5caf"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#aba3a4332955452df8a8963a1dc8a5caf">cb_iter_count</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:aba3a4332955452df8a8963a1dc8a5caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4f7361b178ffc65c173f1a4c5d9bc9a" id="r_ad4f7361b178ffc65c173f1a4c5d9bc9a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ad4f7361b178ffc65c173f1a4c5d9bc9a">cb_iter_to_start</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:ad4f7361b178ffc65c173f1a4c5d9bc9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb217e97f98c3cfb95077f6b9525ff3d" id="r_adb217e97f98c3cfb95077f6b9525ff3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#adb217e97f98c3cfb95077f6b9525ff3d">cb_iter_to_end</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:adb217e97f98c3cfb95077f6b9525ff3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76dfe631504e8d32ee629f4b566cc179" id="r_a76dfe631504e8d32ee629f4b566cc179"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a76dfe631504e8d32ee629f4b566cc179">cb_iter_next</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:a76dfe631504e8d32ee629f4b566cc179"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42599a1688b5981c19bd57dcdf0fd149" id="r_a42599a1688b5981c19bd57dcdf0fd149"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a42599a1688b5981c19bd57dcdf0fd149">cb_iter_prev</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:a42599a1688b5981c19bd57dcdf0fd149"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeceeaddbaa2c87421cc6306cfde9d124" id="r_aeceeaddbaa2c87421cc6306cfde9d124"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#aeceeaddbaa2c87421cc6306cfde9d124">cb_iter_forward</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_, size_t _steps_)</td></tr>
-<tr class="separator:aeceeaddbaa2c87421cc6306cfde9d124"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ec79a0b3f09e2688aae65f05452f374" id="r_a2ec79a0b3f09e2688aae65f05452f374"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a2ec79a0b3f09e2688aae65f05452f374">cb_iter_backward</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_, size_t _steps_)</td></tr>
-<tr class="separator:a2ec79a0b3f09e2688aae65f05452f374"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7684287ff379bab18d5913ff6ac265f" id="r_af7684287ff379bab18d5913ff6ac265f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#af7684287ff379bab18d5913ff6ac265f">cb_iter_go_to</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_, size_t _index_)</td></tr>
-<tr class="separator:af7684287ff379bab18d5913ff6ac265f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0d876d0f464d9b5ff170ef12467baf0" id="r_af0d876d0f464d9b5ff170ef12467baf0"><td class="memItemLeft" align="right" valign="top">TVal&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#af0d876d0f464d9b5ff170ef12467baf0">cb_iter_value</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:af0d876d0f464d9b5ff170ef12467baf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6717c7b958bbbc552d1bc2eaa5c3441" id="r_aa6717c7b958bbbc552d1bc2eaa5c3441"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#aa6717c7b958bbbc552d1bc2eaa5c3441">cb_iter_index</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *_iter_)</td></tr>
-<tr class="separator:aa6717c7b958bbbc552d1bc2eaa5c3441"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34ebf5f8435ba9e2d6ac0b16aff1e41b" id="r_a34ebf5f8435ba9e2d6ac0b16aff1e41b"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a34ebf5f8435ba9e2d6ac0b16aff1e41b">cb_iter__start</a> (TVal *buffer, size_t capacity, size_t count, size_t head)</td></tr>
+<tr class="separator:a34ebf5f8435ba9e2d6ac0b16aff1e41b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae857586b0662481a15833ef6574bd1f3" id="r_ae857586b0662481a15833ef6574bd1f3"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ae857586b0662481a15833ef6574bd1f3">cb_iter__end</a> (TVal *buffer, size_t capacity, size_t count, size_t tail)</td></tr>
+<tr class="separator:ae857586b0662481a15833ef6574bd1f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9aec4e6a25c56c58a2af29bcec5968cb" id="r_a9aec4e6a25c56c58a2af29bcec5968cb"><td class="memItemLeft" align="right" valign="top">_Bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a9aec4e6a25c56c58a2af29bcec5968cb">cb_iter_at_end</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:a9aec4e6a25c56c58a2af29bcec5968cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85a6c1ccf04da723a3a8e3b42252f229" id="r_a85a6c1ccf04da723a3a8e3b42252f229"><td class="memItemLeft" align="right" valign="top">_Bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a85a6c1ccf04da723a3a8e3b42252f229">cb_iter_at_start</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:a85a6c1ccf04da723a3a8e3b42252f229"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8cf6b4c47db241c79419211b422e076" id="r_ab8cf6b4c47db241c79419211b422e076"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ab8cf6b4c47db241c79419211b422e076">cb_iter_to_end</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:ab8cf6b4c47db241c79419211b422e076"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5d5c658d57bdd1c35ca42ef19c8c946" id="r_af5d5c658d57bdd1c35ca42ef19c8c946"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#af5d5c658d57bdd1c35ca42ef19c8c946">cb_iter_to_start</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:af5d5c658d57bdd1c35ca42ef19c8c946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7954d1f888d21bcabb9aa5a60831707a" id="r_a7954d1f888d21bcabb9aa5a60831707a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a7954d1f888d21bcabb9aa5a60831707a">cb_iter_next</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:a7954d1f888d21bcabb9aa5a60831707a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc6b53474dd03d2f0b028488ac16ccc8" id="r_abc6b53474dd03d2f0b028488ac16ccc8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#abc6b53474dd03d2f0b028488ac16ccc8">cb_iter_prev</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:abc6b53474dd03d2f0b028488ac16ccc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbadb3c9e42106b2123db62ca0a704e0" id="r_afbadb3c9e42106b2123db62ca0a704e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#afbadb3c9e42106b2123db62ca0a704e0">cb_iter_go_to</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:afbadb3c9e42106b2123db62ca0a704e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fbd0bba23770d9a21bccbd9836a2e40" id="r_a8fbd0bba23770d9a21bccbd9836a2e40"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a8fbd0bba23770d9a21bccbd9836a2e40">cb_iter_forward</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self, size_t steps)</td></tr>
+<tr class="separator:a8fbd0bba23770d9a21bccbd9836a2e40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9bd239fdf83ac14f65dbae9b186ba14" id="r_ac9bd239fdf83ac14f65dbae9b186ba14"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ac9bd239fdf83ac14f65dbae9b186ba14">cb_iter_backward</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self, size_t steps)</td></tr>
+<tr class="separator:ac9bd239fdf83ac14f65dbae9b186ba14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe1701e4fd368b9c69e51d5e77ffca02" id="r_abe1701e4fd368b9c69e51d5e77ffca02"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#abe1701e4fd368b9c69e51d5e77ffca02">cb_iter_index</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:abe1701e4fd368b9c69e51d5e77ffca02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74ada4e27cfe601da10af3099f29c041" id="r_a74ada4e27cfe601da10af3099f29c041"><td class="memItemLeft" align="right" valign="top">TVal&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a74ada4e27cfe601da10af3099f29c041">cb_iter_value</a> (struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *self)</td></tr>
+<tr class="separator:a74ada4e27cfe601da10af3099f29c041"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2816232cda15e2ad0df29aabdba7f949" id="r_a2816232cda15e2ad0df29aabdba7f949"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a2816232cda15e2ad0df29aabdba7f949">cb_iter_start</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *self)</td></tr>
+<tr class="separator:a2816232cda15e2ad0df29aabdba7f949"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a120dde7d7aa33e17353e749b752f7c1d" id="r_a120dde7d7aa33e17353e749b752f7c1d"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a120dde7d7aa33e17353e749b752f7c1d">cb_iter_end</a> (struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *self)</td></tr>
+<tr class="separator:a120dde7d7aa33e17353e749b752f7c1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a939bf217dd21428c59254ee6ca123003" id="r_a939bf217dd21428c59254ee6ca123003"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a939bf217dd21428c59254ee6ca123003">cb__proxy_clone</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_orig_, <a class="el" href="structcvx__container.html">cvx_container</a> *_clone_)</td></tr>
 <tr class="memdesc:a939bf217dd21428c59254ee6ca123003"><td class="mdescLeft">&#160;</td><td class="mdescRight">PROXIES.  <br /></td></tr>
 <tr class="separator:a939bf217dd21428c59254ee6ca123003"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0b464ae3e3e416f1a1c76b721f45433" id="r_af0b464ae3e3e416f1a1c76b721f45433"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#af0b464ae3e3e416f1a1c76b721f45433">cb__proxy_drop</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
 <tr class="separator:af0b464ae3e3e416f1a1c76b721f45433"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26718447eb989fb0a0f6268f0c80fd36" id="r_a26718447eb989fb0a0f6268f0c80fd36"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a26718447eb989fb0a0f6268f0c80fd36">cb__proxy_flag</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
+<tr class="memitem:a26718447eb989fb0a0f6268f0c80fd36" id="r_a26718447eb989fb0a0f6268f0c80fd36"><td class="memItemLeft" align="right" valign="top">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a26718447eb989fb0a0f6268f0c80fd36">cb__proxy_flag</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
 <tr class="separator:a26718447eb989fb0a0f6268f0c80fd36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ded96db7c3a2e40e619fca1f7b525e1" id="r_a0ded96db7c3a2e40e619fca1f7b525e1"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a0ded96db7c3a2e40e619fca1f7b525e1">cb__proxy_count</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
 <tr class="separator:a0ded96db7c3a2e40e619fca1f7b525e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -256,38 +254,68 @@ Functions</h2></td></tr>
 <tr class="separator:ad8e7b9f15b645ca5bcb1f63a9ec8b41b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a6312c0ba75f1dbe0d700e52247b9d0" id="r_a4a6312c0ba75f1dbe0d700e52247b9d0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a4a6312c0ba75f1dbe0d700e52247b9d0">cb__proxy_linearize</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
 <tr class="separator:a4a6312c0ba75f1dbe0d700e52247b9d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39446e7b482b993e55cfe4770754917f" id="r_a39446e7b482b993e55cfe4770754917f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a39446e7b482b993e55cfe4770754917f">cb__proxy_iter_start</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a39446e7b482b993e55cfe4770754917f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0a5fb83e6b72fee18952427a5f681094" id="r_a0a5fb83e6b72fee18952427a5f681094"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a0a5fb83e6b72fee18952427a5f681094">cb__proxy_iter_end</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a0a5fb83e6b72fee18952427a5f681094"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57bd665a3fa03f056a8f506d959dd390" id="r_a57bd665a3fa03f056a8f506d959dd390"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a57bd665a3fa03f056a8f506d959dd390">cb__proxy_iter_drop</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a57bd665a3fa03f056a8f506d959dd390"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0a9976b63859aa2c37f61daaaab767c" id="r_aa0a9976b63859aa2c37f61daaaab767c"><td class="memItemLeft" align="right" valign="top">_Bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#aa0a9976b63859aa2c37f61daaaab767c">cb__proxy_iter_at_start</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:aa0a9976b63859aa2c37f61daaaab767c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7bcd8d46016d98a0d0c4b3fbccac28b" id="r_aa7bcd8d46016d98a0d0c4b3fbccac28b"><td class="memItemLeft" align="right" valign="top">_Bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#aa7bcd8d46016d98a0d0c4b3fbccac28b">cb__proxy_iter_at_end</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:aa7bcd8d46016d98a0d0c4b3fbccac28b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ec4a6fbf544fe751f5a1c6959e4759d" id="r_a2ec4a6fbf544fe751f5a1c6959e4759d"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a2ec4a6fbf544fe751f5a1c6959e4759d">cb__proxy_iter_count</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a2ec4a6fbf544fe751f5a1c6959e4759d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae741dab9a65b7204699292f1c00523f4" id="r_ae741dab9a65b7204699292f1c00523f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#ae741dab9a65b7204699292f1c00523f4">cb__proxy_iter_to_start</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:ae741dab9a65b7204699292f1c00523f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16748100ff3a43b050bfe9aeb2b5a0c7" id="r_a16748100ff3a43b050bfe9aeb2b5a0c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a16748100ff3a43b050bfe9aeb2b5a0c7">cb__proxy_iter_to_end</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a16748100ff3a43b050bfe9aeb2b5a0c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e0bda1ee322e39a754d74077b2819dd" id="r_a1e0bda1ee322e39a754d74077b2819dd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a1e0bda1ee322e39a754d74077b2819dd">cb__proxy_iter_next</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a1e0bda1ee322e39a754d74077b2819dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8cb5427e0d0188626556d2b628bfafd7" id="r_a8cb5427e0d0188626556d2b628bfafd7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a8cb5427e0d0188626556d2b628bfafd7">cb__proxy_iter_prev</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a8cb5427e0d0188626556d2b628bfafd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f02235b8791eaf4b9d7c852dd645aa3" id="r_a5f02235b8791eaf4b9d7c852dd645aa3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a5f02235b8791eaf4b9d7c852dd645aa3">cb__proxy_iter_forward</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_, size_t _steps_)</td></tr>
-<tr class="separator:a5f02235b8791eaf4b9d7c852dd645aa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a895e276d8a437f8849df6ab6758f81e2" id="r_a895e276d8a437f8849df6ab6758f81e2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a895e276d8a437f8849df6ab6758f81e2">cb__proxy_iter_backward</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_, size_t _steps_)</td></tr>
-<tr class="separator:a895e276d8a437f8849df6ab6758f81e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93fb9b17833bc7a2ce9e6b67d53ff8ee" id="r_a93fb9b17833bc7a2ce9e6b67d53ff8ee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a93fb9b17833bc7a2ce9e6b67d53ff8ee">cb__proxy_iter_go_to</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_, size_t _index_)</td></tr>
-<tr class="separator:a93fb9b17833bc7a2ce9e6b67d53ff8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1823b826bad294bf1b3459a4a970f8e3" id="r_a1823b826bad294bf1b3459a4a970f8e3"><td class="memItemLeft" align="right" valign="top">TVal&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a1823b826bad294bf1b3459a4a970f8e3">cb__proxy_iter_value</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a1823b826bad294bf1b3459a4a970f8e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9c472c9813c2c40aa18456c11c643344" id="r_a9c472c9813c2c40aa18456c11c643344"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="circular__buffer_8h.html#a9c472c9813c2c40aa18456c11c643344">cb__proxy_iter_index</a> (<a class="el" href="structcvx__container.html">cvx_container</a> *_col_)</td></tr>
-<tr class="separator:a9c472c9813c2c40aa18456c11c643344"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Typedef Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A fixed-sized array where inserts and deletes wrap around the ends. </p>
+<dl class="section author"><dt>Author</dt><dd>Leonardo Vencovsky </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.0.1</dd></dl>
+<p>The circular buffer means that the insertion and deletion happen at the ends of the array and can wrap around. Once the buffer is full, the next insertion will overwrite the other end.</p>
+<h2><a class="anchor" id="autotoc_md4"></a>
+Visual Layout</h2>
+<p>Elements are stored contiguously starting at <code>head</code>. <code>count</code> tracks how many elements are live. The back element sits at physical index <code>(head + count - 1) % capacity</code>.</p>
+<p><b>Partially filled</b> (capacity=6, count=4, head=0):</p>
+<div class="fragment"><div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ A ] [ B ] [ C ] [ D ] [ . ] [ . ]</div>
+<div class="line">          ^               ^</div>
+<div class="line">         head=0          back=(0+4-1)%6=3</div>
+</div><!-- fragment --><p><b>Full</b> (capacity=6, count=6, head=0):</p>
+<div class="fragment"><div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ A ] [ B ] [ C ] [ D ] [ E ] [ F ]</div>
+<div class="line">          ^                           ^</div>
+<div class="line">         head=0                      back=(0+6-1)%6=5</div>
+</div><!-- fragment --><p><b>push_back(G) on a full buffer</b> — front element (A) is overwritten, then <code>head</code> advances:</p>
+<div class="fragment"><div class="line">Before:</div>
+<div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ A ] [ B ] [ C ] [ D ] [ E ] [ F ]</div>
+<div class="line">          ^</div>
+<div class="line">         head=0, count=6</div>
+<div class="line"> </div>
+<div class="line">After:  G is written at the old head (0), then head moves to 1.</div>
+<div class="line">        The buffer now wraps: back (G) is at a lower index than front (B).</div>
+<div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ G ] [ B ] [ C ] [ D ] [ E ] [ F ]</div>
+<div class="line">                ^                     (back=G wraps to [0])</div>
+<div class="line">               head=1, count=6</div>
+<div class="line">Logical order (front → back): B C D E F G</div>
+</div><!-- fragment --><p><b>push_front(H) on a full buffer</b> — <code>head</code> wraps backwards, back element (G) is overwritten:</p>
+<div class="fragment"><div class="line">Before:</div>
+<div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ G ] [ B ] [ C ] [ D ] [ E ] [ F ]</div>
+<div class="line">                ^</div>
+<div class="line">               head=1, count=6</div>
+<div class="line"> </div>
+<div class="line">After:  head moves to (1+6-1)%6=0, H is written there (overwriting G).</div>
+<div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ H ] [ B ] [ C ] [ D ] [ E ] [ F ]</div>
+<div class="line">          ^</div>
+<div class="line">         head=0, count=6</div>
+<div class="line">Logical order (front → back): H B C D E F</div>
+</div><!-- fragment --><p><b>Wrapped layout</b> — elements span the end and the beginning of the array (e.g. after several push_back + pop_front calls, head=4, count=4):</p>
+<div class="fragment"><div class="line">index:  [0]   [1]   [2]   [3]   [4]   [5]</div>
+<div class="line">        [ E ] [ F ] [ . ] [ . ] [ C ] [ D ]</div>
+<div class="line">                                  ^     ^</div>
+<div class="line">                            back=(4+4-1)%6=1 (F)</div>
+<div class="line">                                 head=4</div>
+<div class="line">Logical order (front → back): C D E F</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md5"></a>
+Required Macros</h2>
+<ul>
+<li><code>V</code>: Type name of the array (e.g. <code>V *buffer</code>).</li>
+<li><code>SNAME</code>: Prefix of all declared structs (e.g. <code>struct SNAME</code>, <code>struct SNAME_vtabv</code>, etc.).</li>
+<li><code>PFX</code>: Prefix of all functions, including implementation detail ones.</li>
+<li><code>TAG</code>: A unique integer tag that identifies this data structure. </li>
+</ul>
+</div><h2 class="groupheader">Typedef Documentation</h2>
 <a id="a5e1637b832979e1748c49f98e07cfa7b" name="a5e1637b832979e1748c49f98e07cfa7b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5e1637b832979e1748c49f98e07cfa7b">&#9670;&#160;</a></span>cvx_container</h2>
 
@@ -310,15 +338,12 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a></td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="circular__buffer_8h.html">circular_buffer.h</a> </p>
-<p>Status</p>
-<p>[x] concept [ ] v1 [ ] tests [ ] refine [ ] stabilize</p>
-<p>Status and error flags for the CVX library.</p>
+<p>Status and error flags for the CVX library. </p>
 <p><b>Error Handling</b> </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d" name="a363d5432241382812e755e9cc215d7a5a355b9c6106164b2601a95257a84aa85d"></a>CVX_FLAG_OK&#160;</td><td class="fielddoc"><p>No errors. </p>
@@ -354,7 +379,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#ad25317a5ffc13f32a076f8e4e34ded70">cvx_heap_order</a></td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#ad25317a5ffc13f32a076f8e4e34ded70">cvx_heap_order</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -499,7 +524,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a> cb__proxy_flag </td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a> cb__proxy_flag </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
           <td class="paramname"><em>_col_</em></td><td>)</td>
@@ -582,306 +607,6 @@ Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">_Bool cb__proxy_is_linearized </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa7bcd8d46016d98a0d0c4b3fbccac28b" name="aa7bcd8d46016d98a0d0c4b3fbccac28b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7bcd8d46016d98a0d0c4b3fbccac28b">&#9670;&#160;</a></span>cb__proxy_iter_at_end()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">_Bool cb__proxy_iter_at_end </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa0a9976b63859aa2c37f61daaaab767c" name="aa0a9976b63859aa2c37f61daaaab767c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa0a9976b63859aa2c37f61daaaab767c">&#9670;&#160;</a></span>cb__proxy_iter_at_start()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">_Bool cb__proxy_iter_at_start </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a895e276d8a437f8849df6ab6758f81e2" name="a895e276d8a437f8849df6ab6758f81e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a895e276d8a437f8849df6ab6758f81e2">&#9670;&#160;</a></span>cb__proxy_iter_backward()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_backward </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>_steps_</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a2ec4a6fbf544fe751f5a1c6959e4759d" name="a2ec4a6fbf544fe751f5a1c6959e4759d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ec4a6fbf544fe751f5a1c6959e4759d">&#9670;&#160;</a></span>cb__proxy_iter_count()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">size_t cb__proxy_iter_count </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a57bd665a3fa03f056a8f506d959dd390" name="a57bd665a3fa03f056a8f506d959dd390"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a57bd665a3fa03f056a8f506d959dd390">&#9670;&#160;</a></span>cb__proxy_iter_drop()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_drop </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0a5fb83e6b72fee18952427a5f681094" name="a0a5fb83e6b72fee18952427a5f681094"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a5fb83e6b72fee18952427a5f681094">&#9670;&#160;</a></span>cb__proxy_iter_end()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structcvx__container.html">cvx_container</a> * cb__proxy_iter_end </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a5f02235b8791eaf4b9d7c852dd645aa3" name="a5f02235b8791eaf4b9d7c852dd645aa3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5f02235b8791eaf4b9d7c852dd645aa3">&#9670;&#160;</a></span>cb__proxy_iter_forward()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_forward </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>_steps_</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a93fb9b17833bc7a2ce9e6b67d53ff8ee" name="a93fb9b17833bc7a2ce9e6b67d53ff8ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93fb9b17833bc7a2ce9e6b67d53ff8ee">&#9670;&#160;</a></span>cb__proxy_iter_go_to()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_go_to </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>_index_</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9c472c9813c2c40aa18456c11c643344" name="a9c472c9813c2c40aa18456c11c643344"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c472c9813c2c40aa18456c11c643344">&#9670;&#160;</a></span>cb__proxy_iter_index()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">size_t cb__proxy_iter_index </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1e0bda1ee322e39a754d74077b2819dd" name="a1e0bda1ee322e39a754d74077b2819dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1e0bda1ee322e39a754d74077b2819dd">&#9670;&#160;</a></span>cb__proxy_iter_next()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_next </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a8cb5427e0d0188626556d2b628bfafd7" name="a8cb5427e0d0188626556d2b628bfafd7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8cb5427e0d0188626556d2b628bfafd7">&#9670;&#160;</a></span>cb__proxy_iter_prev()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_prev </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a39446e7b482b993e55cfe4770754917f" name="a39446e7b482b993e55cfe4770754917f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a39446e7b482b993e55cfe4770754917f">&#9670;&#160;</a></span>cb__proxy_iter_start()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structcvx__container.html">cvx_container</a> * cb__proxy_iter_start </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a16748100ff3a43b050bfe9aeb2b5a0c7" name="a16748100ff3a43b050bfe9aeb2b5a0c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16748100ff3a43b050bfe9aeb2b5a0c7">&#9670;&#160;</a></span>cb__proxy_iter_to_end()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_to_end </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae741dab9a65b7204699292f1c00523f4" name="ae741dab9a65b7204699292f1c00523f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae741dab9a65b7204699292f1c00523f4">&#9670;&#160;</a></span>cb__proxy_iter_to_start()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb__proxy_iter_to_start </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
-          <td class="paramname"><em>_col_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1823b826bad294bf1b3459a4a970f8e3" name="a1823b826bad294bf1b3459a4a970f8e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1823b826bad294bf1b3459a4a970f8e3">&#9670;&#160;</a></span>cb__proxy_iter_value()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">TVal cb__proxy_iter_value </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structcvx__container.html">cvx_container</a> *&#160;</td>
           <td class="paramname"><em>_col_</em></td><td>)</td>
@@ -1155,7 +880,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="binary__heap_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a> cb_flag </td>
+          <td class="memname">enum <a class="el" href="array__iterator_8h.html#a363d5432241382812e755e9cc215d7a5">cvx_flags</a> cb_flag </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *&#160;</td>
           <td class="paramname"><em>_self_</em></td><td>)</td>
@@ -1282,8 +1007,88 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a427741822113154c650393d54476086c" name="a427741822113154c650393d54476086c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a427741822113154c650393d54476086c">&#9670;&#160;</a></span>cb_iter_at_end()</h2>
+<a id="ae857586b0662481a15833ef6574bd1f3" name="ae857586b0662481a15833ef6574bd1f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae857586b0662481a15833ef6574bd1f3">&#9670;&#160;</a></span>cb_iter__end()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> cb_iter__end </td>
+          <td>(</td>
+          <td class="paramtype">TVal *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>capacity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>tail</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a34ebf5f8435ba9e2d6ac0b16aff1e41b" name="a34ebf5f8435ba9e2d6ac0b16aff1e41b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a34ebf5f8435ba9e2d6ac0b16aff1e41b">&#9670;&#160;</a></span>cb_iter__start()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> cb_iter__start </td>
+          <td>(</td>
+          <td class="paramtype">TVal *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>capacity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>head</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9aec4e6a25c56c58a2af29bcec5968cb" name="a9aec4e6a25c56c58a2af29bcec5968cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9aec4e6a25c56c58a2af29bcec5968cb">&#9670;&#160;</a></span>cb_iter_at_end()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1292,7 +1097,7 @@ Functions</h2></td></tr>
           <td class="memname">_Bool cb_iter_at_end </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1300,8 +1105,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ae98ac6892a777b52d2f364524ad103c0" name="ae98ac6892a777b52d2f364524ad103c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae98ac6892a777b52d2f364524ad103c0">&#9670;&#160;</a></span>cb_iter_at_start()</h2>
+<a id="a85a6c1ccf04da723a3a8e3b42252f229" name="a85a6c1ccf04da723a3a8e3b42252f229"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85a6c1ccf04da723a3a8e3b42252f229">&#9670;&#160;</a></span>cb_iter_at_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1310,7 +1115,7 @@ Functions</h2></td></tr>
           <td class="memname">_Bool cb_iter_at_start </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1318,8 +1123,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a2ec79a0b3f09e2688aae65f05452f374" name="a2ec79a0b3f09e2688aae65f05452f374"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ec79a0b3f09e2688aae65f05452f374">&#9670;&#160;</a></span>cb_iter_backward()</h2>
+<a id="ac9bd239fdf83ac14f65dbae9b186ba14" name="ac9bd239fdf83ac14f65dbae9b186ba14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac9bd239fdf83ac14f65dbae9b186ba14">&#9670;&#160;</a></span>cb_iter_backward()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1328,13 +1133,13 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_backward </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em>, </td>
+          <td class="paramname"><em>self</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>_steps_</em>&#160;</td>
+          <td class="paramname"><em>steps</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1346,53 +1151,17 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aba3a4332955452df8a8963a1dc8a5caf" name="aba3a4332955452df8a8963a1dc8a5caf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba3a4332955452df8a8963a1dc8a5caf">&#9670;&#160;</a></span>cb_iter_count()</h2>
+<a id="a120dde7d7aa33e17353e749b752f7c1d" name="a120dde7d7aa33e17353e749b752f7c1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a120dde7d7aa33e17353e749b752f7c1d">&#9670;&#160;</a></span>cb_iter_end()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">size_t cb_iter_count </td>
-          <td>(</td>
-          <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae4a05fcf6c78b5a37450aa8eddf61aae" name="ae4a05fcf6c78b5a37450aa8eddf61aae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4a05fcf6c78b5a37450aa8eddf61aae">&#9670;&#160;</a></span>cb_iter_drop()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void cb_iter_drop </td>
-          <td>(</td>
-          <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a67c8720de743618dbee4e85187fca813" name="a67c8720de743618dbee4e85187fca813"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a67c8720de743618dbee4e85187fca813">&#9670;&#160;</a></span>cb_iter_end()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> * cb_iter_end </td>
+          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> cb_iter_end </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *&#160;</td>
-          <td class="paramname"><em>_target_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1400,8 +1169,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aeceeaddbaa2c87421cc6306cfde9d124" name="aeceeaddbaa2c87421cc6306cfde9d124"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeceeaddbaa2c87421cc6306cfde9d124">&#9670;&#160;</a></span>cb_iter_forward()</h2>
+<a id="a8fbd0bba23770d9a21bccbd9836a2e40" name="a8fbd0bba23770d9a21bccbd9836a2e40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fbd0bba23770d9a21bccbd9836a2e40">&#9670;&#160;</a></span>cb_iter_forward()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1410,13 +1179,13 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_forward </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em>, </td>
+          <td class="paramname"><em>self</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>_steps_</em>&#160;</td>
+          <td class="paramname"><em>steps</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1428,8 +1197,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="af7684287ff379bab18d5913ff6ac265f" name="af7684287ff379bab18d5913ff6ac265f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7684287ff379bab18d5913ff6ac265f">&#9670;&#160;</a></span>cb_iter_go_to()</h2>
+<a id="afbadb3c9e42106b2123db62ca0a704e0" name="afbadb3c9e42106b2123db62ca0a704e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbadb3c9e42106b2123db62ca0a704e0">&#9670;&#160;</a></span>cb_iter_go_to()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1438,26 +1207,16 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_go_to </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>_index_</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="aa6717c7b958bbbc552d1bc2eaa5c3441" name="aa6717c7b958bbbc552d1bc2eaa5c3441"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6717c7b958bbbc552d1bc2eaa5c3441">&#9670;&#160;</a></span>cb_iter_index()</h2>
+<a id="abe1701e4fd368b9c69e51d5e77ffca02" name="abe1701e4fd368b9c69e51d5e77ffca02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe1701e4fd368b9c69e51d5e77ffca02">&#9670;&#160;</a></span>cb_iter_index()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1466,7 +1225,7 @@ Functions</h2></td></tr>
           <td class="memname">size_t cb_iter_index </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1474,46 +1233,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a3247c06d7b12e6e08072ea36da856289" name="a3247c06d7b12e6e08072ea36da856289"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3247c06d7b12e6e08072ea36da856289">&#9670;&#160;</a></span>cb_iter_init_end()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> cb_iter_init_end </td>
-          <td>(</td>
-          <td class="paramtype">struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *&#160;</td>
-          <td class="paramname"><em>_target_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a605b2c76534175441ce55369f18994d0" name="a605b2c76534175441ce55369f18994d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a605b2c76534175441ce55369f18994d0">&#9670;&#160;</a></span>cb_iter_init_start()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> cb_iter_init_start </td>
-          <td>(</td>
-          <td class="paramtype">struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *&#160;</td>
-          <td class="paramname"><em>_target_</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>ITERATOR. </p>
-
-</div>
-</div>
-<a id="a76dfe631504e8d32ee629f4b566cc179" name="a76dfe631504e8d32ee629f4b566cc179"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a76dfe631504e8d32ee629f4b566cc179">&#9670;&#160;</a></span>cb_iter_next()</h2>
+<a id="a7954d1f888d21bcabb9aa5a60831707a" name="a7954d1f888d21bcabb9aa5a60831707a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7954d1f888d21bcabb9aa5a60831707a">&#9670;&#160;</a></span>cb_iter_next()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1522,7 +1243,7 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_next </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1530,8 +1251,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a42599a1688b5981c19bd57dcdf0fd149" name="a42599a1688b5981c19bd57dcdf0fd149"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a42599a1688b5981c19bd57dcdf0fd149">&#9670;&#160;</a></span>cb_iter_prev()</h2>
+<a id="abc6b53474dd03d2f0b028488ac16ccc8" name="abc6b53474dd03d2f0b028488ac16ccc8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc6b53474dd03d2f0b028488ac16ccc8">&#9670;&#160;</a></span>cb_iter_prev()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1540,7 +1261,7 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_prev </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1548,17 +1269,17 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac362263f4f0433a9f41e7079d16bdf47" name="ac362263f4f0433a9f41e7079d16bdf47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac362263f4f0433a9f41e7079d16bdf47">&#9670;&#160;</a></span>cb_iter_start()</h2>
+<a id="a2816232cda15e2ad0df29aabdba7f949" name="a2816232cda15e2ad0df29aabdba7f949"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2816232cda15e2ad0df29aabdba7f949">&#9670;&#160;</a></span>cb_iter_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> * cb_iter_start </td>
+          <td class="memname">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> cb_iter_start </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer.html">circular_buffer</a> *&#160;</td>
-          <td class="paramname"><em>_target_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1566,8 +1287,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="adb217e97f98c3cfb95077f6b9525ff3d" name="adb217e97f98c3cfb95077f6b9525ff3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adb217e97f98c3cfb95077f6b9525ff3d">&#9670;&#160;</a></span>cb_iter_to_end()</h2>
+<a id="ab8cf6b4c47db241c79419211b422e076" name="ab8cf6b4c47db241c79419211b422e076"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8cf6b4c47db241c79419211b422e076">&#9670;&#160;</a></span>cb_iter_to_end()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1576,7 +1297,7 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_to_end </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1584,8 +1305,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad4f7361b178ffc65c173f1a4c5d9bc9a" name="ad4f7361b178ffc65c173f1a4c5d9bc9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad4f7361b178ffc65c173f1a4c5d9bc9a">&#9670;&#160;</a></span>cb_iter_to_start()</h2>
+<a id="af5d5c658d57bdd1c35ca42ef19c8c946" name="af5d5c658d57bdd1c35ca42ef19c8c946"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5d5c658d57bdd1c35ca42ef19c8c946">&#9670;&#160;</a></span>cb_iter_to_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1594,7 +1315,7 @@ Functions</h2></td></tr>
           <td class="memname">void cb_iter_to_start </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1602,8 +1323,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="af0d876d0f464d9b5ff170ef12467baf0" name="af0d876d0f464d9b5ff170ef12467baf0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af0d876d0f464d9b5ff170ef12467baf0">&#9670;&#160;</a></span>cb_iter_value()</h2>
+<a id="a74ada4e27cfe601da10af3099f29c041" name="a74ada4e27cfe601da10af3099f29c041"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74ada4e27cfe601da10af3099f29c041">&#9670;&#160;</a></span>cb_iter_value()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1612,7 +1333,7 @@ Functions</h2></td></tr>
           <td class="memname">TVal cb_iter_value </td>
           <td>(</td>
           <td class="paramtype">struct <a class="el" href="structcircular__buffer__iter.html">circular_buffer_iter</a> *&#160;</td>
-          <td class="paramname"><em>_iter_</em></td><td>)</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

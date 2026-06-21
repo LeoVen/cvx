@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['hashtable_0',['hashtable',['../structhashtable.html',1,'']]],
-  ['hashtable_5fentry_1',['hashtable_entry',['../structhashtable__entry.html',1,'']]],
-  ['hashtable_5fiter_2',['hashtable_iter',['../structhashtable__iter.html',1,'']]],
-  ['hashtable_5fvtabk_3',['hashtable_vtabk',['../structhashtable__vtabk.html',1,'']]],
-  ['hashtable_5fvtabv_4',['hashtable_vtabv',['../structhashtable__vtabv.html',1,'']]]
+  ['dlinked_5flist_0',['dlinked_list',['../structdlinked__list.html',1,'']]],
+  ['dlinked_5flist_5fiter_1',['dlinked_list_iter',['../structdlinked__list__iter.html',1,'']]],
+  ['dlinked_5flist_5fnode_2',['dlinked_list_node',['../structdlinked__list__node.html',1,'']]],
+  ['dlinked_5flist_5fvtabv_3',['dlinked_list_vtabv',['../structdlinked__list__vtabv.html',1,'']]],
+  ['dynamic_5farray_4',['dynamic_array',['../structdynamic__array.html',1,'']]],
+  ['dynamic_5farray_5fiter_5',['dynamic_array_iter',['../structdynamic__array__iter.html',1,'']]],
+  ['dynamic_5farray_5fvtabv_6',['dynamic_array_vtabv',['../structdynamic__array__vtabv.html',1,'']]]
 ];

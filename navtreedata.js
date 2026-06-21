@@ -25,27 +25,27 @@
 var NAVTREE =
 [
   [ "CVX", "index.html", [
-    [ "Quick start", "index.html#autotoc_md7", null ],
-    [ "Available Implementations and Interfaces", "index.html#autotoc_md9", [
-      [ "Available implementations", "index.html#autotoc_md10", null ],
-      [ "Available interfaces", "index.html#autotoc_md11", null ],
-      [ "Available iterators", "index.html#autotoc_md12", null ]
+    [ "Quick start", "index.html#autotoc_md21", null ],
+    [ "Available Implementations and Interfaces", "index.html#autotoc_md23", [
+      [ "Available implementations", "index.html#autotoc_md24", null ],
+      [ "Available interfaces", "index.html#autotoc_md25", null ],
+      [ "Available iterators", "index.html#autotoc_md26", null ]
     ] ],
-    [ "Implementations", "index.html#autotoc_md14", [
-      [ "Macros", "index.html#autotoc_md15", null ],
-      [ "User type virtual tables", "index.html#autotoc_md16", null ]
+    [ "Implementations", "index.html#autotoc_md28", [
+      [ "Macros", "index.html#autotoc_md29", null ],
+      [ "User type virtual tables", "index.html#autotoc_md30", null ]
     ] ],
-    [ "Interfaces", "index.html#autotoc_md17", [
-      [ "Declaring an interface", "index.html#autotoc_md18", null ],
-      [ "Casting an implementation to an interface", "index.html#autotoc_md19", null ],
-      [ "Interface macros", "index.html#autotoc_md20", null ]
+    [ "Interfaces", "index.html#autotoc_md31", [
+      [ "Declaring an interface", "index.html#autotoc_md32", null ],
+      [ "Casting an implementation to an interface", "index.html#autotoc_md33", null ],
+      [ "Interface macros", "index.html#autotoc_md34", null ]
     ] ],
-    [ "Error handling", "index.html#autotoc_md21", [
-      [ "Tags and <tt>CVX_FLAG_WRONG_TAG</tt>", "index.html#autotoc_md22", null ]
+    [ "Error handling", "index.html#autotoc_md35", [
+      [ "Tags and <tt>CVX_FLAG_WRONG_TAG</tt>", "index.html#autotoc_md36", null ]
     ] ],
-    [ "Installing dependencies", "index.html#autotoc_md24", null ],
-    [ "Building and running", "index.html#autotoc_md25", null ],
-    [ "Testing", "index.html#autotoc_md27", null ],
+    [ "Installing dependencies", "index.html#autotoc_md38", null ],
+    [ "Building and running", "index.html#autotoc_md39", null ],
+    [ "Testing", "index.html#autotoc_md41", null ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
@@ -72,10 +72,10 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"dlinked__list_8h.html#a363d5432241382812e755e9cc215d7a5ab8d1298f72d0fe9389cf8d3a2fec381f",
-"hashtable_8h.html#ad25317a5ffc13f32a076f8e4e34ded70a59c187a9582371ecad33d4c788939faf",
-"slinked__list_8h.html#a1db18eec8215029940bdb1480ba5097a",
-"structinterval__set.html#a6761c85ca1ac2a42990a679e6920680f"
+"dlinked__list_8h.html#a612c61a1085150ceec3c811c1fd3e10e",
+"hashtable_8h.html#affd57851e2c358eb6eb68b74afdb4e52",
+"slinked__list_8h.html#a363d5432241382812e755e9cc215d7a5ac4173e0814ccef42ad15a3f537770d31",
+"structinterval__set__vtabv.html#aa782128d2c65416aab61804bac4552ec"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

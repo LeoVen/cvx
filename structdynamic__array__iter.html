@@ -95,9 +95,6 @@ $(document).ready(function(){initNavTree('structdynamic__array__iter.html',''); 
 </div><!--header-->
 <div class="contents">
 
-<p>ITERATOR.  
- <a href="structdynamic__array__iter.html#details">More...</a></p>
-
 <p><code>#include &lt;<a class="el" href="dynamic__array_8h_source.html">dynamic_array.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -115,23 +112,7 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a3e39e143ae23e3430601d27192e7cd07" id="r_a3e39e143ae23e3430601d27192e7cd07"><td class="memItemLeft" align="right" valign="top">TVal *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdynamic__array__iter.html#a3e39e143ae23e3430601d27192e7cd07">buffer</a></td></tr>
 <tr class="separator:a3e39e143ae23e3430601d27192e7cd07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>ITERATOR. </p>
-<p><a class="el" href="buffer__iterator_8h.html">buffer_iterator.h</a></p>
-<p>Status</p>
-<p>[x] concept [x] v1 [ ] tests [ ] refine [ ] stabilize</p>
-<p>The implementation of the buffer iterator can be tuned depending on what the underlying data structure needs.</p>
-<p>This is the basic interface: for (struct iterator it = init_iter(&amp;arr); !iter_at_end(&amp;it); iter_next(&amp;it)) { char *key = iter_key(&amp;it); int value = iter_value(&amp;it); ... }</p>
-<p>User defined macro options</p>
-<ul>
-<li>SPARSE(item): a function-like macro that receives and item and checks if this is just a "hole" or an actual item</li>
-<li>CIRCULAR: if enabled, the pointer wraps around the buffer's capacity</li>
-</ul>
-<p>Other macros</p>
-<ul>
-<li>EMBEDDED: Used by other data structures to automatically implement an iterator. When this is enabled, it changes the input macros and prefixes them all with "IT_". </li>
-</ul>
-</div><h2 class="groupheader">Field Documentation</h2>
+<h2 class="groupheader">Field Documentation</h2>
 <a id="a3e39e143ae23e3430601d27192e7cd07" name="a3e39e143ae23e3430601d27192e7cd07"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3e39e143ae23e3430601d27192e7cd07">&#9670;&#160;</a></span>buffer</h2>
 
