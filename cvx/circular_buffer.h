@@ -1,13 +1,89 @@
-/// circular_buffer.h
-///
-/// Status
-///
-///   [x] concept
-///   [ ] v1
-///   [ ] tests
-///   [ ] refine
-///   [ ] stabilize
-///
+/**
+ * @file circular_buffer.h
+ * @author Leonardo Vencovsky
+ * @brief A fixed-sized array where inserts and deletes wrap around the ends.
+ * @version 0.0.1
+ *
+ * The circular buffer means that the insertion and deletion happen at the ends of the array and can
+ * wrap around. Once the buffer is full, the next insertion will overwrite the other end.
+ *
+ * ## Visual Layout
+ *
+ * Elements are stored contiguously starting at `head`. `count` tracks how many elements are live.
+ * The back element sits at physical index `(head + count - 1) % capacity`.
+ *
+ * **Partially filled** (capacity=6, count=4, head=0):
+ *
+ * ```
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ A ] [ B ] [ C ] [ D ] [ . ] [ . ]
+ *             ^               ^
+ *            head=0          back=(0+4-1)%6=3
+ * ```
+ *
+ * **Full** (capacity=6, count=6, head=0):
+ *
+ * ```
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ A ] [ B ] [ C ] [ D ] [ E ] [ F ]
+ *             ^                           ^
+ *            head=0                      back=(0+6-1)%6=5
+ * ```
+ *
+ * **push_back(G) on a full buffer** — front element (A) is overwritten, then `head` advances:
+ *
+ * ```
+ *   Before:
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ A ] [ B ] [ C ] [ D ] [ E ] [ F ]
+ *             ^
+ *            head=0, count=6
+ *
+ *   After:  G is written at the old head (0), then head moves to 1.
+ *           The buffer now wraps: back (G) is at a lower index than front (B).
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ G ] [ B ] [ C ] [ D ] [ E ] [ F ]
+ *                   ^                     (back=G wraps to [0])
+ *                  head=1, count=6
+ *   Logical order (front → back): B C D E F G
+ * ```
+ *
+ * **push_front(H) on a full buffer** — `head` wraps backwards, back element (G) is overwritten:
+ *
+ * ```
+ *   Before:
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ G ] [ B ] [ C ] [ D ] [ E ] [ F ]
+ *                   ^
+ *                  head=1, count=6
+ *
+ *   After:  head moves to (1+6-1)%6=0, H is written there (overwriting G).
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ H ] [ B ] [ C ] [ D ] [ E ] [ F ]
+ *             ^
+ *            head=0, count=6
+ *   Logical order (front → back): H B C D E F
+ * ```
+ *
+ * **Wrapped layout** — elements span the end and the beginning of the array
+ *   (e.g. after several push_back + pop_front calls, head=4, count=4):
+ *
+ * ```
+ *   index:  [0]   [1]   [2]   [3]   [4]   [5]
+ *           [ E ] [ F ] [ . ] [ . ] [ C ] [ D ]
+ *                                     ^     ^
+ *                               back=(4+4-1)%6=1 (F)
+ *                                    head=4
+ *   Logical order (front → back): C D E F
+ * ```
+ *
+ * ## Required Macros
+ *
+ * - `V`: Type name of the array (e.g. `V *buffer`).
+ * - `SNAME`: Prefix of all declared structs (e.g. `struct SNAME`, `struct SNAME_vtabv`, etc.).
+ * - `PFX`: Prefix of all functions, including implementation detail ones.
+ * - `TAG`: A unique integer tag that identifies this data structure.
+ */
 
 #include "cvx/fallback.h"
 
@@ -52,18 +128,10 @@ struct SNAME
     V *buffer;
 };
 
-struct ITERATOR
-{
-    cvx_container super;
-    size_t index;
-    struct SNAME *target;
-};
-
 // Initializers and destructors
 void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, size_t capacity);
 void FUNC(_clone)(struct SNAME *orig, struct SNAME *clone);
 void FUNC(_drop)(struct SNAME *self);
-
 // Getters
 enum cvx_flags FUNC(_flag)(struct SNAME *_self_);
 size_t FUNC(_count)(struct SNAME *_self_);
@@ -71,7 +139,6 @@ size_t FUNC(_capacity)(struct SNAME *_self_);
 bool FUNC(_empty)(struct SNAME *_self_);
 bool FUNC(_full)(struct SNAME *_self_);
 bool FUNC(_is_linearized)(struct SNAME *_self_);
-
 // Operations
 V FUNC(_front)(struct SNAME *_self_);
 V FUNC(_back)(struct SNAME *_self_);
@@ -82,25 +149,6 @@ V FUNC(_pop_back)(struct SNAME *_self_);
 V FUNC(_pop_front)(struct SNAME *_self_);
 void FUNC(_set_capacity)(struct SNAME *_self_, size_t _new_cap_);
 void FUNC(_linearize)(struct SNAME *_self_);
-
-// Iterators
-struct ITERATOR FUNC(_iter_init_start)(struct SNAME *_target_);
-struct ITERATOR FUNC(_iter_init_end)(struct SNAME *_target_);
-struct ITERATOR *FUNC(_iter_start)(struct SNAME *_target_);
-struct ITERATOR *FUNC(_iter_end)(struct SNAME *_target_);
-void FUNC(_iter_drop)(struct ITERATOR *_iter_);
-bool FUNC(_iter_at_start)(struct ITERATOR *_iter_);
-bool FUNC(_iter_at_end)(struct ITERATOR *_iter_);
-size_t FUNC(_iter_count)(struct ITERATOR *_iter_);
-void FUNC(_iter_to_start)(struct ITERATOR *_iter_);
-void FUNC(_iter_to_end)(struct ITERATOR *_iter_);
-void FUNC(_iter_next)(struct ITERATOR *_iter_);
-void FUNC(_iter_prev)(struct ITERATOR *_iter_);
-void FUNC(_iter_forward)(struct ITERATOR *_iter_, size_t _steps_);
-void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_);
-void FUNC(_iter_go_to)(struct ITERATOR *_iter_, size_t _index_);
-V FUNC(_iter_value)(struct ITERATOR *_iter_);
-size_t FUNC(_iter_index)(struct ITERATOR *_iter_);
 
 void FUNC(_init)(struct SNAME *self, struct VTAB_V *vtabv, size_t capacity)
 {
@@ -406,160 +454,25 @@ void FUNC(_linearize)(struct SNAME *_self_)
 ///
 ///
 
-struct ITERATOR FUNC(_iter_init_start)(struct SNAME *_target_)
+#ifdef ITERATOR
+#define EMBEDDED
+#define CIRCULAR
+#define IT_V V
+#define IT_SNAME CVX_(SNAME, _iter)
+#define IT_PFX CVX_(PFX, _iter)
+#define IT_TAG (TAG * CVX_ITER_TAG_MULT)
+#include "cvx/array_iterator.h"
+struct IT_SNAME FUNC(_iter_start)(struct SNAME *self)
 {
-    struct ITERATOR _res_ = { 0 };
-    _res_.super.tag = ITER_TAG;
-    _res_.super.flag = CVX_FLAG_OK;
-    _res_.index = 0;
-    _res_.target = _target_;
-
-    return _res_;
+    return FUNC(_iter__start)(self->buffer, self->capacity, self->count, self->head);
 }
-
-struct ITERATOR FUNC(_iter_init_end)(struct SNAME *_target_)
+struct IT_SNAME FUNC(_iter_end)(struct SNAME *self)
 {
-    struct ITERATOR _res_ = { 0 };
-    _res_.super.tag = ITER_TAG;
-    _res_.super.flag = CVX_FLAG_OK;
-    _res_.index = _target_->count;
-    _res_.target = _target_;
-
-    return _res_;
+    size_t tail = (self->head + self->count - 1) % self->capacity;
+    return FUNC(_iter__end)(self->buffer, self->capacity, self->count, tail);
 }
-
-struct ITERATOR *FUNC(_iter_start)(struct SNAME *_target_)
-{
-    struct ITERATOR *_res_ = malloc(sizeof(struct ITERATOR));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = ITER_TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->index = 0;
-    _res_->target = _target_;
-
-    return _res_;
-}
-
-struct ITERATOR *FUNC(_iter_end)(struct SNAME *_target_)
-{
-    struct ITERATOR *_res_ = malloc(sizeof(struct ITERATOR));
-
-    if (!_res_)
-        return NULL;
-
-    _res_->super.tag = ITER_TAG;
-    _res_->super.flag = CVX_FLAG_OK;
-    _res_->index = _target_->count;
-    _res_->target = _target_;
-
-    return _res_;
-}
-
-void FUNC(_iter_drop)(struct ITERATOR *_iter_)
-{
-    free(_iter_);
-}
-
-bool FUNC(_iter_at_start)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->index == 0;
-}
-
-bool FUNC(_iter_at_end)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->index == _iter_->target->count;
-}
-
-size_t FUNC(_iter_count)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->target->count;
-}
-
-void FUNC(_iter_to_start)(struct ITERATOR *_iter_)
-{
-    _iter_->index = 0;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_to_end)(struct ITERATOR *_iter_)
-{
-    _iter_->index = _iter_->target->count;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_next)(struct ITERATOR *_iter_)
-{
-    if (_iter_->index >= _iter_->target->count)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return;
-    }
-
-    _iter_->index++;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_prev)(struct ITERATOR *_iter_)
-{
-    if (_iter_->index == 0)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return;
-    }
-
-    _iter_->index--;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_forward)(struct ITERATOR *_iter_, size_t _steps_)
-{
-    size_t _remaining_ = _iter_->target->count - _iter_->index;
-    _iter_->index += (_steps_ < _remaining_) ? _steps_ : _remaining_;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_backward)(struct ITERATOR *_iter_, size_t _steps_)
-{
-    _iter_->index -= (_steps_ < _iter_->index) ? _steps_ : _iter_->index;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-void FUNC(_iter_go_to)(struct ITERATOR *_iter_, size_t _index_)
-{
-    if (_index_ > _iter_->target->count)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return;
-    }
-
-    _iter_->index = _index_;
-    _iter_->super.flag = CVX_FLAG_OK;
-}
-
-V FUNC(_iter_value)(struct ITERATOR *_iter_)
-{
-    if (_iter_->index >= _iter_->target->count || _iter_->target->capacity == 0)
-    {
-        _iter_->super.flag = CVX_FLAG_RANGE;
-        return (V){ 0 };
-    }
-
-    _iter_->super.flag = CVX_FLAG_OK;
-    size_t _phys_ = (_iter_->target->head + _iter_->index) % _iter_->target->capacity;
-    return _iter_->target->buffer[_phys_];
-}
-
-size_t FUNC(_iter_index)(struct ITERATOR *_iter_)
-{
-    _iter_->super.flag = CVX_FLAG_OK;
-    return _iter_->index;
-}
+#undef IT_SNAME
+#endif /* ITERATOR */
 
 ///
 ///
@@ -585,25 +498,6 @@ V FUNC_PROXY(_pop_back)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_,
 V FUNC_PROXY(_pop_front)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, (V){ 0 }); return FUNC(_pop_front)((struct SNAME *)_col_); }
 void FUNC_PROXY(_set_capacity)(cvx_container *_col_, size_t _new_cap_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_set_capacity)((struct SNAME *)_col_, _new_cap_); }
 void FUNC_PROXY(_linearize)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, ); FUNC(_linearize)((struct SNAME *)_col_); }
-
-// ITERATORS
-
-cvx_container *FUNC_PROXY(_iter_start)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_iter_start)((struct SNAME *)_col_); }
-cvx_container *FUNC_PROXY(_iter_end)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(TAG, _col_, NULL); return (cvx_container *)FUNC(_iter_end)((struct SNAME *)_col_); }
-void FUNC_PROXY(_iter_drop)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_drop)((struct ITERATOR *)_col_); }
-bool FUNC_PROXY(_iter_at_start)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, false); return FUNC(_iter_at_start)((struct ITERATOR *)_col_); }
-bool FUNC_PROXY(_iter_at_end)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, false); return FUNC(_iter_at_end)((struct ITERATOR *)_col_); }
-size_t FUNC_PROXY(_iter_count)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, 0); return FUNC(_iter_count)((struct ITERATOR *)_col_); }
-void FUNC_PROXY(_iter_to_start)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_to_start)((struct ITERATOR *)_col_); }
-void FUNC_PROXY(_iter_to_end)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_to_end)((struct ITERATOR *)_col_); }
-void FUNC_PROXY(_iter_next)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_next)((struct ITERATOR *)_col_); }
-void FUNC_PROXY(_iter_prev)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_prev)((struct ITERATOR *)_col_); }
-void FUNC_PROXY(_iter_forward)(cvx_container *_col_, size_t _steps_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_forward)((struct ITERATOR *)_col_, _steps_); }
-void FUNC_PROXY(_iter_backward)(cvx_container *_col_, size_t _steps_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_backward)((struct ITERATOR *)_col_, _steps_); }
-void FUNC_PROXY(_iter_go_to)(cvx_container *_col_, size_t _index_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, ); FUNC(_iter_go_to)((struct ITERATOR *)_col_, _index_); }
-V FUNC_PROXY(_iter_value)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, (V){ 0 }); return FUNC(_iter_value)((struct ITERATOR *)_col_); }
-size_t FUNC_PROXY(_iter_index)(cvx_container *_col_) { CVX_CONTAINER_GUARDS(ITER_TAG, _col_, 0); return FUNC(_iter_index)((struct ITERATOR *)_col_); }
-// clang-format on
 
 #ifdef IMPL_RANDOM_ACCESS_ITER
 #define INTERFACE IMPL_RANDOM_ACCESS_ITER
