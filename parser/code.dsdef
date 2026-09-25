@@ -1,0 +1,18 @@
+struct my_list is DynamicArray<int> implements Iterator
+{
+    tag = 1,
+    buffer_growth_rate = 1.5,
+    buffer_min_size = 8
+}
+
+struct my_table is Hashtable<char *, struct my_list>
+implements Map, MyMap
+{
+    tag = 2,
+    conflict_resolution = open_addressing,
+    probing = linear
+}
+
+interface Map<char *, struct my_list> named MyMap
+interface Set<char *> named ArrayList
+
