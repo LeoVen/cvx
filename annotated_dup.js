@@ -8,6 +8,7 @@ var annotated_dup =
     [ "circular_buffer_iter", "structcircular__buffer__iter.html", "structcircular__buffer__iter" ],
     [ "circular_buffer_vtabv", "structcircular__buffer__vtabv.html", "structcircular__buffer__vtabv" ],
     [ "cvx_container", "structcvx__container.html", "structcvx__container" ],
+    [ "cvx_fallback", "structcvx__fallback.html", "structcvx__fallback" ],
     [ "cvx_fallback_interface", "structcvx__fallback__interface.html", "structcvx__fallback__interface" ],
     [ "cvx_fallback_interface_vtable", "structcvx__fallback__interface__vtable.html", "structcvx__fallback__interface__vtable" ],
     [ "dlinked_list", "structdlinked__list.html", "structdlinked__list" ],

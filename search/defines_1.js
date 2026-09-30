@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['global_5fvtable_0',['GLOBAL_VTABLE',['../core_8h.html#a741153a7f64913f7136de57137b2a733',1,'core.h']]]
+  ['func_0',['FUNC',['../segment__tree_8h.html#a69f2d3d2d4ff93ea801cc8d4955c0625',1,'segment_tree.h']]]
 ];

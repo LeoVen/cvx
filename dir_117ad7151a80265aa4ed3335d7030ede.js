@@ -4,5 +4,6 @@ var dir_117ad7151a80265aa4ed3335d7030ede =
     [ "iter", "dir_1b1c64d40af09ea4d734f9f1ab6a802a.html", "dir_1b1c64d40af09ea4d734f9f1ab6a802a" ],
     [ "core.h", "core_8h.html", "core_8h" ],
     [ "flags.h", "flags_8h.html", "flags_8h" ],
-    [ "interface_macros.h", "interface__macros_8h.html", "interface__macros_8h" ]
+    [ "interface_macros.h", "interface__macros_8h.html", "interface__macros_8h" ],
+    [ "segment_tree.h", "segment__tree_8h.html", "segment__tree_8h" ]
 ];
