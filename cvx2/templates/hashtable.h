@@ -1,28 +1,13 @@
 /**
  * @file hashtable.h
- * @brief cvx2 template: a configurable hashtable that maps CVX_KEY -> CVX_VAL
+ * @brief A hashtable mapping CVX_KEY -> CVX_VAL.
  *
- * ## Required config fields
- * - **key_type**: key type (maps to CVX_KEY)
- * - **value_type**: value type (maps to CVX_VAL)
- * - **struct_name**: name of the generated struct (maps to CVX_SNAME)
- * - **prefix**: prefix of all generated functions (maps to CVX_PFX)
+ * Required config: key_type, value_type, struct_name, prefix.
+ * Variant "collision": "open_addressing" or "separate_chaining".
  *
- * No tag -- instances carry no type-identifying field.
- *
- * ## Variant axes
- * - **collision** (required): "open_addressing" (robin-hood linear probing)
- *   or "separate_chaining" (singly-linked buckets).
- *
- * Both variants expose the same public API and struct field names
- * (`capacity`, `count`, `load`, `vtabk`, `vtabv`) -- only the internal
- * storage field (`buffer` vs `buckets`) and algorithms differ. See the
- * `@cvx2:variant axis="collision" ...` blocks below and in hashtable.c.
- *
- * Keys are hashed with vtabk->hash and compared with vtabk->comp. Both are
- * required; vtabk->clone / vtabk->drop and vtabv->clone / vtabv->drop are
- * optional. A resize is triggered whenever `count >= capacity * load`
- * (default load = 0.7); capacity is always rounded up to a prime.
+ * vtabk->hash and vtabk->comp are required; copy/drop callbacks are
+ * optional. Resizes when count >= capacity * load (default 0.7); capacity
+ * is always rounded up to a prime.
  */
 
 #include "cvx2/fallback.h"
@@ -71,11 +56,7 @@ struct ENTRY
     CVX_KEY key;
     CVX_VAL val;
     size_t dist; // displacement from home slot (robin hood)
-    // `state` is one of the CVX2_HT_ENTRY_* constants defined in the .c --
-    // not declared here since it's purely a private implementation detail,
-    // and keeping it out of the header avoids an unqualified enum colliding
-    // across two open_addressing instantiations included in one TU.
-    int state;
+    int state;   // internal bookkeeping, do not modify
 };
 
 struct CVX_SNAME
@@ -111,23 +92,31 @@ struct CVX_SNAME
 #endif
 // @cvx2:endvariant
 
-// ---- Initializers ----
+/** @brief Initializes self, optionally pre-allocating capacity slots. */
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv, size_t capacity);
+/** @brief Initializes clone as a deep copy of orig. */
 enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
-
-// ---- Destructor ----
+/** @brief Frees the table, dropping any keys/values still stored. */
 enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self);
 
-// ---- Getters (no failure mode beyond struct state, so these keep direct returns) ----
+/** @brief Number of entries currently stored. */
 size_t FUNC(_count)(struct CVX_SNAME *self);
+/** @brief Current number of buffer/bucket slots. */
 size_t FUNC(_capacity)(struct CVX_SNAME *self);
+/** @brief Resize threshold, as a fraction of capacity. */
 double FUNC(_load)(struct CVX_SNAME *self);
+/** @brief True if count is 0. */
 bool FUNC(_empty)(struct CVX_SNAME *self);
 
-// ---- Operations ----
+/** @brief Inserts key/val. Fails with CVX_FLAG_DUPLICATE if key already exists. */
 enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val);
+/** @brief Replaces the value for key, returning the old value through old_out. Fails with CVX_FLAG_NOT_FOUND if absent. */
 enum cvx_flags FUNC(_update)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL new_val, CVX_VAL *old_out);
+/** @brief Removes key, returning its value through out. Fails with CVX_FLAG_NOT_FOUND if absent. */
 enum cvx_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
+/** @brief Gets the value for key. Fails with CVX_FLAG_NOT_FOUND if absent. */
 enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
+/** @brief Gets a pointer to the stored value for key, or NULL if absent. */
 CVX_VAL *FUNC(_get_ref)(struct CVX_SNAME *self, CVX_KEY key);
+/** @brief True if key is present. */
 bool FUNC(_contains)(struct CVX_SNAME *self, CVX_KEY key);

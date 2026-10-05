@@ -59,3 +59,10 @@ build/
 coverage/
 docs/output/
 .cache
+
+# cvx2 generator output + python caches (generator output is a build
+# artifact, not source -- see cvx2/examples/config.json for the source of
+# truth that produces it)
+cvx2/examples/generated/
+__pycache__/
+*.pyc

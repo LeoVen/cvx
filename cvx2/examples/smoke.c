@@ -1,11 +1,4 @@
-// Exercises the generated output from cvx2/examples/config.json: one
-// dynamic_array instantiation, one hashtable instantiation per collision
-// variant (proving the variant mechanism actually selects between two
-// different real implementations, not just a config flag), and two
-// dynamic_array instantiations over "complex" declarator types (a
-// fixed-size array wrapped in a typedef'd struct, and a typedef'd function
-// pointer) that only work because of their "includes": ["types.h"] config
-// -- see types.h for why that's required.
+// Smoke test for the generated examples; see config.json.
 #include <assert.h>
 #include <stdio.h>
 
@@ -15,7 +8,7 @@
 #include "generated/int_map_sc.h"
 #include "generated/int10_array.h"
 #include "generated/binop_list.h"
-#include "types.h" // int10_t / binop_fn, used directly below
+#include "types.h"
 
 static int int_comp(int a, int b)
 {

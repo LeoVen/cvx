@@ -4,8 +4,7 @@
 #include "flags.h"
 #include <stddef.h>
 
-// Token-paste helpers used by generated code and by templates' own local
-// macros (FUNC(X), VTAB_V, etc.) before the generator resolves them away.
+// Concatenates two tokens, expanding them first.
 #define CVX__(A, B) A##B
 #define CVX_(A, B) CVX__(A, B)
 

@@ -51,3 +51,11 @@ valgrind_all:
 check_examples:
 	find ./examples -type f -name "*.c" | xargs -I {} sh -c 'just valgrind {} || exit 255'
 
+# generate cvx2 container types from a config (default: the example config)
+cvx2-generate config="cvx2/examples/config.json":
+	python3 cvx2/generator/generator.py --config {{config}}
+
+# run the cvx2 generator's own unit + end-to-end tests
+cvx2-test:
+	python3 -m unittest discover -s cvx2/tests -p "test_*.py" -v
+

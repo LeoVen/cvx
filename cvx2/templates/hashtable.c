@@ -2,10 +2,8 @@
 
 #include <stdlib.h>
 
-// ---- Private per-variant interface ----
-// Both collision variants implement exactly this set of `static` helpers
-// with matching signatures; everything else in this file (the public API
-// below) is axis-independent and written once.
+// Each collision variant implements this set of helpers; the public API
+// below is shared between both.
 static enum cvx_flags FUNC(__init_buffer)(struct CVX_SNAME *self, size_t capacity);
 static void FUNC(__drop_buffer)(struct CVX_SNAME *self);
 static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
@@ -14,7 +12,7 @@ static void FUNC(__insert_unchecked)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
 static enum cvx_flags FUNC(__resize)(struct CVX_SNAME *self, size_t new_cap);
 static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
 
-// ---- Shared prime table (both variants round capacity up to a prime) ----
+// Capacity is always rounded up to one of these primes.
 // clang-format off
 static const size_t CVX_(CVX_PFX, __primes)[] = {
     /* < 1e3  */ 53, 97, 191, 383, 769,
@@ -43,19 +41,10 @@ static size_t FUNC(__next_prime)(size_t required)
     return required;
 }
 
-///
-///
-/// COLLISION VARIANTS
-///
-///
-
 // @cvx2:variant axis="collision" name="open_addressing"
 #ifdef CVX2_COLLISION_OPEN_ADDRESSING
 
-// Entry state constants (used as the `state` field value). File-scope and
-// unqualified is fine here: each generated instantiation is its own
-// translation unit, so these can't collide across instantiations the way a
-// header-level definition could.
+// state field values.
 enum
 {
     CVX2_HT_ENTRY_EMPTY = 0,
@@ -129,12 +118,27 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
     for (size_t i = 0; i < orig->capacity; i++)
     {
         buf[i] = orig->buffer[i];
-        if (orig->buffer[i].state == CVX2_HT_ENTRY_FILLED)
+        if (orig->buffer[i].state != CVX2_HT_ENTRY_FILLED)
+            continue;
+
+        if (orig->vtabk && orig->vtabk->copy)
         {
-            buf[i].key = (orig->vtabk && orig->vtabk->clone) ? orig->vtabk->clone(orig->buffer[i].key)
-                                                               : orig->buffer[i].key;
-            buf[i].val = (orig->vtabv && orig->vtabv->clone) ? orig->vtabv->clone(orig->buffer[i].val)
-                                                               : orig->buffer[i].val;
+            enum cvx_flags flag = orig->vtabk->copy(orig->buffer[i].key, &buf[i].key);
+            if (flag != CVX_FLAG_OK)
+            {
+                free(buf);
+                return flag;
+            }
+        }
+
+        if (orig->vtabv && orig->vtabv->copy)
+        {
+            enum cvx_flags flag = orig->vtabv->copy(orig->buffer[i].val, &buf[i].val);
+            if (flag != CVX_FLAG_OK)
+            {
+                free(buf);
+                return flag;
+            }
         }
     }
 
@@ -317,16 +321,36 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
         struct NODE **tail = &buckets[i];
         for (struct NODE *node = orig->buckets[i]; node; node = node->next)
         {
-            struct NODE *copy = malloc(sizeof(struct NODE));
-            if (!copy)
+            struct NODE *node_copy = malloc(sizeof(struct NODE));
+            if (!node_copy)
                 return CVX_FLAG_ALLOC;
 
-            copy->key = (orig->vtabk && orig->vtabk->clone) ? orig->vtabk->clone(node->key) : node->key;
-            copy->val = (orig->vtabv && orig->vtabv->clone) ? orig->vtabv->clone(node->val) : node->val;
-            copy->next = NULL;
+            node_copy->key = node->key;
+            node_copy->val = node->val;
+            node_copy->next = NULL;
 
-            *tail = copy;
-            tail = &copy->next;
+            if (orig->vtabk && orig->vtabk->copy)
+            {
+                enum cvx_flags flag = orig->vtabk->copy(node->key, &node_copy->key);
+                if (flag != CVX_FLAG_OK)
+                {
+                    free(node_copy);
+                    return flag;
+                }
+            }
+
+            if (orig->vtabv && orig->vtabv->copy)
+            {
+                enum cvx_flags flag = orig->vtabv->copy(node->val, &node_copy->val);
+                if (flag != CVX_FLAG_OK)
+                {
+                    free(node_copy);
+                    return flag;
+                }
+            }
+
+            *tail = node_copy;
+            tail = &node_copy->next;
         }
     }
 
@@ -420,12 +444,6 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
 
 #endif
 // @cvx2:endvariant
-
-///
-///
-/// PUBLIC API (axis-independent)
-///
-///
 
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv, size_t capacity)
 {

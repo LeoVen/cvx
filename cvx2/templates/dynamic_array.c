@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Private helpers (kept `static`: the generator emits one .c per
-// instantiation, so nothing outside this translation unit needs them).
+// Not part of the public API.
 static bool FUNC(__assert_capacity)(struct CVX_SNAME *self);
 static bool FUNC(__assert_buffer)(struct CVX_SNAME *self, size_t capacity);
 
@@ -282,7 +281,7 @@ enum cvx_flags FUNC(_sort)(struct CVX_SNAME *self)
     if (self->count <= 1)
         return CVX_FLAG_OK;
 
-    // TODO: optimize
+    // Bubble sort: O(n^2).
     for (size_t i = 0; i < self->count - 1; i++)
     {
         for (size_t j = 0; j < self->count - 1 - i; j++)

@@ -1,32 +1,23 @@
 #ifndef CVX_FLAGS_H
 #define CVX_FLAGS_H
 
-/**
- * @brief Status and error flags for the CVX library.
- *
- * **Error Handling**
- *
- */
+/** @brief Status codes returned by cvx operations. */
 enum cvx_flags
 { // clang-format off
     CVX_FLAG_OK        =  0, //!< No errors
-    CVX_FLAG_VTAB      =  1, //!< Required vtab function was not provided
-    CVX_FLAG_WRONG_TAG =  2, //!< Tags are checked so you don't pass the wrong struct to a function
-    CVX_FLAG_ALLOC     =  3, //!< Allocation failed
-    CVX_FLAG_EMPTY     =  4, //!< Operation can not proceed because the container is empty
-    CVX_FLAG_FULL      =  5, //!< When a container that doesn't resize is full
-    CVX_FLAG_RANGE     =  6, //!< Index out of range
-    CVX_FLAG_NOT_FOUND =  7, //!< Key or value not found
-    CVX_FLAG_INVALID   =  8, //!< Invalid argument or operation
-    CVX_FLAG_DUPLICATE =  9, //!< Duplicate key or value
-    CVX_FLAG_ERROR     = 10, //!< Generic error, or unknown error
+    CVX_FLAG_WRONG_TAG =  1, //!< Tags are checked so you don't pass the wrong struct to a function
+    CVX_FLAG_ALLOC     =  2, //!< Allocation failed
+    CVX_FLAG_EMPTY     =  3, //!< Operation can not proceed because the container is empty
+    CVX_FLAG_FULL      =  4, //!< When a container that doesn't resize is full
+    CVX_FLAG_RANGE     =  5, //!< Index out of range
+    CVX_FLAG_NOT_FOUND =  6, //!< Key or value not found
+    CVX_FLAG_INVALID   =  7, //!< Invalid argument or operation
+    CVX_FLAG_DUPLICATE =  8, //!< Duplicate key or value
+    CVX_FLAG_ERROR     =  9, //!< Generic error, or unknown error
+    CVX_FLAG_VTAB      = 10, //!< Required vtab function was not provided
 }; // clang-format on
 
-/**
- * cvx_flags_str
- *
- * Maps the error codes to their character representation.
- */
+/** Short name for each cvx_flags value, indexed by its integer value. */
 // clang-format off
 static const char *cvx_flags_str[] = {
     "OK",          // 0
@@ -43,15 +34,11 @@ static const char *cvx_flags_str[] = {
 };
 // clang-format on
 
-/**
- * cvx_flags_description
- *
- * Maps the error codes to their description strings.
- */
+/** Human-readable description for each cvx_flags value. */
 // clang-format off
 static const char *cvx_flags_description[] = {
     "No error",                                      // 0
-    "Wrong container type for this function",        // 1
+    "Tag did not match",                             // 1
     "Allocation failed",                             // 2
     "The container is empty when it should not be",  // 3
     "Container is full",                             // 4

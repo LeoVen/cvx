@@ -93,9 +93,7 @@ def case_fn_for(case_name):
 ###
 ### VARIANT SELECTION
 ###
-# Marker-comment variant block selection.
-#
-# Each structurally-alternative region in a cvx2 template is wrapped like:
+# A variant block looks like:
 #
 #     // @cvx2:variant axis="collision" name="open_addressing"
 #     #ifdef CVX2_COLLISION_OPEN_ADDRESSING
@@ -103,13 +101,9 @@ def case_fn_for(case_name):
 #     #endif
 #     // @cvx2:endvariant
 #
-# The #ifdef/#endif exist only so the template still compiles standalone
-# for editing (fallback.h defines exactly one branch's macro by default).
-# select_variants() does NOT evaluate those directives -- it parses the
-# marker comments directly and keeps only the block whose (axis, name)
-# matches the config, stripping the marker/#ifdef/#endif scaffolding lines
-# from the kept block and deleting every other block (and its scaffolding)
-# entirely.
+# select_variants() picks the block matching the config and discards the
+# rest, based on the marker comments alone (the #ifdef/#endif just let the
+# template compile standalone while editing).
 
 _VARIANT_START_RE = re.compile(
     r'^\s*//\s*@cvx2:variant\s+axis="([^"]+)"\s+name="([^"]+)"\s*$'
@@ -239,38 +233,9 @@ def select_variants(text, variants_config, template_name):
 ###
 ### TEMPLATE EXPANSION
 ###
-# Turns a cvx2 template (after variant selection) into literal, macro-free
-# (w.r.t. template-instantiation machinery) generated C.
-#
-# A template's local helper macros (FUNC(X), and object-like macros like
-# VTAB_V/VTAB_K/ENTRY/NODE) are only ever #define'd in the .h -- the .c
-# relies on them via its `#include` of the .h, same as at template-edit
-# time. So resolution is two-phase:
-#
-#   1. parse_local_macros(header_text) reads those #define lines out of the
-#      header once (nothing hardcoded per-template: any template following
-#      the convention FUNC(X) = CVX_(CVX_PFX, X) / NAME = CVX_(CVX_SNAME,
-#      suffix) works) and immediately strips them (and the other
-#      template-only scaffolding: the fallback.h include, the
-#      required-macro #error guard block) out of the header text.
-#   2. expand(text, macros, ctx) applies those macros' call sites (FUNC(...)
-#      calls, bare object-macro names) to a given file's text -- called
-#      once for the (already-scaffolding-stripped) header and once for the
-#      source -- then resolves CVX_(A, B) token-pasting into a literal
-#      joined identifier (case-converting at the point of pasting, so case
-#      conversion only ever touches whole generator-owned identifiers,
-#      never fragments or incidental C tokens), then resolves the
-#      remaining bare CVX_SNAME/CVX_PFX (case-converted) and
-#      CVX_VAL/CVX_KEY (verbatim -- arbitrary C type text, not identifiers
-#      the generator owns) placeholders.
-#
-# cvx2/core.h and cvx2/flags.h are deliberately NOT expanded away:
-# generated output keeps `#include "cvx2/core.h"` and `#include
-# "cvx2/flags.h"`, using their macros/types (enum cvx_flags,
-# CVX_VTAB_DEFINITION, ...) as a small fixed runtime support library, the
-# same way generated parser/protocol code typically still depends on a
-# small runtime. There's no per-instance tag/container type: cvx2 instances
-# carry no type-identifying field at all.
+# Resolves a template's local macros (FUNC(X), VTAB_V, etc., #define'd in
+# the .h) and CVX_(A, B) token-pasting into literal generated identifiers.
+# cvx2/core.h and cvx2/flags.h stay as real #includes in the output.
 
 _FUNC_DEF_RE = re.compile(
     r"^[ \t]*#define[ \t]+FUNC\((\w+)\)[ \t]+(.+?)[ \t]*$", re.MULTILINE
@@ -359,9 +324,7 @@ def _resolve_pastes(text, ctx):
         raw_b = ctx.raw.get(b, b)
         return ctx.case_fn(raw_a + raw_b)
 
-    # Loop to a fixpoint -- harmless no-op after the first pass for today's
-    # templates (no nested pastes), but keeps this correct if a future
-    # template's macro body pastes the result of another paste.
+    # Loop in case a macro body itself contains another paste.
     for _ in range(4):
         new_text = _PASTE_RE.sub(repl, text)
         if new_text == text:
@@ -402,15 +365,10 @@ def rewrite_self_include(text, template_name, generated_header_filename):
 ###
 ### CONFIG VALIDATION
 ###
-# Hand-rolled typed loading/validation for cvx2 generator config files. No
-# third-party JSON Schema validator -- the generator is meant to be
-# stdlib-only. cvx2/generator/config.schema.json documents the same shape
-# for humans/editors, maintained by hand alongside this file.
+# Validates config files against config.schema.json's shape (kept in sync
+# by hand -- no jsonschema dependency).
 
-# Per-template required/optional fields. `variant_axes` lists the axes this
-# template's marker-comment blocks use (validated against the template file
-# itself at generation time, not here -- this section only checks the
-# config is well-typed).
+# variant_axes: the @cvx2:variant axes this template's blocks use.
 TEMPLATE_SCHEMAS = {
     "dynamic_array": {
         "scalar_fields": {"value_type": (str, "string")},
@@ -463,15 +421,9 @@ def _optional_identifier(instantiation, where, key):
 
 
 def _check_type_expression(where, field, value):
-    """value_type/key_type get spliced into the template as a plain
-    declarator prefix (e.g. `CVX_VALUE item`, `(CVX_VALUE){0}`). That only
-    works for a type that's already a single name at the use site: a
-    builtin, a pointer, or a typedef/struct tag. Raw array ("int[10]") and
-    raw function-pointer ("int (*)(int, int)") syntax need the identifier
-    embedded *inside* the type, which no amount of prefix substitution can
-    produce -- so reject them early with the fix, instead of letting it
-    fail deep inside the generated C with a wall of cryptic errors.
-    """
+    """Rejects raw array/function-pointer syntax in value_type/key_type --
+    neither can be expressed as a plain declarator prefix; a typedef is
+    needed instead (see the error message)."""
     if "[" in value or "(" in value:
         _err(
             where,
@@ -542,13 +494,7 @@ def validate_instantiation(instantiation, index):
     if not isinstance(out_dir, str):
         _err(where, "field 'out_dir' must be a string")
 
-    # Any value_type/key_type beyond a builtin (a struct tag, a typedef'd
-    # array-wrapper or function-pointer alias, ...) has to be declared
-    # somewhere the generated .c can see it -- it's compiled as its own
-    # translation unit and only #includes its own generated .h. `includes`
-    # lists headers to #include at the top of the generated .h (and so,
-    # transitively, the .c) instead of relying on the consumer happening to
-    # include the type's definition first.
+    # Headers needed for value_type/key_type, if not a builtin.
     includes = _optional(instantiation, "includes", [])
     if not isinstance(includes, list) or not all(isinstance(h, str) for h in includes):
         _err(where, "field 'includes' must be an array of strings (header paths)")

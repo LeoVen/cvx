@@ -1,13 +1,8 @@
 /**
  * @file dynamic_array.h
- * @brief cvx template: an array that gets reallocated as needed.
+ * @brief A dynamically-resizing array.
  *
- * ## Required config fields
- *
- * - **value_type**: element type stored in the array (maps to CVX_VAL)
- * - **struct_name**: name of the generated struct (maps to CVX_SNAME)
- * - **prefix**: prefix of all generated functions (maps to CVX_PFX)
- *
+ * Required config: value_type, struct_name, prefix.
  */
 
 #include "cvx2/fallback.h"
@@ -48,78 +43,50 @@ struct CVX_SNAME
     CVX_VAL *buffer;
 };
 
-// Initializers and destructors
+/** @brief Initializes self, optionally pre-allocating capacity elements. */
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_V *vtabv, size_t capacity);
+/** @brief Frees the buffer, dropping any elements still stored. */
 enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self);
+/** @brief Initializes clone as a deep copy of orig. */
 enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
-// Getters (no failure mode beyond "empty" struct state, so these keep direct returns)
+
+/** @brief Number of elements currently stored. */
 size_t FUNC(_count)(struct CVX_SNAME *self);
+/** @brief Current buffer capacity. */
 size_t FUNC(_capacity)(struct CVX_SNAME *self);
+/** @brief True if count is 0. */
 bool FUNC(_empty)(struct CVX_SNAME *self);
+/** @brief True if count equals capacity. */
 bool FUNC(_full)(struct CVX_SNAME *self);
-// Operations
-/**
- * @brief Gets the element at position 0
- *
- * **Error Handling**
- * - `CVX_FLAG_EMPTY` - if the array is empty
- */
+
+/** @brief Gets the first element. Fails with CVX_FLAG_EMPTY if empty. */
 enum cvx_flags FUNC(_front)(struct CVX_SNAME *self, CVX_VAL *out);
+/** @brief Gets the last element. Fails with CVX_FLAG_EMPTY if empty. */
 enum cvx_flags FUNC(_back)(struct CVX_SNAME *self, CVX_VAL *out);
+/** @brief Gets the element at index. Fails with CVX_FLAG_RANGE if out of bounds. */
 enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
-/**
- * @brief Inserts an element at position 0.
- * @note If the buffer is full, it gets reallocated. The new buffer's size
- * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
- *
- * **Error Handling**
- * - `CVX_FLAG_ALLOC` - if reallocation of the buffer fails
- */
+
+/** @brief Inserts item at the front, growing the buffer if needed. */
 enum cvx_flags FUNC(_push_front)(struct CVX_SNAME *self, CVX_VAL item);
-/**
- * @brief Inserts `item` at position `index`.
- * @param index must be 0 <= index <= count
- *
- * **Error Handling**
- * - `CVX_FLAG_RANGE` - if index > count
- * - `CVX_FLAG_ALLOC` - if reallocation of the buffer fails
- */
+/** @brief Inserts item at index, growing the buffer if needed. */
 enum cvx_flags FUNC(_push_at)(struct CVX_SNAME *self, CVX_VAL item, size_t index);
-/**
- * @brief Inserts an element at the last position.
- *
- * **Error Handling**
- * - `CVX_FLAG_ALLOC` - if reallocation of the buffer fails
- */
+/** @brief Inserts item at the back, growing the buffer if needed. */
 enum cvx_flags FUNC(_push_back)(struct CVX_SNAME *self, CVX_VAL item);
-/**
- * @brief Removes and returns (through `out`) the item at position 0.
- * @note `_pop*` functions do not cause the buffer to shrink.
- *
- * **Error Handling**
- * - `CVX_FLAG_EMPTY` - if there are no items in the dynamic array.
- */
+
+/** @brief Removes and returns the first element. Fails with CVX_FLAG_EMPTY if empty. */
 enum cvx_flags FUNC(_pop_front)(struct CVX_SNAME *self, CVX_VAL *out);
-/**
- * @brief
- */
+/** @brief Removes and returns the element at index. Fails with CVX_FLAG_RANGE if out of bounds. */
 enum cvx_flags FUNC(_pop_at)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
-/**
- * @brief
- */
+/** @brief Removes and returns the last element. Fails with CVX_FLAG_EMPTY if empty. */
 enum cvx_flags FUNC(_pop_back)(struct CVX_SNAME *self, CVX_VAL *out);
-/**
- * @brief
- */
+/** @brief Replaces the first element, returning the old value through old_out. */
 enum cvx_flags FUNC(_replace_front)(struct CVX_SNAME *self, CVX_VAL new_value, CVX_VAL *old_out);
-/**
- * @brief
- */
+/** @brief Replaces the last element, returning the old value through old_out. */
 enum cvx_flags FUNC(_replace_back)(struct CVX_SNAME *self, CVX_VAL new_value, CVX_VAL *old_out);
-/**
- * @brief
- */
+/** @brief Swaps the elements at idx1 and idx2. */
 enum cvx_flags FUNC(_swap)(struct CVX_SNAME *self, size_t idx1, size_t idx2);
-// Extras
+
+/** @brief Lexicographically compares two arrays using vtabv->comp. */
 enum cvx_flags FUNC(_compare)(struct CVX_SNAME *left, struct CVX_SNAME *right, int *out);
+/** @brief Sorts in place using vtabv->comp. */
 enum cvx_flags FUNC(_sort)(struct CVX_SNAME *self);
