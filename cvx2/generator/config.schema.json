@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Reference documentation for cvx2 generator config files, kept by hand in sync with the actual validator in generator.py (validate_instantiation). Not loaded or enforced by the generator itself (stdlib-only, no jsonschema dependency) -- this exists for editors/IDEs and for humans to check the config shape against.",
+  "title": "cvx2 generator config",
+  "type": "object",
+  "required": [
+    "instantiations"
+  ],
+  "properties": {
+    "instantiations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/instantiation"
+      }
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "string",
+      "enum": [
+        "snake_case",
+        "camelCase",
+        "PascalCase"
+      ],
+      "default": "snake_case"
+    },
+    "instantiation": {
+      "type": "object",
+      "required": [
+        "template",
+        "struct_name",
+        "prefix"
+      ],
+      "properties": {
+        "template": {
+          "type": "string",
+          "enum": [
+            "dynamic_array",
+            "circular_buffer",
+            "hamt",
+            "hashtable"
+          ]
+        },
+        "value_type": {
+          "type": "string",
+          "description": "Required for \"dynamic_array\" and \"circular_buffer\". Required for \"hashtable\" when variants.kind is \"map\" (the default); must be omitted when variants.kind is \"set\". A C type expression, e.g. \"int\" or \"char *\"."
+        },
+        "key_type": {
+          "type": "string",
+          "description": "Required for \"hashtable\" only."
+        },
+        "struct_name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "prefix": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+        },
+        "file_name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "description": "Basename (no extension) for the generated .h/.c pair, when it needs to differ from struct_name -- e.g. struct_name \"CharMap\" (used for the C struct/type names) but files char_map.h/char_map.c. Also used for the #ifndef include guard. Defaults to struct_name."
+        },
+        "case": {
+          "type": "object",
+          "description": "Naming case for the generated names, set independently for functions (e.g. prefix + _init) and structs (e.g. struct_name + _vtabv). Only the suffixes the generator appends are cased; struct_name and prefix are used as given.",
+          "properties": {
+            "function": {
+              "$ref": "#/$defs/case"
+            },
+            "struct": {
+              "$ref": "#/$defs/case"
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "function": "snake_case",
+            "struct": "snake_case"
+          }
+        },
+        "variants": {
+          "type": "object",
+          "description": "Required key set depends on `template`: dynamic_array uses none; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
+          "properties": {
+            "collision": {
+              "type": "string",
+              "enum": [
+                "open_addressing",
+                "separate_chaining"
+              ],
+              "description": "hashtable only."
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "map",
+                "set"
+              ],
+              "default": "map",
+              "description": "hashtable only. \"map\" stores key_type -> value_type (value_type required); \"set\" stores key_type only (value_type must be omitted)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "out_dir": {
+          "type": "string",
+          "default": ".",
+          "description": "Resolved relative to the config file's own directory."
+        },
+        "includes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Header paths to #include at the top of the generated .h, before value_type/key_type are used. Required whenever value_type/key_type is anything the generator doesn't already know about (a struct tag, a typedef'd fixed-size-array wrapper, a typedef'd function pointer, ...) -- the generated .c is its own translation unit and only #includes its own generated .h, so without this the type has to happen to already be visible via the consumer's own include order, which is fragile. An entry wrapped in angle brackets (\"<stdint.h>\") is emitted as a system include; anything else is quoted as a local path."
+        }
+      }
+    }
+  }
+}

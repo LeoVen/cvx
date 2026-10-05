@@ -1,0 +1,74 @@
+{
+  "instantiations": [
+    {
+      "template": "dynamic_array",
+      "value_type": "void *",
+      "struct_name": "DynamicArray",
+      "prefix": "da",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "dynamic_array",
+      "out_dir": "output"
+    },
+    {
+      "template": "circular_buffer",
+      "value_type": "void *",
+      "struct_name": "CircularBuffer",
+      "prefix": "cb",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "circular_buffer",
+      "out_dir": "output/cvx"
+    },
+    {
+      "template": "hashtable",
+      "key_type": "void *",
+      "value_type": "void *",
+      "struct_name": "HashMap",
+      "prefix": "hm",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "hashmap",
+      "variants": {
+        "kind": "map",
+        "collision": "separate_chaining"
+      },
+      "out_dir": "output"
+    },
+    {
+      "template": "hashtable",
+      "key_type": "void *",
+      "struct_name": "HashSet",
+      "prefix": "hs",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "hashset",
+      "variants": {
+        "kind": "set",
+        "collision": "open_addressing"
+      },
+      "out_dir": "output"
+    },
+    {
+      "template": "hamt",
+      "key_type": "void *",
+      "value_type": "void *",
+      "struct_name": "HAMT",
+      "prefix": "hamt",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "hamt",
+      "out_dir": "output"
+    }
+  ]
+}
