@@ -1,13 +1,14 @@
-// Defines placeholder macros only when editing a cvx2 template directly
-// (CVX_ENABLE_FALLBACK), so clangd/gcc can type-check the template as
-// standalone C even though it's never included this way by real consumers
-// -- the generator text-substitutes these placeholders instead.
+// This file defines a bunch of macros only when I'm using clangd LSP.
+// This is enabled by defining CVX_ENABLE_FALLBACK.
 //
-// Mirrors cvx/fallback.h's role, but for cvx2's renamed placeholders
-// (CVX_VALUE/CVX_KEY/CVX_SNAME/CVX_PFX/CVX_TAG instead of V/K/SNAME/PFX/TAG)
-// and for cvx2's variant-axis default selection.
-#ifndef CVX2_FALLBACK_H
-#define CVX2_FALLBACK_H
+// Since I'm writing templating headers, clangd doesn't understand where macros
+// like V and SNAME are defined. Basically, the header files aren't stand-alone
+// and I need to include this file at the top of every templating header file
+// so that I get decent LSP features.
+//
+// It is not ideal, but I think it works for now.
+#ifndef CVX_FALLBACK_H
+#define CVX_FALLBACK_H
 
 #ifdef CVX_ENABLE_FALLBACK
 
@@ -31,9 +32,6 @@
 #ifndef CVX_PFX
 #define CVX_PFX cvx2_fb
 #endif
-#ifndef CVX_TAG
-#define CVX_TAG 99
-#endif
 
 // Dynamic Array
 #define CVX_BUFFER_MIN_SIZE 8
@@ -52,4 +50,4 @@
 
 #endif // CVX_ENABLE_FALLBACK
 
-#endif // CVX2_FALLBACK_H
+#endif // CVX_FALLBACK_H

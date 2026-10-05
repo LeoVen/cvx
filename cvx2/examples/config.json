@@ -5,7 +5,6 @@
       "value_type": "int",
       "struct_name": "int_array",
       "prefix": "ia",
-      "tag": 1,
       "case": "snake_case",
       "out_dir": "generated"
     },
@@ -15,7 +14,6 @@
       "value_type": "int",
       "struct_name": "int_map_oa",
       "prefix": "moa",
-      "tag": 2,
       "case": "camelCase",
       "variants": {
         "collision": "open_addressing"
@@ -28,7 +26,6 @@
       "value_type": "int",
       "struct_name": "int_map_sc",
       "prefix": "msc",
-      "tag": 3,
       "case": "snake_case",
       "variants": {
         "collision": "separate_chaining"
@@ -41,7 +38,6 @@
       "value_type": "int*",
       "struct_name": "char_map",
       "prefix": "cm",
-      "tag": 4,
       "case": "snake_case",
       "variants": {
         "collision": "open_addressing"
@@ -53,7 +49,6 @@
       "value_type": "int10_t",
       "struct_name": "int10_array",
       "prefix": "i10a",
-      "tag": 5,
       "case": "snake_case",
       "includes": [
         "../types.h"
@@ -65,7 +60,6 @@
       "value_type": "binop_fn",
       "struct_name": "binop_list",
       "prefix": "bl",
-      "tag": 6,
       "case": "snake_case",
       "includes": [
         "../types.h"

@@ -12,7 +12,6 @@ def da(**overrides):
         "value_type": "int",
         "struct_name": "my_array",
         "prefix": "ma",
-        "tag": 1,
     }
     base.update(overrides)
     return base
@@ -25,7 +24,6 @@ def ht(**overrides):
         "value_type": "int",
         "struct_name": "my_map",
         "prefix": "mm",
-        "tag": 2,
         "variants": {"collision": "open_addressing"},
     }
     base.update(overrides)
@@ -71,10 +69,6 @@ class TestValidateConfig(unittest.TestCase):
     def test_bad_struct_name_not_an_identifier_errors(self):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [da(struct_name="not an identifier")]})
-
-    def test_tag_must_be_int_not_bool(self):
-        with self.assertRaises(generator.ConfigError):
-            generator.validate_config({"instantiations": [da(tag=True)]})
 
     def test_invalid_case_errors(self):
         with self.assertRaises(generator.ConfigError):

@@ -1,18 +1,13 @@
 /**
  * @file dynamic_array.h
- * @brief cvx2 template: an array that gets reallocated as needed.
+ * @brief cvx template: an array that gets reallocated as needed.
  *
  * ## Required config fields
+ *
  * - **value_type**: element type stored in the array (maps to CVX_VAL)
  * - **struct_name**: name of the generated struct (maps to CVX_SNAME)
  * - **prefix**: prefix of all generated functions (maps to CVX_PFX)
- * - **tag**: a unique integer tag for the generated type (maps to CVX_TAG)
  *
- * No variant axes.
- *
- * Every operation that can fail returns `enum cvx2_flags` and writes its
- * result (if any) through an out-parameter, instead of returning the value
- * directly -- see the cvx2 plan, "out-param + enum cvx2_flags" convention.
  */
 
 #include "cvx2/fallback.h"
@@ -27,9 +22,6 @@
 #ifndef CVX_PFX
 #error "dynamic_array.h requires CVX_PFX to be defined (the function prefix)"
 #endif
-#ifndef CVX_TAG
-#error "dynamic_array.h requires CVX_TAG to be defined (a unique integer tag)"
-#endif
 // clang-format on
 
 #include <stdbool.h>
@@ -43,9 +35,9 @@
 
 struct VTAB_V
 {
-    int (*comp)(CVX_VAL, CVX_VAL);
-    enum cvx_flags (*clone)(CVX_VAL, CVX_VAL *);
-    void (*drop)(CVX_VAL);
+    CVX_VTAB_COPY(copy, CVX_VAL);
+    CVX_VTAB_COMP(comp, CVX_VAL);
+    CVX_VTAB_DROP(drop, CVX_VAL);
 };
 
 struct CVX_SNAME

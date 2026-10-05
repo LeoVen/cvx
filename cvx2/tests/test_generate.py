@@ -15,7 +15,6 @@ def da(**overrides):
         "key_type": None,
         "struct_name": "my_array",
         "prefix": "ma",
-        "tag": 1,
         "file_name": None,
         "case": "snake_case",
         "variants": {},

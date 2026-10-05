@@ -37,8 +37,13 @@ class TestToCamelCase(unittest.TestCase):
 
     def test_case_fn_for(self):
         self.assertIs(generator.case_fn_for(generator.CASE_SNAKE), generator.identity)
-        self.assertIs(generator.case_fn_for(generator.CASE_CAMEL), generator.to_camel_case)
-        self.assertIs(generator.case_fn_for(generator.CASE_UPPER_CAMEL), generator.to_upper_camel_case)
+        self.assertIs(
+            generator.case_fn_for(generator.CASE_CAMEL), generator.to_camel_case
+        )
+        self.assertIs(
+            generator.case_fn_for(generator.CASE_UPPER_CAMEL),
+            generator.to_upper_camel_case,
+        )
         with self.assertRaises(ValueError):
             generator.case_fn_for("PascalCase")
 
@@ -66,7 +71,9 @@ class TestToUpperCamelCase(unittest.TestCase):
 
     def test_double_underscore_mid_string(self):
         self.assertEqual(generator.to_upper_camel_case("mm__primes"), "Mm__Primes")
-        self.assertEqual(generator.to_upper_camel_case("mm__primes_count"), "Mm__PrimesCount")
+        self.assertEqual(
+            generator.to_upper_camel_case("mm__primes_count"), "Mm__PrimesCount"
+        )
 
     def test_idempotent_on_already_capitalized_single_word(self):
         self.assertEqual(generator.to_upper_camel_case("X"), "X")

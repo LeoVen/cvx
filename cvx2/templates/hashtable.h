@@ -1,23 +1,23 @@
 /**
  * @file hashtable.h
- * @brief cvx2 template: a configurable hashtable that maps CVX_KEY -> CVX_VALUE
+ * @brief cvx2 template: a configurable hashtable that maps CVX_KEY -> CVX_VAL
  *
  * ## Required config fields
  * - **key_type**: key type (maps to CVX_KEY)
- * - **value_type**: value type (maps to CVX_VALUE)
+ * - **value_type**: value type (maps to CVX_VAL)
  * - **struct_name**: name of the generated struct (maps to CVX_SNAME)
  * - **prefix**: prefix of all generated functions (maps to CVX_PFX)
- * - **tag**: a unique integer tag for the generated type (maps to CVX_TAG)
+ *
+ * No tag -- instances carry no type-identifying field.
  *
  * ## Variant axes
  * - **collision** (required): "open_addressing" (robin-hood linear probing)
  *   or "separate_chaining" (singly-linked buckets).
  *
  * Both variants expose the same public API and struct field names
- * (`super`, `capacity`, `count`, `load`, `vtabk`, `vtabv`) -- only the
- * internal storage field (`buffer` vs `buckets`) and algorithms differ.
- * See the `@cvx2:variant axis="collision" ...` blocks below and in
- * hashtable.c.
+ * (`capacity`, `count`, `load`, `vtabk`, `vtabv`) -- only the internal
+ * storage field (`buffer` vs `buckets`) and algorithms differ. See the
+ * `@cvx2:variant axis="collision" ...` blocks below and in hashtable.c.
  *
  * Keys are hashed with vtabk->hash and compared with vtabk->comp. Both are
  * required; vtabk->clone / vtabk->drop and vtabv->clone / vtabv->drop are
@@ -31,8 +31,8 @@
 #ifndef CVX_KEY
 #error "hashtable.h requires CVX_KEY to be defined (the key type)"
 #endif
-#ifndef CVX_VALUE
-#error "hashtable.h requires CVX_VALUE to be defined (the value type)"
+#ifndef CVX_VAL
+#error "hashtable.h requires CVX_VAL to be defined (the value type)"
 #endif
 #ifndef CVX_SNAME
 #error "hashtable.h requires CVX_SNAME to be defined (the struct name)"
@@ -40,30 +40,28 @@
 #ifndef CVX_PFX
 #error "hashtable.h requires CVX_PFX to be defined (the function prefix)"
 #endif
-#ifndef CVX_TAG
-#error "hashtable.h requires CVX_TAG to be defined (a unique integer tag)"
-#endif
 // clang-format on
 
 #include <stdbool.h>
 #include <stddef.h>
 
 #include "cvx2/core.h"
+#include "cvx2/flags.h"
 
-#define FUNC(X) CVX2_(CVX_PFX, X)
-#define VTAB_K CVX2_(CVX_SNAME, _vtabk)
-#define VTAB_V CVX2_(CVX_SNAME, _vtabv)
-#define ENTRY CVX2_(CVX_SNAME, _entry)
-#define NODE CVX2_(CVX_SNAME, _node)
+#define FUNC(X) CVX_(CVX_PFX, X)
+#define VTAB_K CVX_(CVX_SNAME, _vtabk)
+#define VTAB_V CVX_(CVX_SNAME, _vtabv)
+#define ENTRY CVX_(CVX_SNAME, _entry)
+#define NODE CVX_(CVX_SNAME, _node)
 
 struct VTAB_K
 {
-    CVX2_VTAB_DEFINITION(CVX_KEY)
+    CVX_VTAB_DEFINITION(CVX_KEY)
 };
 
 struct VTAB_V
 {
-    CVX2_VTAB_DEFINITION(CVX_VALUE)
+    CVX_VTAB_DEFINITION(CVX_VAL)
 };
 
 // @cvx2:variant axis="collision" name="open_addressing"
@@ -71,7 +69,7 @@ struct VTAB_V
 struct ENTRY
 {
     CVX_KEY key;
-    CVX_VALUE val;
+    CVX_VAL val;
     size_t dist; // displacement from home slot (robin hood)
     // `state` is one of the CVX2_HT_ENTRY_* constants defined in the .c --
     // not declared here since it's purely a private implementation detail,
@@ -82,7 +80,6 @@ struct ENTRY
 
 struct CVX_SNAME
 {
-    cvx2_container super;
     size_t capacity;      // total buffer slots
     size_t count;         // number of filled entries
     double load;          // resize threshold (count >= capacity * load)
@@ -98,13 +95,12 @@ struct CVX_SNAME
 struct NODE
 {
     CVX_KEY key;
-    CVX_VALUE val;
+    CVX_VAL val;
     struct NODE *next;
 };
 
 struct CVX_SNAME
 {
-    cvx2_container super;
     size_t capacity;      // bucket count
     size_t count;         // number of stored entries
     double load;          // resize threshold (count >= capacity * load)
@@ -116,11 +112,11 @@ struct CVX_SNAME
 // @cvx2:endvariant
 
 // ---- Initializers ----
-enum cvx2_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv, size_t capacity);
-enum cvx2_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
+enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv, size_t capacity);
+enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
 
 // ---- Destructor ----
-enum cvx2_flags FUNC(_drop)(struct CVX_SNAME *self);
+enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self);
 
 // ---- Getters (no failure mode beyond struct state, so these keep direct returns) ----
 size_t FUNC(_count)(struct CVX_SNAME *self);
@@ -129,9 +125,9 @@ double FUNC(_load)(struct CVX_SNAME *self);
 bool FUNC(_empty)(struct CVX_SNAME *self);
 
 // ---- Operations ----
-enum cvx2_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VALUE val);
-enum cvx2_flags FUNC(_update)(struct CVX_SNAME *self, CVX_KEY key, CVX_VALUE new_val, CVX_VALUE *old_out);
-enum cvx2_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VALUE *out);
-enum cvx2_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VALUE *out);
-CVX_VALUE *FUNC(_get_ref)(struct CVX_SNAME *self, CVX_KEY key);
+enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val);
+enum cvx_flags FUNC(_update)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL new_val, CVX_VAL *old_out);
+enum cvx_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
+enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
+CVX_VAL *FUNC(_get_ref)(struct CVX_SNAME *self, CVX_KEY key);
 bool FUNC(_contains)(struct CVX_SNAME *self, CVX_KEY key);

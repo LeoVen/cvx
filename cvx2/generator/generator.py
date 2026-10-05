@@ -34,18 +34,13 @@ class ConfigError(Exception):
 ###
 ### CASE CONVERSION
 ###
-# snake_case <-> camelCase/UpperCamelCase conversion for generator-owned
-# identifiers. Only ever called on identifiers the generator itself
-# constructed (a struct name, a prefix, or one of their
-# FUNC()/CVX2_()-pasted compounds) -- never on arbitrary C tokens -- so it
-# doesn't need to understand C syntax at all.
 
 CASE_SNAKE = "snake_case"
 CASE_CAMEL = "camelCase"
 CASE_UPPER_CAMEL = "UpperCamelCase"
 VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_UPPER_CAMEL)
 
-_UNDERSCORE_RUN_RE = re.compile(r"(_+)")
+UNDERSCORE_RUN_RE = re.compile(r"(_+)")
 
 
 def identity(identifier):
@@ -53,7 +48,7 @@ def identity(identifier):
 
 
 def _convert_case(identifier, capitalize_first_word):
-    parts = [p for p in _UNDERSCORE_RUN_RE.split(identifier) if p]
+    parts = [p for p in UNDERSCORE_RUN_RE.split(identifier) if p]
 
     out = []
     seen_word = False
@@ -254,26 +249,28 @@ def select_variants(text, variants_config, template_name):
 #
 #   1. parse_local_macros(header_text) reads those #define lines out of the
 #      header once (nothing hardcoded per-template: any template following
-#      the convention FUNC(X) = CVX2_(CVX_PFX, X) / NAME = CVX2_(CVX_SNAME,
+#      the convention FUNC(X) = CVX_(CVX_PFX, X) / NAME = CVX_(CVX_SNAME,
 #      suffix) works) and immediately strips them (and the other
 #      template-only scaffolding: the fallback.h include, the
 #      required-macro #error guard block) out of the header text.
 #   2. expand(text, macros, ctx) applies those macros' call sites (FUNC(...)
 #      calls, bare object-macro names) to a given file's text -- called
 #      once for the (already-scaffolding-stripped) header and once for the
-#      source -- then resolves CVX2_(A, B) token-pasting into a literal
+#      source -- then resolves CVX_(A, B) token-pasting into a literal
 #      joined identifier (case-converting at the point of pasting, so case
 #      conversion only ever touches whole generator-owned identifiers,
 #      never fragments or incidental C tokens), then resolves the
 #      remaining bare CVX_SNAME/CVX_PFX (case-converted) and
-#      CVX_VALUE/CVX_KEY/CVX_TAG (verbatim -- arbitrary C type/int text,
-#      not identifiers the generator owns) placeholders.
+#      CVX_VAL/CVX_KEY (verbatim -- arbitrary C type text, not identifiers
+#      the generator owns) placeholders.
 #
 # cvx2/core.h and cvx2/flags.h are deliberately NOT expanded away:
-# generated output keeps `#include "cvx2/core.h"` and uses its macros/types
-# (cvx2_container, enum cvx2_flags, CVX2_VTAB_DEFINITION, ...) as a small
-# fixed runtime support library, the same way generated parser/protocol
-# code typically still depends on a small runtime.
+# generated output keeps `#include "cvx2/core.h"` and `#include
+# "cvx2/flags.h"`, using their macros/types (enum cvx_flags,
+# CVX_VTAB_DEFINITION, ...) as a small fixed runtime support library, the
+# same way generated parser/protocol code typically still depends on a
+# small runtime. There's no per-instance tag/container type: cvx2 instances
+# carry no type-identifying field at all.
 
 _FUNC_DEF_RE = re.compile(
     r"^[ \t]*#define[ \t]+FUNC\((\w+)\)[ \t]+(.+?)[ \t]*$", re.MULTILINE
@@ -281,7 +278,7 @@ _FUNC_DEF_RE = re.compile(
 _OBJECT_DEF_RE = re.compile(
     r"^[ \t]*#define[ \t]+(VTAB_K|VTAB_V|ENTRY|NODE)[ \t]+(.+?)[ \t]*$", re.MULTILINE
 )
-_PASTE_RE = re.compile(r"CVX2_\(\s*(\w+)\s*,\s*(\w+)\s*\)")
+_PASTE_RE = re.compile(r"CVX_\(\s*(\w+)\s*,\s*(\w+)\s*\)")
 _GUARD_BLOCK_RE = re.compile(
     r"^[ \t]*//[ \t]*clang-format off[ \t]*\n"
     r"(?:[ \t]*#ifndef[ \t]+\w+\n[ \t]*#error[^\n]*\n[ \t]*#endif\n)+"
@@ -294,7 +291,7 @@ _FALLBACK_INCLUDE_RE = re.compile(
 _BLANK_RUN_RE = re.compile(r"\n{3,}")
 
 _IDENTIFIER_PLACEHOLDERS = ("CVX_SNAME", "CVX_PFX")
-_LITERAL_PLACEHOLDERS = ("CVX_VALUE", "CVX_KEY", "CVX_TAG")
+_LITERAL_PLACEHOLDERS = ("CVX_VAL", "CVX_KEY")
 
 
 class LocalMacros:
@@ -305,13 +302,12 @@ class LocalMacros:
 
 
 class ExpandContext:
-    def __init__(self, value_type, key_type, struct_name, prefix, tag, case_fn):
+    def __init__(self, value_type, key_type, struct_name, prefix, case_fn):
         self.raw = {
-            "CVX_VALUE": value_type,
+            "CVX_VAL": value_type,
             "CVX_KEY": key_type,
             "CVX_SNAME": struct_name,
             "CVX_PFX": prefix,
-            "CVX_TAG": str(tag),
         }
         self.case_fn = case_fn
 
@@ -510,7 +506,6 @@ def validate_instantiation(instantiation, index):
 
     _require_identifier(instantiation, where, "struct_name")
     _require_identifier(instantiation, where, "prefix")
-    _require(instantiation, where, "tag", int, "integer")
 
     # Optional: the generated .h/.c basename, when it needs to differ from
     # struct_name (e.g. struct_name "CharMap" but files char_map.h/.c).
@@ -564,7 +559,6 @@ def validate_instantiation(instantiation, index):
         "key_type": instantiation.get("key_type"),
         "struct_name": instantiation["struct_name"],
         "prefix": instantiation["prefix"],
-        "tag": instantiation["tag"],
         "file_name": file_name,
         "case": case_name,
         "variants": variants,
@@ -616,7 +610,6 @@ def generate_instantiation(inst, templates_dir=TEMPLATES_DIR):
         key_type=inst["key_type"],
         struct_name=inst["struct_name"],
         prefix=inst["prefix"],
-        tag=inst["tag"],
         case_fn=case_fn,
     )
 

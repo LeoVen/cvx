@@ -14,7 +14,7 @@
   "$defs": {
     "instantiation": {
       "type": "object",
-      "required": ["template", "struct_name", "prefix", "tag"],
+      "required": ["template", "struct_name", "prefix"],
       "properties": {
         "template": {
           "type": "string",
@@ -35,10 +35,6 @@
         "prefix": {
           "type": "string",
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
-        },
-        "tag": {
-          "type": "integer",
-          "description": "Unique per instantiation within a program, same role as TAG in cvx/."
         },
         "file_name": {
           "type": "string",

@@ -9,8 +9,8 @@ FIXTURE_HEADER = '''\
 #include "cvx2/fallback.h"
 
 // clang-format off
-#ifndef CVX_VALUE
-#error "requires CVX_VALUE"
+#ifndef CVX_VAL
+#error "requires CVX_VAL"
 #endif
 #ifndef CVX_SNAME
 #error "requires CVX_SNAME"
@@ -21,32 +21,32 @@ FIXTURE_HEADER = '''\
 // clang-format on
 
 #include "cvx2/core.h"
+#include "cvx2/flags.h"
 
-#define FUNC(X) CVX2_(CVX_PFX, X)
-#define VTAB_V CVX2_(CVX_SNAME, _vtabv)
+#define FUNC(X) CVX_(CVX_PFX, X)
+#define VTAB_V CVX_(CVX_SNAME, _vtabv)
 
 struct VTAB_V
 {
-    CVX2_VTAB_DEFINITION(CVX_VALUE)
+    CVX_VTAB_DEFINITION(CVX_VAL)
 };
 
 struct CVX_SNAME
 {
-    CVX_VALUE *buffer;
+    CVX_VAL *buffer;
 };
 
-enum cvx2_flags FUNC(_init)(struct CVX_SNAME *self);
-enum cvx2_flags FUNC(__private_helper)(struct CVX_SNAME *self);
+enum cvx_flags FUNC(_init)(struct CVX_SNAME *self);
+enum cvx_flags FUNC(__private_helper)(struct CVX_SNAME *self);
 '''
 
 
-def make_ctx(value_type="int", struct_name="my_thing", prefix="mt", tag=1, case_name=generator.CASE_SNAKE):
+def make_ctx(value_type="int", struct_name="my_thing", prefix="mt", case_name=generator.CASE_SNAKE):
     return generator.ExpandContext(
         value_type=value_type,
         key_type=None,
         struct_name=struct_name,
         prefix=prefix,
-        tag=tag,
         case_fn=generator.case_fn_for(case_name),
     )
 
@@ -67,7 +67,7 @@ class TestExpand(unittest.TestCase):
         self.assertIn("struct my_thing", out)
         self.assertIn("mt_init(struct my_thing *self)", out)
         self.assertIn("int *buffer", out)
-        self.assertNotIn("CVX_VALUE", out)
+        self.assertNotIn("CVX_VAL", out)
         self.assertNotIn("CVX_SNAME", out)
         self.assertNotIn("CVX_PFX", out)
         self.assertNotIn("FUNC(", out)

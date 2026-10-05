@@ -52,12 +52,12 @@ enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone)
     if (!orig->buffer || !clone->buffer)
         return CVX_FLAG_OK;
 
-    if (clone->vtabv && clone->vtabv->clone)
+    if (clone->vtabv && clone->vtabv->copy)
     {
         for (size_t i = 0; i < orig->count; i++)
         {
             CVX_VAL cloned;
-            enum cvx_flags flag = clone->vtabv->clone(orig->buffer[i], &cloned);
+            enum cvx_flags flag = clone->vtabv->copy(orig->buffer[i], &cloned);
 
             if (flag != CVX_FLAG_OK)
                 return flag;
