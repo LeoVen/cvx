@@ -14,7 +14,7 @@ docs:
 	doxygen docs/Doxyfile
 
 format:
-	find . -name "*.h" -o -name "*.c" -type f | xargs clang-format --style=file --verbose -i
+	find . -type f \( -name "*.h" -o -name "*.c" \) | xargs clang-format --style=file:./.clang-format --verbose -i
 
 run file:
 	mkdir -p ./bin
@@ -50,4 +50,17 @@ valgrind_all:
 
 check_examples:
 	find ./examples -type f -name "*.c" | xargs -I {} sh -c 'just valgrind {} || exit 255'
+
+# generate cvx2 container types from a config (default: the example config)
+# compiler is mandatory, e.g.: just cvx2-generate gcc
+cvx2-generate compiler config="cvx2/examples/config.json":
+	python3 cvx2/generator/generator.py --config {{config}} --compiler {{compiler}}
+
+generate-docs:
+	python3 cvx2/generator/generator.py --config cvx2/docs/config.json --compiler gcc
+	clang-format --style=file:./.clang-format -i cvx2/docs/output/*.h cvx2/docs/output/*.c
+
+# run the cvx2 generator's own unit + end-to-end tests
+cvx2-test:
+	python3 -m unittest discover -s cvx2/generator/tests -p "test_*.py" -v
 

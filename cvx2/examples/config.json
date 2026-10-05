@@ -1,0 +1,89 @@
+{
+  "instantiations": [
+    {
+      "template": "dynamic_array",
+      "value_type": "int",
+      "struct_name": "int_array",
+      "prefix": "ia",
+      "case": {
+        "function": "snake_case",
+        "struct": "snake_case"
+      },
+      "out_dir": "generated"
+    },
+    {
+      "template": "hashtable",
+      "key_type": "int",
+      "value_type": "int",
+      "struct_name": "intMapOa",
+      "prefix": "moa",
+      "case": {
+        "function": "camelCase",
+        "struct": "camelCase"
+      },
+      "file_name": "int_map_oa",
+      "variants": {
+        "collision": "open_addressing"
+      },
+      "out_dir": "generated"
+    },
+    {
+      "template": "hashtable",
+      "key_type": "int",
+      "value_type": "int",
+      "struct_name": "int_map_sc",
+      "prefix": "msc",
+      "case": {
+        "function": "snake_case",
+        "struct": "snake_case"
+      },
+      "variants": {
+        "collision": "separate_chaining"
+      },
+      "out_dir": "generated"
+    },
+    {
+      "template": "hashtable",
+      "key_type": "char *",
+      "value_type": "int*",
+      "struct_name": "char_map",
+      "prefix": "cm",
+      "case": {
+        "function": "snake_case",
+        "struct": "snake_case"
+      },
+      "variants": {
+        "collision": "open_addressing"
+      },
+      "out_dir": "generated"
+    },
+    {
+      "template": "dynamic_array",
+      "value_type": "int10_t",
+      "struct_name": "int10_array",
+      "prefix": "i10a",
+      "case": {
+        "function": "snake_case",
+        "struct": "snake_case"
+      },
+      "includes": [
+        "../types.h"
+      ],
+      "out_dir": "generated"
+    },
+    {
+      "template": "dynamic_array",
+      "value_type": "binop_fn",
+      "struct_name": "binop_list",
+      "prefix": "bl",
+      "case": {
+        "function": "snake_case",
+        "struct": "snake_case"
+      },
+      "includes": [
+        "../types.h"
+      ],
+      "out_dir": "generated"
+    }
+  ]
+}
