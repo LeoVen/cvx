@@ -77,23 +77,22 @@ class TestExpand(unittest.TestCase):
         self.assertNotIn("CVX_PFX", out)
         self.assertNotIn("FUNC(", out)
 
-    def test_resolves_camel_case_and_keeps_private_marker(self):
+    def test_camel_case_cases_the_suffix_but_not_user_text(self):
+        # A single-word suffix like "_init"/"_vtabv" has no second word to
+        # capitalize, so camelCase leaves it unchanged (just minus the
+        # underscore) -- only a multi-word suffix shows real camelCasing.
         macros, stripped = generator.parse_local_macros(FIXTURE_HEADER)
-        out = generator.expand(
-            stripped, macros, make_ctx(case_name=generator.CASE_CAMEL)
-        )
-        self.assertIn("struct myThingVtabv", out)
-        self.assertIn("mtInit(struct myThing *self)", out)
-        self.assertIn("mt__PrivateHelper(struct myThing *self)", out)
+        out = generator.expand(stripped, macros, make_ctx(case_name=generator.CASE_CAMEL))
+        self.assertIn("struct my_thingvtabv", out)
+        self.assertIn("mtinit(struct my_thing *self)", out)
+        self.assertIn("mt__privateHelper(struct my_thing *self)", out)
 
-    def test_resolves_upper_camel_case_and_keeps_private_marker(self):
+    def test_pascal_case_capitalizes_the_suffixs_own_first_word_too(self):
         macros, stripped = generator.parse_local_macros(FIXTURE_HEADER)
-        out = generator.expand(
-            stripped, macros, make_ctx(case_name=generator.CASE_PASCAL)
-        )
-        self.assertIn("struct MyThingVtabv", out)
-        self.assertIn("MtInit(struct MyThing *self)", out)
-        self.assertIn("Mt__PrivateHelper(struct MyThing *self)", out)
+        out = generator.expand(stripped, macros, make_ctx(case_name=generator.CASE_PASCAL))
+        self.assertIn("struct my_thingVtabv", out)
+        self.assertIn("mtInit(struct my_thing *self)", out)
+        self.assertIn("mt__PrivateHelper(struct my_thing *self)", out)
 
     def test_value_type_never_case_converted(self):
         macros, stripped = generator.parse_local_macros(FIXTURE_HEADER)

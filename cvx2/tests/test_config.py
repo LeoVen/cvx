@@ -72,7 +72,7 @@ class TestValidateConfig(unittest.TestCase):
 
     def test_invalid_case_errors(self):
         with self.assertRaises(generator.ConfigError):
-            generator.validate_config({"instantiations": [da(case="PascalCase")]})
+            generator.validate_config({"instantiations": [da(case="kebab-case")]})
 
     def test_empty_instantiations_errors(self):
         with self.assertRaises(generator.ConfigError):

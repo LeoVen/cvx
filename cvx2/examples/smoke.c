@@ -49,33 +49,37 @@ static void test_dynamic_array(void)
 
 static void test_hashtable_open_addressing(void)
 {
-    struct intMapOaVtabk vtabk = { .hash = int_hash, .comp = int_comp };
+    // case="camelCase" cases a library suffix's own first word too, except
+    // when the suffix is only one word (nothing to capitalize) -- so e.g.
+    // moainit/moacount stay lowercase, while moagetRef (from "_get_ref")
+    // shows real camelCasing on its second word.
+    struct intMapOavtabk vtabk = { .hash = int_hash, .comp = int_comp };
     struct intMapOa map;
 
-    assert(moaInit(&map, &vtabk, NULL, 0) == CVX_FLAG_OK);
+    assert(moainit(&map, &vtabk, NULL, 0) == CVX_FLAG_OK);
 
     for (int i = 0; i < 200; i++)
-        assert(moaInsert(&map, i, i * 10) == CVX_FLAG_OK);
-    assert(moaCount(&map) == 200);
+        assert(moainsert(&map, i, i * 10) == CVX_FLAG_OK);
+    assert(moacount(&map) == 200);
 
-    assert(moaInsert(&map, 5, 999) == CVX_FLAG_DUPLICATE);
+    assert(moainsert(&map, 5, 999) == CVX_FLAG_DUPLICATE);
 
     int out = 0;
-    assert(moaGet(&map, 42, &out) == CVX_FLAG_OK && out == 420);
-    assert(moaGet(&map, 99999, &out) == CVX_FLAG_NOT_FOUND);
-    assert(moaContains(&map, 7));
-    assert(!moaContains(&map, 99999));
+    assert(moaget(&map, 42, &out) == CVX_FLAG_OK && out == 420);
+    assert(moaget(&map, 99999, &out) == CVX_FLAG_NOT_FOUND);
+    assert(moacontains(&map, 7));
+    assert(!moacontains(&map, 99999));
 
     int old = 0;
-    assert(moaUpdate(&map, 7, 7000, &old) == CVX_FLAG_OK && old == 70);
-    assert(moaGet(&map, 7, &out) == CVX_FLAG_OK && out == 7000);
+    assert(moaupdate(&map, 7, 7000, &old) == CVX_FLAG_OK && old == 70);
+    assert(moaget(&map, 7, &out) == CVX_FLAG_OK && out == 7000);
 
-    assert(moaRemove(&map, 7, &out) == CVX_FLAG_OK && out == 7000);
-    assert(!moaContains(&map, 7));
-    assert(moaRemove(&map, 7, &out) == CVX_FLAG_NOT_FOUND);
-    assert(moaCount(&map) == 199);
+    assert(moaremove(&map, 7, &out) == CVX_FLAG_OK && out == 7000);
+    assert(!moacontains(&map, 7));
+    assert(moaremove(&map, 7, &out) == CVX_FLAG_NOT_FOUND);
+    assert(moacount(&map) == 199);
 
-    moaDrop(&map);
+    moadrop(&map);
     printf("hashtable (open_addressing): OK\n");
 }
 

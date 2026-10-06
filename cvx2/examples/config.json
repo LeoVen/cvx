@@ -12,9 +12,10 @@
       "template": "hashtable",
       "key_type": "int",
       "value_type": "int",
-      "struct_name": "int_map_oa",
+      "struct_name": "intMapOa",
       "prefix": "moa",
       "case": "camelCase",
+      "file_name": "int_map_oa",
       "variants": {
         "collision": "open_addressing"
       },

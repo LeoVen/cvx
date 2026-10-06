@@ -17,6 +17,7 @@ import argparse
 import json
 import re
 import sys
+from collections import namedtuple
 from pathlib import Path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
@@ -43,50 +44,47 @@ VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
 UNDERSCORE_RUN_RE = re.compile(r"(_+)")
 
 
+# All identifiers are written in snake_case by default.
 def identity(identifier):
     return identifier
 
 
-def _convert_case(identifier, capitalize_first_word):
-    parts = [p for p in UNDERSCORE_RUN_RE.split(identifier) if p]
-
+def _capitalize_words(identifier, capitalize_first_word):
     out = []
     seen_word = False
-    for token in parts:
-        if token[0] == "_":
-            if len(token) >= 2:
-                out.append(token)
+    for word in UNDERSCORE_RUN_RE.split(identifier):
+        if not word or word == "_":
             continue
-        if not seen_word:
+        if word.startswith("_"):
             out.append(
-                token[:1].upper() + token[1:]
-                if capitalize_first_word
-                else token.lower()
-            )
-            seen_word = True
+                word
+            )  # 2+ underscores: the private-helper marker, kept literally
+            continue
+        if not seen_word and not capitalize_first_word:
+            out.append(word)
         else:
-            out.append(token[:1].upper() + token[1:])
-
-    return "".join(out) if seen_word else identifier
-
-
-def to_camel_case(identifier):
-    """camelCase"""
-    return _convert_case(identifier, capitalize_first_word=False)
+            out.append(word[:1].upper() + word[1:])
+        seen_word = True
+    return "".join(out)
 
 
-def to_upper_camel_case(identifier):
-    """PascalCase"""
-    return _convert_case(identifier, capitalize_first_word=True)
+def to_camel_case(fragment):
+    """ "_push_back" -> "pushBack": own first word stays lowercase."""
+    return _capitalize_words(fragment, capitalize_first_word=False)
+
+
+def to_pascal_case(fragment):
+    """ "_push_back" -> "PushBack": own first word is capitalized too."""
+    return _capitalize_words(fragment, capitalize_first_word=True)
 
 
 def case_fn_for(case_name):
+    if case_name == CASE_SNAKE:
+        return identity
     if case_name == CASE_CAMEL:
         return to_camel_case
     if case_name == CASE_PASCAL:
-        return to_upper_camel_case
-    if case_name == CASE_SNAKE:
-        return identity
+        return to_pascal_case
     raise ValueError(f"unknown case {case_name!r}, expected one of {VALID_CASES}")
 
 
@@ -112,16 +110,7 @@ _VARIANT_END_RE = re.compile(r"^\s*//\s*@cvx2:endvariant\s*$")
 _IF_RE = re.compile(r"^\s*#\s*(if|ifdef|ifndef)\b")
 _ENDIF_RE = re.compile(r"^\s*#\s*endif\b")
 
-
-class _VariantBlock:
-    __slots__ = ("axis", "body", "end", "name", "start")
-
-    def __init__(self, axis, name, start, end, body):
-        self.axis = axis
-        self.name = name
-        self.start = start  # index of the "// @cvx2:variant ..." line
-        self.end = end  # index of the "// @cvx2:endvariant" line
-        self.body = body  # lines strictly between the inner #ifdef and #endif
+_VariantBlock = namedtuple("_VariantBlock", ["axis", "name", "start", "end", "body"])
 
 
 def _find_variant_blocks(lines, template_name):
@@ -237,11 +226,8 @@ def select_variants(text, variants_config, template_name):
 # the .h) and CVX_(A, B) token-pasting into literal generated identifiers.
 # cvx2/core.h and cvx2/flags.h stay as real #includes in the output.
 
-_FUNC_DEF_RE = re.compile(
-    r"^[ \t]*#define[ \t]+FUNC\((\w+)\)[ \t]+(.+?)[ \t]*$", re.MULTILINE
-)
-_OBJECT_DEF_RE = re.compile(
-    r"^[ \t]*#define[ \t]+(VTAB_K|VTAB_V|ENTRY|NODE)[ \t]+(.+?)[ \t]*$", re.MULTILINE
+_DEFINE_RE = re.compile(
+    r"^[ \t]*#define[ \t]+(\w+)(?:\((\w+)\))?[ \t]+(.+?)[ \t]*$", re.MULTILINE
 )
 _PASTE_RE = re.compile(r"CVX_\(\s*(\w+)\s*,\s*(\w+)\s*\)")
 _GUARD_BLOCK_RE = re.compile(
@@ -255,15 +241,9 @@ _FALLBACK_INCLUDE_RE = re.compile(
 )
 _BLANK_RUN_RE = re.compile(r"\n{3,}")
 
-_IDENTIFIER_PLACEHOLDERS = ("CVX_SNAME", "CVX_PFX")
-_LITERAL_PLACEHOLDERS = ("CVX_VAL", "CVX_KEY")
+_PLACEHOLDERS = ("CVX_SNAME", "CVX_PFX", "CVX_VAL", "CVX_KEY")
 
-
-class LocalMacros:
-    def __init__(self, func_param, func_body, object_defs):
-        self.func_param = func_param
-        self.func_body = func_body
-        self.object_defs = object_defs  # {NAME: body}
+LocalMacros = namedtuple("LocalMacros", ["func_param", "func_body", "object_defs"])
 
 
 class ExpandContext:
@@ -282,47 +262,45 @@ def parse_local_macros(header_text):
     template header's text and strips all template-only scaffolding
     (the fallback.h include, the required-macro guard block, and the macro
     #define lines themselves) from it. Returns (macros, stripped_text)."""
-    m = _FUNC_DEF_RE.search(header_text)
-    func_param, func_body = (m.group(1), m.group(2)) if m else (None, None)
-    object_defs = {
-        om.group(1): om.group(2) for om in _OBJECT_DEF_RE.finditer(header_text)
-    }
+    func_param = func_body = None
+    object_defs = {}
+    for name, param, body in _DEFINE_RE.findall(header_text):
+        if name == "FUNC":
+            func_param, func_body = param, body
+        else:
+            object_defs[name] = body
 
     stripped = _GUARD_BLOCK_RE.sub("", header_text)
     stripped = _FALLBACK_INCLUDE_RE.sub("", stripped)
-    stripped = _FUNC_DEF_RE.sub("", stripped)
-    stripped = _OBJECT_DEF_RE.sub("", stripped)
+    stripped = _DEFINE_RE.sub("", stripped)
 
     return LocalMacros(func_param, func_body, object_defs), stripped
 
 
-def _apply_func_calls(text, macros):
-    if macros.func_param is None:
-        return text
+def _expand_macros(text, macros):
+    if macros.func_param is not None:
 
-    def repl(match):
-        arg = match.group(1).strip()
-        return re.sub(rf"\b{re.escape(macros.func_param)}\b", arg, macros.func_body)
+        def repl(match):
+            arg = match.group(1).strip()
+            return re.sub(rf"\b{re.escape(macros.func_param)}\b", arg, macros.func_body)
 
-    return re.sub(r"\bFUNC\(([^()]*)\)", repl, text)
+        text = re.sub(r"\bFUNC\(([^()]*)\)", repl, text)
 
+    if macros.object_defs:
+        name_re = re.compile(
+            r"\b(" + "|".join(re.escape(n) for n in macros.object_defs) + r")\b"
+        )
+        text = name_re.sub(lambda m: macros.object_defs[m.group(1)], text)
 
-def _apply_object_macros(text, macros):
-    if not macros.object_defs:
-        return text
-
-    name_alt_re = re.compile(
-        r"\b(" + "|".join(re.escape(n) for n in macros.object_defs) + r")\b"
-    )
-    return name_alt_re.sub(lambda m: macros.object_defs[m.group(1)], text)
+    return text
 
 
 def _resolve_pastes(text, ctx):
+    # The first paste argument is always user text (CVX_SNAME/CVX_PFX) and
+    # stays as-is; the second is always a library suffix and gets cased.
     def repl(match):
-        a, b = match.group(1), match.group(2)
-        raw_a = ctx.raw.get(a, a)
-        raw_b = ctx.raw.get(b, b)
-        return raw_a + ctx.case_fn(raw_b)
+        a, b = match.groups()
+        return ctx.raw.get(a, a) + ctx.case_fn(ctx.raw.get(b, b))
 
     # Loop in case a macro body itself contains another paste.
     for _ in range(4):
@@ -334,10 +312,10 @@ def _resolve_pastes(text, ctx):
 
 
 def _resolve_bare_placeholders(text, ctx):
-    for name in _IDENTIFIER_PLACEHOLDERS:
-        text = re.sub(rf"\b{name}\b", lambda _m, n=name: ctx.case_fn(ctx.raw[n]), text)
-    for name in _LITERAL_PLACEHOLDERS:
-        value = ctx.raw[name]
+    # Always literal: these are either user text or arbitrary C type text,
+    # never a library identifier that needs casing.
+    for name in _PLACEHOLDERS:
+        value = ctx.raw.get(name)
         if value is None:
             continue
         text = re.sub(rf"\b{name}\b", lambda _m, v=value: v, text)
@@ -345,8 +323,7 @@ def _resolve_bare_placeholders(text, ctx):
 
 
 def expand(text, macros, ctx):
-    text = _apply_func_calls(text, macros)
-    text = _apply_object_macros(text, macros)
+    text = _expand_macros(text, macros)
     text = _resolve_pastes(text, ctx)
     text = _resolve_bare_placeholders(text, ctx)
     text = _BLANK_RUN_RE.sub("\n\n", text)
@@ -368,55 +345,48 @@ def rewrite_self_include(text, template_name, generated_header_filename):
 # Validates config files against config.schema.json's shape (kept in sync
 # by hand -- no jsonschema dependency).
 
+# scalar_fields: required string fields beyond struct_name/prefix.
 # variant_axes: the @cvx2:variant axes this template's blocks use.
 TEMPLATE_SCHEMAS = {
-    "dynamic_array": {
-        "scalar_fields": {"value_type": (str, "string")},
-        "variant_axes": [],
-    },
+    "dynamic_array": {"scalar_fields": ["value_type"], "variant_axes": []},
     "hashtable": {
-        "scalar_fields": {"key_type": (str, "string"), "value_type": (str, "string")},
+        "scalar_fields": ["key_type", "value_type"],
         "variant_axes": ["collision"],
     },
 }
+
+_MISSING = object()
 
 
 def _err(where, message):
     raise ConfigError(f"{where}: {message}")
 
 
-def _require(instantiation, where, key, expected_type, type_name):
+def _field(instantiation, where, key, default=_MISSING, identifier=False, allowed=None):
+    """Reads and validates a single string field: required unless `default`
+    is given, optionally must be a valid C identifier, optionally must be
+    one of `allowed`."""
     if key not in instantiation:
+        if default is not _MISSING:
+            return default
         _err(where, f"missing required field {key!r}")
+
     value = instantiation[key]
-    valid = isinstance(value, expected_type)
-    if expected_type is int and isinstance(value, bool):
-        valid = False  # JSON true/false must not satisfy an integer field
+    valid = isinstance(value, str)
+    if valid and identifier:
+        valid = IDENTIFIER_RE.match(value) is not None
+    if valid and allowed is not None:
+        valid = value in allowed
+
     if not valid:
-        _err(where, f"field {key!r} must be a {type_name}, got {value!r}")
-    return value
-
-
-def _require_identifier(instantiation, where, key):
-    value = _require(instantiation, where, key, str, "string")
-    if not IDENTIFIER_RE.match(value):
-        _err(where, f"field {key!r} must be a valid C identifier, got {value!r}")
-    return value
-
-
-def _optional(instantiation, key, default):
-    return instantiation.get(key, default)
-
-
-def _optional_identifier(instantiation, where, key):
-    if key not in instantiation:
-        return None
-    value = instantiation[key]
-    if not isinstance(value, str) or not IDENTIFIER_RE.match(value):
-        _err(
-            where,
-            f"field {key!r}, if present, must be a valid C identifier, got {value!r}",
+        kind = (
+            "a valid C identifier"
+            if identifier
+            else f"one of {allowed}"
+            if allowed
+            else "a string"
         )
+        _err(where, f"field {key!r} must be {kind}, got {value!r}")
     return value
 
 
@@ -443,32 +413,22 @@ def validate_instantiation(instantiation, index):
     if not isinstance(instantiation, dict):
         _err(where, f"must be an object, got {instantiation!r}")
 
-    template = _require(instantiation, where, "template", str, "string")
-    if template not in TEMPLATE_SCHEMAS:
-        _err(
-            where,
-            f"unknown template {template!r}, expected one of {sorted(TEMPLATE_SCHEMAS)}",
-        )
+    template = _field(instantiation, where, "template", allowed=tuple(TEMPLATE_SCHEMAS))
     schema = TEMPLATE_SCHEMAS[template]
 
-    for field, (expected_type, type_name) in schema["scalar_fields"].items():
-        value = _require(instantiation, where, field, expected_type, type_name)
-        if field in ("value_type", "key_type"):
-            _check_type_expression(where, field, value)
+    for field in schema["scalar_fields"]:
+        value = _field(instantiation, where, field)
+        _check_type_expression(where, field, value)
 
-    _require_identifier(instantiation, where, "struct_name")
-    _require_identifier(instantiation, where, "prefix")
+    struct_name = _field(instantiation, where, "struct_name", identifier=True)
+    prefix = _field(instantiation, where, "prefix", identifier=True)
+    file_name = _field(instantiation, where, "file_name", default=None, identifier=True)
+    case_name = _field(
+        instantiation, where, "case", default=CASE_SNAKE, allowed=VALID_CASES
+    )
+    out_dir = _field(instantiation, where, "out_dir", default=".")
 
-    # Optional: the generated .h/.c basename, when it needs to differ from
-    # struct_name (e.g. struct_name "CharMap" but files char_map.h/.c).
-    # Defaults to struct_name.
-    file_name = _optional_identifier(instantiation, where, "file_name")
-
-    case_name = _optional(instantiation, "case", CASE_SNAKE)
-    if case_name not in VALID_CASES:
-        _err(where, f"field 'case' must be one of {VALID_CASES}, got {case_name!r}")
-
-    variants = _optional(instantiation, "variants", {})
+    variants = instantiation.get("variants", {})
     if not isinstance(variants, dict):
         _err(
             where,
@@ -490,12 +450,8 @@ def validate_instantiation(instantiation, index):
         if not isinstance(variants[axis], str):
             _err(where, f"variants[{axis!r}] must be a string")
 
-    out_dir = _optional(instantiation, "out_dir", ".")
-    if not isinstance(out_dir, str):
-        _err(where, "field 'out_dir' must be a string")
-
     # Headers needed for value_type/key_type, if not a builtin.
-    includes = _optional(instantiation, "includes", [])
+    includes = instantiation.get("includes", [])
     if not isinstance(includes, list) or not all(isinstance(h, str) for h in includes):
         _err(where, "field 'includes' must be an array of strings (header paths)")
 
@@ -503,8 +459,8 @@ def validate_instantiation(instantiation, index):
         "template": template,
         "value_type": instantiation.get("value_type"),
         "key_type": instantiation.get("key_type"),
-        "struct_name": instantiation["struct_name"],
-        "prefix": instantiation["prefix"],
+        "struct_name": struct_name,
+        "prefix": prefix,
         "file_name": file_name,
         "case": case_name,
         "variants": variants,
