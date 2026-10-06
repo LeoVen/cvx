@@ -49,8 +49,8 @@ struct VTAB_V
     CVX_VTAB_DEFINITION(CVX_VAL)
 };
 
-// @cvx2:variant axis="collision" name="open_addressing"
 #ifdef CVX2_COLLISION_OPEN_ADDRESSING
+// collision strategy: open addressing
 struct ENTRY
 {
     CVX_KEY key;
@@ -69,10 +69,9 @@ struct CVX_SNAME
     struct ENTRY *buffer;
 };
 #endif
-// @cvx2:endvariant
 
-// @cvx2:variant axis="collision" name="separate_chaining"
 #ifdef CVX2_COLLISION_SEPARATE_CHAINING
+// collision strategy: separate chaining
 struct NODE
 {
     CVX_KEY key;
@@ -90,7 +89,6 @@ struct CVX_SNAME
     struct NODE **buckets;
 };
 #endif
-// @cvx2:endvariant
 
 /** @brief Initializes self, optionally pre-allocating capacity slots. */
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv, size_t capacity);

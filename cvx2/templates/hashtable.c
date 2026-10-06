@@ -41,8 +41,8 @@ static size_t FUNC(__next_prime)(size_t required)
     return required;
 }
 
-// @cvx2:variant axis="collision" name="open_addressing"
 #ifdef CVX2_COLLISION_OPEN_ADDRESSING
+// collision strategy: open addressing
 
 // state field values.
 enum
@@ -242,10 +242,9 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
 }
 
 #endif
-// @cvx2:endvariant
 
-// @cvx2:variant axis="collision" name="separate_chaining"
 #ifdef CVX2_COLLISION_SEPARATE_CHAINING
+// collision strategy: separate chaining
 
 static struct NODE *FUNC(__find_node)(struct CVX_SNAME *self, CVX_KEY key)
 {
@@ -443,7 +442,6 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
 }
 
 #endif
-// @cvx2:endvariant
 
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv, size_t capacity)
 {

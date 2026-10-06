@@ -21,7 +21,12 @@ class TestGenerateEndToEnd(unittest.TestCase):
             shutil.rmtree(generated_dir)
 
         gen = subprocess.run(
-            [sys.executable, str(CVX2_DIR / "generator" / "generator.py"), "--config", str(EXAMPLES_DIR / "config.json")],
+            [
+                sys.executable,
+                str(CVX2_DIR / "generator" / "generator.py"),
+                "--config", str(EXAMPLES_DIR / "config.json"),
+                "--compiler", "gcc",
+            ],
             capture_output=True,
             text=True,
         )

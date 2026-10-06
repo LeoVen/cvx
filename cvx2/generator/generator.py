@@ -7,7 +7,7 @@ into a simple file containing no extra macros and outputs them to the
 configured directories by `out_dir`.
 
 Usage:
-    python3 generator.py --config path/to/config.json
+    python3 generator.py --config path/to/config.json --compiler gcc
 
 This file should be accompanied by the /templates folder containing all the
 cvx template files. Both .h/.c should be in the same folder.
@@ -16,25 +16,30 @@ cvx template files. Both .h/.c should be in the same folder.
 import argparse
 import json
 import re
+import subprocess
 import sys
-from collections import namedtuple
 from pathlib import Path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
-class VariantError(Exception):
+class ConfigError(Exception):
     pass
 
 
-class ConfigError(Exception):
+class PreprocessError(Exception):
     pass
 
 
 ###
 ### CASE CONVERSION
 ###
+# Only ever applied to library-provided name fragments (_init, _vtabv,
+# ...) -- user-provided identifiers (struct_name, prefix) are always left
+# exactly as given. E.g. with prefix "ga_" and suffix "_push_back":
+#   snake_case -> "ga_push_back", camelCase -> "ga_pushBack" (fragment's
+#   own first word stays lowercase), PascalCase -> "ga_PushBack".
 
 CASE_SNAKE = "snake_case"
 CASE_CAMEL = "camelCase"
@@ -44,7 +49,6 @@ VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
 UNDERSCORE_RUN_RE = re.compile(r"(_+)")
 
 
-# All identifiers are written in snake_case by default.
 def identity(identifier):
     return identifier
 
@@ -56,9 +60,7 @@ def _capitalize_words(identifier, capitalize_first_word):
         if not word or word == "_":
             continue
         if word.startswith("_"):
-            out.append(
-                word
-            )  # 2+ underscores: the private-helper marker, kept literally
+            out.append(word)  # 2+ underscores: the private-helper marker, kept literally
             continue
         if not seen_word and not capitalize_first_word:
             out.append(word)
@@ -69,12 +71,12 @@ def _capitalize_words(identifier, capitalize_first_word):
 
 
 def to_camel_case(fragment):
-    """ "_push_back" -> "pushBack": own first word stays lowercase."""
+    """"_push_back" -> "pushBack": own first word stays lowercase."""
     return _capitalize_words(fragment, capitalize_first_word=False)
 
 
 def to_pascal_case(fragment):
-    """ "_push_back" -> "PushBack": own first word is capitalized too."""
+    """"_push_back" -> "PushBack": own first word is capitalized too."""
     return _capitalize_words(fragment, capitalize_first_word=True)
 
 
@@ -89,221 +91,97 @@ def case_fn_for(case_name):
 
 
 ###
-### VARIANT SELECTION
+### TEMPLATE EXPANSION
 ###
-# A variant block looks like:
+# A template's own macros (FUNC(X), VTAB_V, etc.) and placeholders
+# (CVX_VAL, CVX_SNAME, ...) are real C preprocessor constructs -- so
+# instead of re-implementing macro expansion by hand, we hand the file to
+# the real preprocessor (-D for each placeholder/variant) and let it do
+# that part. We deliberately never let it see cvx2/core.h, cvx2/flags.h,
+# or any system header: every #include line is stripped before the
+# preprocessor runs and spliced back in literally afterwards, so they stay
+# real #includes in the output rather than being inlined -- and so e.g.
+# "bool" is never touched (it only becomes "_Bool" if <stdbool.h> actually
+# gets processed, which this never lets happen).
 #
-#     // @cvx2:variant axis="collision" name="open_addressing"
-#     #ifdef CVX2_COLLISION_OPEN_ADDRESSING
-#     ... code ...
-#     #endif
-#     // @cvx2:endvariant
-#
-# select_variants() picks the block matching the config and discards the
-# rest, based on the marker comments alone (the #ifdef/#endif just let the
-# template compile standalone while editing).
+# Only CVX_(A, B) token-pasting is left for us to resolve ourselves: it's
+# the one piece of case-conversion logic (CVX_SNAME's own text stays
+# literal; only the pasted library suffix gets cased) that no C tool can
+# do, so the templates' own paste macro is deliberately left undefined for
+# the preprocessor and resolved here afterward instead.
 
-_VARIANT_START_RE = re.compile(
-    r'^\s*//\s*@cvx2:variant\s+axis="([^"]+)"\s+name="([^"]+)"\s*$'
-)
-_VARIANT_END_RE = re.compile(r"^\s*//\s*@cvx2:endvariant\s*$")
-_IF_RE = re.compile(r"^\s*#\s*(if|ifdef|ifndef)\b")
-_ENDIF_RE = re.compile(r"^\s*#\s*endif\b")
+# Required flags per compiler, in case one ever needs something different
+# from -E -C (preprocess, keep comments).
+COMPILER_FLAGS = {
+    "gcc": ["-E", "-C"],
+    "clang": ["-E", "-C"],
+    "cc": ["-E", "-C"],
+}
 
-_VariantBlock = namedtuple("_VariantBlock", ["axis", "name", "start", "end", "body"])
-
-
-def _find_variant_blocks(lines, template_name):
-    blocks = []
-    i = 0
-    while i < len(lines):
-        m = _VARIANT_START_RE.match(lines[i])
-        if not m:
-            i += 1
-            continue
-
-        axis, name = m.group(1), m.group(2)
-        start = i
-
-        if i + 1 >= len(lines) or not _IF_RE.match(lines[i + 1]):
-            raise VariantError(
-                f"{template_name}: line {i + 1}: @cvx2:variant must be immediately followed "
-                f"by a #if/#ifdef/#ifndef line"
-            )
-
-        # depth starts at 1 for the #ifdef right after the marker; body is
-        # everything after it, up to (not including) the matching #endif.
-        depth = 1
-        j = i + 2
-        body_start = j
-        while j < len(lines) and depth > 0:
-            if _IF_RE.match(lines[j]):
-                depth += 1
-            elif _ENDIF_RE.match(lines[j]):
-                depth -= 1
-                if depth == 0:
-                    break
-            j += 1
-        else:
-            raise VariantError(
-                f"{template_name}: line {start + 1}: unterminated #if inside @cvx2:variant block"
-            )
-
-        if j >= len(lines):
-            raise VariantError(
-                f"{template_name}: line {start + 1}: missing #endif for @cvx2:variant block"
-            )
-
-        body = lines[body_start:j]
-        endif_line = j
-
-        if endif_line + 1 >= len(lines) or not _VARIANT_END_RE.match(
-            lines[endif_line + 1]
-        ):
-            raise VariantError(
-                f"{template_name}: line {endif_line + 1}: expected // @cvx2:endvariant "
-                f"immediately after the block's #endif"
-            )
-
-        end = endif_line + 1
-        blocks.append(_VariantBlock(axis, name, start, end, body))
-        i = end + 1
-
-    return blocks
+_INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
+_DEFINE_LINE_RE = re.compile(r"^[ \t]*#define\b[^\n]*\n?", re.MULTILINE)
+_LINE_MARKER_RE = re.compile(r'^# \d+ "([^"]*)"')
+_SYSTEM_PREFIXES = ("/usr", "/opt/homebrew", "/Library", "<built-in>", "<command-line>", "<command line>")
+_EMPTY_CLANG_FORMAT_RE = re.compile(r"[ \t]*//[ \t]*clang-format off[ \t]*\n[ \t]*//[ \t]*clang-format on[ \t]*\n")
+_BLANK_RUN_RE = re.compile(r"\n{3,}")
+_PASTE_RE = re.compile(r"CVX_\(\s*(\w+)\s*,\s*(\w+)\s*\)")
 
 
-def select_variants(text, variants_config, template_name):
-    """Strips every @cvx2:variant block down to the one instance selected by
-    variants_config (an {axis: name} dict), deleting all others. Raises
-    VariantError if the template and config disagree about which axes/names
-    exist."""
-    lines = text.split("\n")
-    blocks = _find_variant_blocks(lines, template_name)
+def _strip_includes(text):
+    """Pulls every #include line out of text (so the preprocessor never
+    resolves them) and returns (includes_block, remaining_text). The
+    fallback.h include is dropped outright rather than kept: it exists
+    only so the template compiles standalone while editing, and must
+    never appear in generated output."""
+    includes = [inc for inc in _INCLUDE_RE.findall(text) if "cvx2/fallback.h" not in inc]
+    return "".join(includes), _INCLUDE_RE.sub("", text)
 
-    if not blocks:
-        return text
 
-    axes_in_template = {}
-    for b in blocks:
-        axes_in_template.setdefault(b.axis, set()).add(b.name)
+def _local_macro_defines(header_text):
+    """Raw #define lines (FUNC, VTAB_V, etc.) copied verbatim out of a
+    template header's text, to prepend to the matching .c's text before
+    preprocessing it: the .c relies on these via its own #include of the
+    .h, which gets stripped along with every other #include."""
+    return "".join(_DEFINE_LINE_RE.findall(header_text))
 
-    for axis, names in axes_in_template.items():
-        if axis not in variants_config:
-            raise VariantError(
-                f"{template_name}: requires variants[{axis!r}] to be set in config (choices: {sorted(names)})"
-            )
-        selected = variants_config[axis]
-        if selected not in names:
-            raise VariantError(
-                f"{template_name}: variants[{axis!r}] = {selected!r} is not a known variant "
-                f"(choices: {sorted(names)})"
-            )
 
-    # Rebuild the file: kept blocks become just their body; dropped blocks
-    # (and all their scaffolding lines) are removed entirely. `blocks` is
-    # already in document order from _find_variant_blocks.
+def _run_preprocessor(text, defines, compiler):
+    if compiler not in COMPILER_FLAGS:
+        raise PreprocessError(f"unknown compiler {compiler!r}, expected one of {sorted(COMPILER_FLAGS)}")
+
+    cmd = [compiler, *COMPILER_FLAGS[compiler], "-x", "c", *(f"-D{d}" for d in defines), "-"]
+    try:
+        result = subprocess.run(cmd, input=text, capture_output=True, text=True)
+    except FileNotFoundError:
+        raise PreprocessError(f"compiler {compiler!r} not found on PATH")
+
+    if result.returncode != 0:
+        raise PreprocessError(result.stderr)
+
+    # Keep only lines that trace back to our own input (stdin), not to any
+    # implicitly preincluded system file (e.g. glibc's stdc-predef.h).
     out = []
-    i = 0
-    bi = 0
-    while i < len(lines):
-        if bi < len(blocks) and blocks[bi].start == i:
-            b = blocks[bi]
-            if variants_config[b.axis] == b.name:
-                out.extend(b.body)
-            i = b.end + 1
-            bi += 1
-        else:
-            out.append(lines[i])
-            i += 1
-
+    skip = False
+    for line in result.stdout.splitlines():
+        m = _LINE_MARKER_RE.match(line)
+        if m:
+            skip = m.group(1).startswith(_SYSTEM_PREFIXES)
+            continue
+        if not skip:
+            out.append(line)
     return "\n".join(out)
 
 
-###
-### TEMPLATE EXPANSION
-###
-# Resolves a template's local macros (FUNC(X), VTAB_V, etc., #define'd in
-# the .h) and CVX_(A, B) token-pasting into literal generated identifiers.
-# cvx2/core.h and cvx2/flags.h stay as real #includes in the output.
-
-_DEFINE_RE = re.compile(
-    r"^[ \t]*#define[ \t]+(\w+)(?:\((\w+)\))?[ \t]+(.+?)[ \t]*$", re.MULTILINE
-)
-_PASTE_RE = re.compile(r"CVX_\(\s*(\w+)\s*,\s*(\w+)\s*\)")
-_GUARD_BLOCK_RE = re.compile(
-    r"^[ \t]*//[ \t]*clang-format off[ \t]*\n"
-    r"(?:[ \t]*#ifndef[ \t]+\w+\n[ \t]*#error[^\n]*\n[ \t]*#endif\n)+"
-    r"[ \t]*//[ \t]*clang-format on[ \t]*\n",
-    re.MULTILINE,
-)
-_FALLBACK_INCLUDE_RE = re.compile(
-    r'^[ \t]*#include[ \t]+"cvx2/fallback\.h"[ \t]*\n', re.MULTILINE
-)
-_BLANK_RUN_RE = re.compile(r"\n{3,}")
-
-_PLACEHOLDERS = ("CVX_SNAME", "CVX_PFX", "CVX_VAL", "CVX_KEY")
-
-LocalMacros = namedtuple("LocalMacros", ["func_param", "func_body", "object_defs"])
-
-
-class ExpandContext:
-    def __init__(self, value_type, key_type, struct_name, prefix, case_fn):
-        self.raw = {
-            "CVX_VAL": value_type,
-            "CVX_KEY": key_type,
-            "CVX_SNAME": struct_name,
-            "CVX_PFX": prefix,
-        }
-        self.case_fn = case_fn
-
-
-def parse_local_macros(header_text):
-    """Reads FUNC(X)=... and the object-like macro definitions out of a
-    template header's text and strips all template-only scaffolding
-    (the fallback.h include, the required-macro guard block, and the macro
-    #define lines themselves) from it. Returns (macros, stripped_text)."""
-    func_param = func_body = None
-    object_defs = {}
-    for name, param, body in _DEFINE_RE.findall(header_text):
-        if name == "FUNC":
-            func_param, func_body = param, body
-        else:
-            object_defs[name] = body
-
-    stripped = _GUARD_BLOCK_RE.sub("", header_text)
-    stripped = _FALLBACK_INCLUDE_RE.sub("", stripped)
-    stripped = _DEFINE_RE.sub("", stripped)
-
-    return LocalMacros(func_param, func_body, object_defs), stripped
-
-
-def _expand_macros(text, macros):
-    if macros.func_param is not None:
-
-        def repl(match):
-            arg = match.group(1).strip()
-            return re.sub(rf"\b{re.escape(macros.func_param)}\b", arg, macros.func_body)
-
-        text = re.sub(r"\bFUNC\(([^()]*)\)", repl, text)
-
-    if macros.object_defs:
-        name_re = re.compile(
-            r"\b(" + "|".join(re.escape(n) for n in macros.object_defs) + r")\b"
-        )
-        text = name_re.sub(lambda m: macros.object_defs[m.group(1)], text)
-
-    return text
-
-
-def _resolve_pastes(text, ctx):
-    # The first paste argument is always user text (CVX_SNAME/CVX_PFX) and
-    # stays as-is; the second is always a library suffix and gets cased.
+def _resolve_pastes(text, case_fn):
+    # By now CVX_(A, B)'s A and B are already literal text (the
+    # preprocessor substituted CVX_SNAME/CVX_PFX/etc. for us) -- A is
+    # always user text and stays as-is; B is always a library suffix and
+    # gets cased.
     def repl(match):
-        a, b = match.groups()
-        return ctx.raw.get(a, a) + ctx.case_fn(ctx.raw.get(b, b))
+        prefix, suffix = match.groups()
+        return prefix + case_fn(suffix)
 
-    # Loop in case a macro body itself contains another paste.
-    for _ in range(4):
+    for _ in range(4):  # in case a macro body itself contains another paste
         new_text = _PASTE_RE.sub(repl, text)
         if new_text == text:
             return new_text
@@ -311,23 +189,13 @@ def _resolve_pastes(text, ctx):
     return text
 
 
-def _resolve_bare_placeholders(text, ctx):
-    # Always literal: these are either user text or arbitrary C type text,
-    # never a library identifier that needs casing.
-    for name in _PLACEHOLDERS:
-        value = ctx.raw.get(name)
-        if value is None:
-            continue
-        text = re.sub(rf"\b{name}\b", lambda _m, v=value: v, text)
-    return text
-
-
-def expand(text, macros, ctx):
-    text = _expand_macros(text, macros)
-    text = _resolve_pastes(text, ctx)
-    text = _resolve_bare_placeholders(text, ctx)
-    text = _BLANK_RUN_RE.sub("\n\n", text)
-    return text
+def expand(text, defines, compiler, case_fn):
+    includes, stripped = _strip_includes(text)
+    expanded = _run_preprocessor(stripped, defines, compiler)
+    expanded = _resolve_pastes(expanded, case_fn)
+    expanded = _EMPTY_CLANG_FORMAT_RE.sub("", expanded)
+    expanded = _BLANK_RUN_RE.sub("\n\n", expanded)
+    return includes + expanded
 
 
 def rewrite_self_include(text, template_name, generated_header_filename):
@@ -345,13 +213,20 @@ def rewrite_self_include(text, template_name, generated_header_filename):
 # Validates config files against config.schema.json's shape (kept in sync
 # by hand -- no jsonschema dependency).
 
-# scalar_fields: required string fields beyond struct_name/prefix.
-# variant_axes: the @cvx2:variant axes this template's blocks use.
+# Required string fields beyond struct_name/prefix, per template.
 TEMPLATE_SCHEMAS = {
-    "dynamic_array": {"scalar_fields": ["value_type"], "variant_axes": []},
+    "dynamic_array": {"scalar_fields": ["value_type"]},
+    "hashtable": {"scalar_fields": ["key_type", "value_type"]},
+}
+
+# Per template, each @cvx2:variant axis and the macro to #define for each
+# of its names (must match what the template's #ifdef actually checks).
+TEMPLATE_VARIANTS = {
     "hashtable": {
-        "scalar_fields": ["key_type", "value_type"],
-        "variant_axes": ["collision"],
+        "collision": {
+            "open_addressing": "CVX2_COLLISION_OPEN_ADDRESSING",
+            "separate_chaining": "CVX2_COLLISION_SEPARATE_CHAINING",
+        },
     },
 }
 
@@ -379,13 +254,7 @@ def _field(instantiation, where, key, default=_MISSING, identifier=False, allowe
         valid = value in allowed
 
     if not valid:
-        kind = (
-            "a valid C identifier"
-            if identifier
-            else f"one of {allowed}"
-            if allowed
-            else "a string"
-        )
+        kind = "a valid C identifier" if identifier else f"one of {allowed}" if allowed else "a string"
         _err(where, f"field {key!r} must be {kind}, got {value!r}")
     return value
 
@@ -423,32 +292,25 @@ def validate_instantiation(instantiation, index):
     struct_name = _field(instantiation, where, "struct_name", identifier=True)
     prefix = _field(instantiation, where, "prefix", identifier=True)
     file_name = _field(instantiation, where, "file_name", default=None, identifier=True)
-    case_name = _field(
-        instantiation, where, "case", default=CASE_SNAKE, allowed=VALID_CASES
-    )
+    case_name = _field(instantiation, where, "case", default=CASE_SNAKE, allowed=VALID_CASES)
     out_dir = _field(instantiation, where, "out_dir", default=".")
 
+    axes = TEMPLATE_VARIANTS.get(template, {})
     variants = instantiation.get("variants", {})
     if not isinstance(variants, dict):
-        _err(
-            where,
-            "field 'variants' must be an object mapping axis name -> variant name",
-        )
-    for axis in schema["variant_axes"]:
+        _err(where, "field 'variants' must be an object mapping axis name -> variant name")
+    for axis, names in axes.items():
         if axis not in variants:
-            _err(
-                where,
-                f"template {template!r} requires config['variants'][{axis!r}] to be set",
-            )
-    for axis in variants:
-        if axis not in schema["variant_axes"]:
+            _err(where, f"template {template!r} requires variants[{axis!r}] to be set (choices: {sorted(names)})")
+    for axis, name in variants.items():
+        if axis not in axes:
             _err(
                 where,
                 f"config specifies variants[{axis!r}] but template {template!r} has no such axis "
-                f"(it uses: {schema['variant_axes']})",
+                f"(it uses: {sorted(axes)})",
             )
-        if not isinstance(variants[axis], str):
-            _err(where, f"variants[{axis!r}] must be a string")
+        elif name not in axes[axis]:
+            _err(where, f"variants[{axis!r}] = {name!r} is not a known variant (choices: {sorted(axes[axis])})")
 
     # Headers needed for value_type/key_type, if not a builtin.
     includes = instantiation.get("includes", [])
@@ -495,28 +357,27 @@ def _include_directive(header):
     return f'#include "{header}"'
 
 
-def generate_instantiation(inst, templates_dir=TEMPLATES_DIR):
+def _defines_for(inst):
+    defines = [f"CVX_VAL={inst['value_type']}", f"CVX_SNAME={inst['struct_name']}", f"CVX_PFX={inst['prefix']}"]
+    if inst["key_type"] is not None:
+        defines.append(f"CVX_KEY={inst['key_type']}")
+
+    axes = TEMPLATE_VARIANTS.get(inst["template"], {})
+    for axis, name in inst["variants"].items():
+        defines.append(axes[axis][name])
+    return defines
+
+
+def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
     template_name = inst["template"]
     case_fn = case_fn_for(inst["case"])
+    defines = _defines_for(inst)
 
     header_text = (templates_dir / f"{template_name}.h").read_text()
     source_text = (templates_dir / f"{template_name}.c").read_text()
 
-    header_text = select_variants(header_text, inst["variants"], f"{template_name}.h")
-    source_text = select_variants(source_text, inst["variants"], f"{template_name}.c")
-
-    macros, header_stripped = parse_local_macros(header_text)
-
-    ctx = ExpandContext(
-        value_type=inst["value_type"],
-        key_type=inst["key_type"],
-        struct_name=inst["struct_name"],
-        prefix=inst["prefix"],
-        case_fn=case_fn,
-    )
-
-    header_out = expand(header_stripped, macros, ctx)
-    source_out = expand(source_text, macros, ctx)
+    header_out = expand(header_text, defines, compiler, case_fn)
+    source_out = expand(_local_macro_defines(header_text) + source_text, defines, compiler, case_fn)
 
     file_stem = inst["file_name"] or inst["struct_name"]
     header_filename = f"{file_stem}.h"
@@ -532,15 +393,13 @@ def generate_instantiation(inst, templates_dir=TEMPLATES_DIR):
     return header_filename, header_out, source_filename, source_out
 
 
-def run(config_path):
+def run(config_path, compiler):
     raw_config = json.loads(Path(config_path).read_text())
     instantiations = validate_config(raw_config)
 
     written = []
     for inst in instantiations:
-        header_filename, header_out, source_filename, source_out = (
-            generate_instantiation(inst)
-        )
+        header_filename, header_out, source_filename, source_out = generate_instantiation(inst, compiler)
 
         out_dir = Path(config_path).parent / inst["out_dir"]
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -554,15 +413,16 @@ def run(config_path):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(
-        description="Generate cvx2 container types from a JSON config."
-    )
+    parser = argparse.ArgumentParser(description="Generate cvx2 container types from a JSON config.")
     parser.add_argument("--config", required=True, help="path to the JSON config file")
+    parser.add_argument(
+        "--compiler", required=True, choices=sorted(COMPILER_FLAGS), help="C compiler to preprocess templates with"
+    )
     args = parser.parse_args(argv)
 
     try:
-        written = run(args.config)
-    except (ConfigError, VariantError) as exc:
+        written = run(args.config, args.compiler)
+    except (ConfigError, PreprocessError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

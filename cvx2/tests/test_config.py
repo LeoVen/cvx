@@ -56,6 +56,17 @@ class TestValidateConfig(unittest.TestCase):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
+    def test_hashtable_unknown_variant_name_errors(self):
+        bad = ht(variants={"collision": "quantum_probing"})
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [bad]})
+
+    def test_hashtable_separate_chaining_is_a_valid_variant(self):
+        result = generator.validate_config(
+            {"instantiations": [ht(variants={"collision": "separate_chaining"})]}
+        )
+        self.assertEqual(result[0]["variants"], {"collision": "separate_chaining"})
+
     def test_unknown_template_errors(self):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [da(template="avl_tree")]})
