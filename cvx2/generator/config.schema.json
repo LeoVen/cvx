@@ -43,7 +43,7 @@
         },
         "case": {
           "type": "string",
-          "enum": ["snake_case", "camelCase", "UpperCamelCase"],
+          "enum": ["snake_case", "camelCase", "PascalCase"],
           "default": "snake_case"
         },
         "variants": {

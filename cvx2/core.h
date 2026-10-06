@@ -1,7 +1,6 @@
 #ifndef CVX_CORE_H
 #define CVX_CORE_H
 
-#include "flags.h"
 #include <stddef.h>
 
 // Concatenates two tokens, expanding them first.

@@ -37,8 +37,8 @@ class ConfigError(Exception):
 
 CASE_SNAKE = "snake_case"
 CASE_CAMEL = "camelCase"
-CASE_UPPER_CAMEL = "UpperCamelCase"
-VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_UPPER_CAMEL)
+CASE_PASCAL = "PascalCase"
+VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
 
 UNDERSCORE_RUN_RE = re.compile(r"(_+)")
 
@@ -76,14 +76,14 @@ def to_camel_case(identifier):
 
 
 def to_upper_camel_case(identifier):
-    """UpperCamelCase"""
+    """PascalCase"""
     return _convert_case(identifier, capitalize_first_word=True)
 
 
 def case_fn_for(case_name):
     if case_name == CASE_CAMEL:
         return to_camel_case
-    if case_name == CASE_UPPER_CAMEL:
+    if case_name == CASE_PASCAL:
         return to_upper_camel_case
     if case_name == CASE_SNAKE:
         return identity
@@ -322,7 +322,7 @@ def _resolve_pastes(text, ctx):
         a, b = match.group(1), match.group(2)
         raw_a = ctx.raw.get(a, a)
         raw_b = ctx.raw.get(b, b)
-        return ctx.case_fn(raw_a + raw_b)
+        return raw_a + ctx.case_fn(raw_b)
 
     # Loop in case a macro body itself contains another paste.
     for _ in range(4):

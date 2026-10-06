@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from cvx2.generator import generator
 
-FIXTURE_HEADER = '''\
+FIXTURE_HEADER = """\
 #include "cvx2/fallback.h"
 
 // clang-format off
@@ -38,10 +38,15 @@ struct CVX_SNAME
 
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self);
 enum cvx_flags FUNC(__private_helper)(struct CVX_SNAME *self);
-'''
+"""
 
 
-def make_ctx(value_type="int", struct_name="my_thing", prefix="mt", case_name=generator.CASE_SNAKE):
+def make_ctx(
+    value_type="int",
+    struct_name="my_thing",
+    prefix="mt",
+    case_name=generator.CASE_SNAKE,
+):
     return generator.ExpandContext(
         value_type=value_type,
         key_type=None,
@@ -74,21 +79,29 @@ class TestExpand(unittest.TestCase):
 
     def test_resolves_camel_case_and_keeps_private_marker(self):
         macros, stripped = generator.parse_local_macros(FIXTURE_HEADER)
-        out = generator.expand(stripped, macros, make_ctx(case_name=generator.CASE_CAMEL))
+        out = generator.expand(
+            stripped, macros, make_ctx(case_name=generator.CASE_CAMEL)
+        )
         self.assertIn("struct myThingVtabv", out)
         self.assertIn("mtInit(struct myThing *self)", out)
         self.assertIn("mt__PrivateHelper(struct myThing *self)", out)
 
     def test_resolves_upper_camel_case_and_keeps_private_marker(self):
         macros, stripped = generator.parse_local_macros(FIXTURE_HEADER)
-        out = generator.expand(stripped, macros, make_ctx(case_name=generator.CASE_UPPER_CAMEL))
+        out = generator.expand(
+            stripped, macros, make_ctx(case_name=generator.CASE_PASCAL)
+        )
         self.assertIn("struct MyThingVtabv", out)
         self.assertIn("MtInit(struct MyThing *self)", out)
         self.assertIn("Mt__PrivateHelper(struct MyThing *self)", out)
 
     def test_value_type_never_case_converted(self):
         macros, stripped = generator.parse_local_macros(FIXTURE_HEADER)
-        out = generator.expand(stripped, macros, make_ctx(value_type="char *", case_name=generator.CASE_CAMEL))
+        out = generator.expand(
+            stripped,
+            macros,
+            make_ctx(value_type="char *", case_name=generator.CASE_CAMEL),
+        )
         self.assertIn("char * *buffer", out)
 
     def test_rewrite_self_include(self):

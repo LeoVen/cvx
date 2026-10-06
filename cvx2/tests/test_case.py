@@ -41,7 +41,7 @@ class TestToCamelCase(unittest.TestCase):
             generator.case_fn_for(generator.CASE_CAMEL), generator.to_camel_case
         )
         self.assertIs(
-            generator.case_fn_for(generator.CASE_UPPER_CAMEL),
+            generator.case_fn_for(generator.CASE_PASCAL),
             generator.to_upper_camel_case,
         )
         with self.assertRaises(ValueError):

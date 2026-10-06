@@ -42,8 +42,8 @@ class TestValidateConfig(unittest.TestCase):
         self.assertEqual(result[0]["variants"], {"collision": "open_addressing"})
 
     def test_upper_camel_case_is_a_valid_case(self):
-        result = generator.validate_config({"instantiations": [da(case="UpperCamelCase")]})
-        self.assertEqual(result[0]["case"], "UpperCamelCase")
+        result = generator.validate_config({"instantiations": [da(case="PascalCase")]})
+        self.assertEqual(result[0]["case"], "PascalCase")
 
     def test_hashtable_missing_variants_axis_errors(self):
         bad = ht()
