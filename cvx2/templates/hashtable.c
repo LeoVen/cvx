@@ -14,7 +14,7 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
 
 // Capacity is always rounded up to one of these primes.
 // clang-format off
-static const size_t CVX_(CVX_PFX, __primes)[] = {
+static const size_t CVX_(CVX_PFX, NAME__primes)[] = {
     /* < 1e3  */ 53, 97, 191, 383, 769,
     /* < 1e4  */ 1531, 3067, 6143,
     /* < 1e5  */ 12289, 24571, 49157, 98299,
@@ -26,17 +26,17 @@ static const size_t CVX_(CVX_PFX, __primes)[] = {
     /* < 1e11 */ 12884901893, 25769803799, 51539607551,
 };
 // clang-format on
-static const size_t CVX_(CVX_PFX, __primes_count) =
-    sizeof(CVX_(CVX_PFX, __primes)) / sizeof(CVX_(CVX_PFX, __primes)[0]);
+static const size_t CVX_(CVX_PFX, NAME__primes_count) =
+    sizeof(CVX_(CVX_PFX, NAME__primes)) / sizeof(CVX_(CVX_PFX, NAME__primes)[0]);
 
 // Returns the smallest prime in the table that is >= required.
 // Falls back to required if it exceeds all primes.
 static size_t FUNC(__next_prime)(size_t required)
 {
-    for (size_t i = 0; i < CVX_(CVX_PFX, __primes_count); i++)
+    for (size_t i = 0; i < CVX_(CVX_PFX, NAME__primes_count); i++)
     {
-        if (CVX_(CVX_PFX, __primes)[i] >= required)
-            return CVX_(CVX_PFX, __primes)[i];
+        if (CVX_(CVX_PFX, NAME__primes)[i] >= required)
+            return CVX_(CVX_PFX, NAME__primes)[i];
     }
     return required;
 }

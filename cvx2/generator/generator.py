@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
+NAMES_H_PATH = Path(__file__).resolve().parent.parent / "names.h"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
@@ -35,83 +36,37 @@ class PreprocessError(Exception):
 ###
 ### CASE CONVERSION
 ###
-# Only ever applied to library-provided name fragments (_init, _vtabv,
-# ...) -- user-provided identifiers (struct_name, prefix) are always left
-# exactly as given. E.g. with prefix "ga_" and suffix "_push_back":
-#   snake_case -> "ga_push_back", camelCase -> "ga_pushBack" (fragment's
-#   own first word stays lowercase), PascalCase -> "ga_PushBack".
 
+# based on names.h
 CASE_SNAKE = "snake_case"
 CASE_CAMEL = "camelCase"
 CASE_PASCAL = "PascalCase"
 VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
 
-UNDERSCORE_RUN_RE = re.compile(r"(_+)")
+CASE_DEFINES = {
+    CASE_CAMEL: "CVX_NAMES_CAMELCASE",
+    CASE_PASCAL: "CVX_NAMES_PASCALCASE",
+}
 
+_LINE_COMMENT_RE = re.compile(r"^[ \t]*//.*\n?", re.MULTILINE)
+# Only the #ifdef/#define/#endif skeleton is needed by the preprocessor --
+# names.h's own explanatory comments aren't for consumers of generated code
+# and would otherwise leak into it (comments are normally preserved, see
+# TEMPLATE EXPANSION below), so they're stripped once, up front.
+_NAMES_H_DEFS = _LINE_COMMENT_RE.sub("", NAMES_H_PATH.read_text())
 
-def identity(identifier):
-    return identifier
-
-
-def _capitalize_words(identifier, capitalize_first_word):
-    out = []
-    seen_word = False
-    for word in UNDERSCORE_RUN_RE.split(identifier):
-        if not word or word == "_":
-            continue
-        if word.startswith("_"):
-            out.append(word)  # 2+ underscores: the private-helper marker, kept literally
-            continue
-        if not seen_word and not capitalize_first_word:
-            out.append(word)
-        else:
-            out.append(word[:1].upper() + word[1:])
-        seen_word = True
-    return "".join(out)
-
-
-def to_camel_case(fragment):
-    """"_push_back" -> "pushBack": own first word stays lowercase."""
-    return _capitalize_words(fragment, capitalize_first_word=False)
-
-
-def to_pascal_case(fragment):
-    """"_push_back" -> "PushBack": own first word is capitalized too."""
-    return _capitalize_words(fragment, capitalize_first_word=True)
-
-
-def case_fn_for(case_name):
-    if case_name == CASE_SNAKE:
-        return identity
-    if case_name == CASE_CAMEL:
-        return to_camel_case
-    if case_name == CASE_PASCAL:
-        return to_pascal_case
-    raise ValueError(f"unknown case {case_name!r}, expected one of {VALID_CASES}")
+# cvx2/core.h's CVX_(A,B)/CVX__(A,B) token-paste helpers, defined here
+# directly (rather than letting the preprocessor see core.h for real) so
+# the rest of core.h (CVX_VTAB_DEFINITION, etc.) stays unresolved/literal
+# in generated output. Safe to let the real preprocessor fully resolve the
+# paste now that names.h has already supplied the correctly-cased suffix.
+_PASTE_HELPERS = "#define CVX__(A, B) A##B\n#define CVX_(A, B) CVX__(A, B)\n"
 
 
 ###
 ### TEMPLATE EXPANSION
 ###
-# A template's own macros (FUNC(X), VTAB_V, etc.) and placeholders
-# (CVX_VAL, CVX_SNAME, ...) are real C preprocessor constructs -- so
-# instead of re-implementing macro expansion by hand, we hand the file to
-# the real preprocessor (-D for each placeholder/variant) and let it do
-# that part. We deliberately never let it see cvx2/core.h, cvx2/flags.h,
-# or any system header: every #include line is stripped before the
-# preprocessor runs and spliced back in literally afterwards, so they stay
-# real #includes in the output rather than being inlined -- and so e.g.
-# "bool" is never touched (it only becomes "_Bool" if <stdbool.h> actually
-# gets processed, which this never lets happen).
-#
-# Only CVX_(A, B) token-pasting is left for us to resolve ourselves: it's
-# the one piece of case-conversion logic (CVX_SNAME's own text stays
-# literal; only the pasted library suffix gets cased) that no C tool can
-# do, so the templates' own paste macro is deliberately left undefined for
-# the preprocessor and resolved here afterward instead.
 
-# Required flags per compiler, in case one ever needs something different
-# from -E -C (preprocess, keep comments).
 COMPILER_FLAGS = {
     "gcc": ["-E", "-C"],
     "clang": ["-E", "-C"],
@@ -121,19 +76,33 @@ COMPILER_FLAGS = {
 _INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
 _DEFINE_LINE_RE = re.compile(r"^[ \t]*#define\b[^\n]*\n?", re.MULTILINE)
 _LINE_MARKER_RE = re.compile(r'^# \d+ "([^"]*)"')
-_SYSTEM_PREFIXES = ("/usr", "/opt/homebrew", "/Library", "<built-in>", "<command-line>", "<command line>")
-_EMPTY_CLANG_FORMAT_RE = re.compile(r"[ \t]*//[ \t]*clang-format off[ \t]*\n[ \t]*//[ \t]*clang-format on[ \t]*\n")
+_SYSTEM_PREFIXES = (
+    "/usr",
+    "/opt/homebrew",
+    "/Library",
+    "<built-in>",
+    "<command-line>",
+    "<command line>",
+)
+_EMPTY_CLANG_FORMAT_RE = re.compile(
+    r"[ \t]*//[ \t]*clang-format off[ \t]*\n[ \t]*//[ \t]*clang-format on[ \t]*\n"
+)
 _BLANK_RUN_RE = re.compile(r"\n{3,}")
-_PASTE_RE = re.compile(r"CVX_\(\s*(\w+)\s*,\s*(\w+)\s*\)")
+
+# Includes that exist only for the generator's own pipeline (standalone
+# fallback compilation, or feeding names.h's text in directly below) and
+# must never appear in generated output.
+_GENERATION_ONLY_INCLUDES = ("cvx2/fallback.h", "cvx2/names.h")
 
 
 def _strip_includes(text):
     """Pulls every #include line out of text (so the preprocessor never
-    resolves them) and returns (includes_block, remaining_text). The
-    fallback.h include is dropped outright rather than kept: it exists
-    only so the template compiles standalone while editing, and must
-    never appear in generated output."""
-    includes = [inc for inc in _INCLUDE_RE.findall(text) if "cvx2/fallback.h" not in inc]
+    resolves them) and returns (includes_block, remaining_text)."""
+    includes = [
+        inc
+        for inc in _INCLUDE_RE.findall(text)
+        if not any(g in inc for g in _GENERATION_ONLY_INCLUDES)
+    ]
     return "".join(includes), _INCLUDE_RE.sub("", text)
 
 
@@ -147,9 +116,11 @@ def _local_macro_defines(header_text):
 
 def _run_preprocessor(text, defines, compiler):
     if compiler not in COMPILER_FLAGS:
-        raise PreprocessError(f"unknown compiler {compiler!r}, expected one of {sorted(COMPILER_FLAGS)}")
+        raise PreprocessError(
+            f"unknown compiler {compiler!r}, expected one of {sorted(COMPILER_FLAGS)}"
+        )
 
-    cmd = [compiler, *COMPILER_FLAGS[compiler], "-x", "c", *(f"-D{d}" for d in defines), "-"]
+    cmd = [compiler, *COMPILER_FLAGS[compiler], "-x", "c", *(f"-D{d}" for d in defines), "-",]
     try:
         result = subprocess.run(cmd, input=text, capture_output=True, text=True)
     except FileNotFoundError:
@@ -172,27 +143,11 @@ def _run_preprocessor(text, defines, compiler):
     return "\n".join(out)
 
 
-def _resolve_pastes(text, case_fn):
-    # By now CVX_(A, B)'s A and B are already literal text (the
-    # preprocessor substituted CVX_SNAME/CVX_PFX/etc. for us) -- A is
-    # always user text and stays as-is; B is always a library suffix and
-    # gets cased.
-    def repl(match):
-        prefix, suffix = match.groups()
-        return prefix + case_fn(suffix)
-
-    for _ in range(4):  # in case a macro body itself contains another paste
-        new_text = _PASTE_RE.sub(repl, text)
-        if new_text == text:
-            return new_text
-        text = new_text
-    return text
-
-
-def expand(text, defines, compiler, case_fn):
+def expand(text, defines, compiler):
     includes, stripped = _strip_includes(text)
-    expanded = _run_preprocessor(stripped, defines, compiler)
-    expanded = _resolve_pastes(expanded, case_fn)
+    expanded = _run_preprocessor(
+        _PASTE_HELPERS + _NAMES_H_DEFS + stripped, defines, compiler
+    )
     expanded = _EMPTY_CLANG_FORMAT_RE.sub("", expanded)
     expanded = _BLANK_RUN_RE.sub("\n\n", expanded)
     return includes + expanded
@@ -210,8 +165,6 @@ def rewrite_self_include(text, template_name, generated_header_filename):
 ###
 ### CONFIG VALIDATION
 ###
-# Validates config files against config.schema.json's shape (kept in sync
-# by hand -- no jsonschema dependency).
 
 # Required string fields beyond struct_name/prefix, per template.
 TEMPLATE_SCHEMAS = {
@@ -219,8 +172,6 @@ TEMPLATE_SCHEMAS = {
     "hashtable": {"scalar_fields": ["key_type", "value_type"]},
 }
 
-# Per template, each @cvx2:variant axis and the macro to #define for each
-# of its names (must match what the template's #ifdef actually checks).
 TEMPLATE_VARIANTS = {
     "hashtable": {
         "collision": {
@@ -254,7 +205,13 @@ def _field(instantiation, where, key, default=_MISSING, identifier=False, allowe
         valid = value in allowed
 
     if not valid:
-        kind = "a valid C identifier" if identifier else f"one of {allowed}" if allowed else "a string"
+        kind = (
+            "a valid C identifier"
+            if identifier
+            else f"one of {allowed}"
+            if allowed
+            else "a string"
+        )
         _err(where, f"field {key!r} must be {kind}, got {value!r}")
     return value
 
@@ -292,16 +249,24 @@ def validate_instantiation(instantiation, index):
     struct_name = _field(instantiation, where, "struct_name", identifier=True)
     prefix = _field(instantiation, where, "prefix", identifier=True)
     file_name = _field(instantiation, where, "file_name", default=None, identifier=True)
-    case_name = _field(instantiation, where, "case", default=CASE_SNAKE, allowed=VALID_CASES)
+    case_name = _field(
+        instantiation, where, "case", default=CASE_SNAKE, allowed=VALID_CASES
+    )
     out_dir = _field(instantiation, where, "out_dir", default=".")
 
     axes = TEMPLATE_VARIANTS.get(template, {})
     variants = instantiation.get("variants", {})
     if not isinstance(variants, dict):
-        _err(where, "field 'variants' must be an object mapping axis name -> variant name")
+        _err(
+            where,
+            "field 'variants' must be an object mapping axis name -> variant name",
+        )
     for axis, names in axes.items():
         if axis not in variants:
-            _err(where, f"template {template!r} requires variants[{axis!r}] to be set (choices: {sorted(names)})")
+            _err(
+                where,
+                f"template {template!r} requires variants[{axis!r}] to be set (choices: {sorted(names)})",
+            )
     for axis, name in variants.items():
         if axis not in axes:
             _err(
@@ -310,7 +275,10 @@ def validate_instantiation(instantiation, index):
                 f"(it uses: {sorted(axes)})",
             )
         elif name not in axes[axis]:
-            _err(where, f"variants[{axis!r}] = {name!r} is not a known variant (choices: {sorted(axes[axis])})")
+            _err(
+                where,
+                f"variants[{axis!r}] = {name!r} is not a known variant (choices: {sorted(axes[axis])})",
+            )
 
     # Headers needed for value_type/key_type, if not a builtin.
     includes = instantiation.get("includes", [])
@@ -348,9 +316,6 @@ def validate_config(raw_config):
 
 
 def _include_directive(header):
-    """Formats one entry of an instantiation's "includes" list as a real
-    #include line. "<foo.h>" is passed through as a system include;
-    anything else is treated as a local path and quoted."""
     header = header.strip()
     if header.startswith("<") and header.endswith(">"):
         return f"#include {header}"
@@ -358,9 +323,15 @@ def _include_directive(header):
 
 
 def _defines_for(inst):
-    defines = [f"CVX_VAL={inst['value_type']}", f"CVX_SNAME={inst['struct_name']}", f"CVX_PFX={inst['prefix']}"]
+    defines = [
+        f"CVX_VAL={inst['value_type']}",
+        f"CVX_SNAME={inst['struct_name']}",
+        f"CVX_PFX={inst['prefix']}",
+    ]
     if inst["key_type"] is not None:
         defines.append(f"CVX_KEY={inst['key_type']}")
+    if inst["case"] in CASE_DEFINES:
+        defines.append(CASE_DEFINES[inst["case"]])
 
     axes = TEMPLATE_VARIANTS.get(inst["template"], {})
     for axis, name in inst["variants"].items():
@@ -370,14 +341,15 @@ def _defines_for(inst):
 
 def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
     template_name = inst["template"]
-    case_fn = case_fn_for(inst["case"])
     defines = _defines_for(inst)
 
     header_text = (templates_dir / f"{template_name}.h").read_text()
     source_text = (templates_dir / f"{template_name}.c").read_text()
 
-    header_out = expand(header_text, defines, compiler, case_fn)
-    source_out = expand(_local_macro_defines(header_text) + source_text, defines, compiler, case_fn)
+    header_out = expand(header_text, defines, compiler)
+    source_out = expand(
+        _local_macro_defines(header_text) + source_text, defines, compiler
+    )
 
     file_stem = inst["file_name"] or inst["struct_name"]
     header_filename = f"{file_stem}.h"
@@ -399,7 +371,9 @@ def run(config_path, compiler):
 
     written = []
     for inst in instantiations:
-        header_filename, header_out, source_filename, source_out = generate_instantiation(inst, compiler)
+        header_filename, header_out, source_filename, source_out = (
+            generate_instantiation(inst, compiler)
+        )
 
         out_dir = Path(config_path).parent / inst["out_dir"]
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -413,10 +387,15 @@ def run(config_path, compiler):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Generate cvx2 container types from a JSON config.")
+    parser = argparse.ArgumentParser(
+        description="Generate cvx2 container types from a JSON config."
+    )
     parser.add_argument("--config", required=True, help="path to the JSON config file")
     parser.add_argument(
-        "--compiler", required=True, choices=sorted(COMPILER_FLAGS), help="C compiler to preprocess templates with"
+        "--compiler",
+        required=True,
+        choices=sorted(COMPILER_FLAGS),
+        help="C compiler to preprocess templates with",
     )
     args = parser.parse_args(argv)
 

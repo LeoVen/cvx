@@ -24,9 +24,10 @@
 
 #include "cvx2/core.h"
 #include "cvx2/flags.h"
+#include "cvx2/names.h"
 
-#define FUNC(X) CVX_(CVX_PFX, X)
-#define VTAB_V CVX_(CVX_SNAME, _vtabv)
+#define FUNC(X) CVX_(CVX_PFX, NAME##X)
+#define VTAB_V CVX_(CVX_SNAME, NAME##_vtabv)
 
 struct VTAB_V
 {

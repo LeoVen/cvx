@@ -32,12 +32,13 @@
 
 #include "cvx2/core.h"
 #include "cvx2/flags.h"
+#include "cvx2/names.h"
 
-#define FUNC(X) CVX_(CVX_PFX, X)
-#define VTAB_K CVX_(CVX_SNAME, _vtabk)
-#define VTAB_V CVX_(CVX_SNAME, _vtabv)
-#define ENTRY CVX_(CVX_SNAME, _entry)
-#define NODE CVX_(CVX_SNAME, _node)
+#define FUNC(X) CVX_(CVX_PFX, NAME##X)
+#define VTAB_K CVX_(CVX_SNAME, NAME##_vtabk)
+#define VTAB_V CVX_(CVX_SNAME, NAME##_vtabv)
+#define ENTRY CVX_(CVX_SNAME, NAME##_entry)
+#define NODE CVX_(CVX_SNAME, NAME##_node)
 
 struct VTAB_K
 {
