@@ -14,6 +14,7 @@ cvx template files. Both .h/.c should be in the same folder.
 """
 
 import argparse
+import dataclasses
 import json
 import re
 import subprocess
@@ -28,6 +29,12 @@ TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 NAMES_H_PATH = Path(__file__).resolve().parent.parent / "names.h"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
+# based on names.h
+CASE_SNAKE = "snake_case"
+CASE_CAMEL = "camelCase"
+CASE_PASCAL = "PascalCase"
+VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
+
 
 class ConfigError(Exception):
     pass
@@ -41,10 +48,49 @@ class PreprocessError(Exception):
 ### CONFIG VALIDATION
 ###
 
-# Required string fields beyond struct_name/prefix, per template.
+
+def field_spec(
+    default=dataclasses.MISSING, identifier=False, allowed=None, type_expr=False
+):
+    """A dataclass field carrying cvx2 config validation rules as metadata:
+    required unless `default` is given, optionally must be a valid C
+    identifier, optionally one of `allowed`, optionally rejected if it
+    looks like a raw array/function-pointer type (see _validate_field)."""
+    kwargs = {} if default is dataclasses.MISSING else {"default": default}
+    return dataclasses.field(
+        **kwargs,
+        metadata={"identifier": identifier, "allowed": allowed, "type_expr": type_expr},
+    )
+
+
+@dataclasses.dataclass
+class _InstantiationBase:
+    struct_name: str = field_spec(identifier=True)
+    prefix: str = field_spec(identifier=True)
+
+
+@dataclasses.dataclass
+class DynamicArrayConfig(_InstantiationBase):
+    value_type: str = field_spec(type_expr=True)
+    file_name: str = field_spec(default=None, identifier=True)
+    case: str = field_spec(default=CASE_SNAKE, allowed=VALID_CASES)
+    out_dir: str = field_spec(default=".")
+
+
+@dataclasses.dataclass
+class HashtableConfig(_InstantiationBase):
+    key_type: str = field_spec(type_expr=True)
+    value_type: str = field_spec(type_expr=True)
+    file_name: str = field_spec(default=None, identifier=True)
+    case: str = field_spec(default=CASE_SNAKE, allowed=VALID_CASES)
+    out_dir: str = field_spec(default=".")
+
+
+# Adding a template means adding one small dataclass like the two above and
+# registering it here -- no other validation code site needs to change.
 TEMPLATE_SCHEMAS = {
-    "dynamic_array": {"scalar_fields": ["value_type"]},
-    "hashtable": {"scalar_fields": ["key_type", "value_type"]},
+    "dynamic_array": DynamicArrayConfig,
+    "hashtable": HashtableConfig,
 }
 
 TEMPLATE_VARIANTS = {
@@ -56,79 +102,65 @@ TEMPLATE_VARIANTS = {
     },
 }
 
-MISSING = object()
-
 
 def _err(where, message):
     raise ConfigError(f"{where}: {message}")
 
 
-def _field(instantiation, where, key, default=MISSING, identifier=False, allowed=None):
-    """Reads and validates a single string field: required unless `default`
-    is given, optionally must be a valid C identifier, optionally must be
-    one of `allowed`."""
-    if key not in instantiation:
-        if default is not MISSING:
-            return default
-        _err(where, f"missing required field {key!r}")
-
-    value = instantiation[key]
+def _validate_field(where, name, value, meta):
+    """Applies one dataclass field's metadata-declared rules (see
+    field_spec) to a raw JSON value."""
     valid = isinstance(value, str)
-    if valid and identifier:
+    if valid and meta["identifier"]:
         valid = IDENTIFIER_RE.match(value) is not None
-    if valid and allowed is not None:
-        valid = value in allowed
+    if valid and meta["allowed"] is not None:
+        valid = value in meta["allowed"]
 
     if not valid:
         kind = (
             "a valid C identifier"
-            if identifier
-            else f"one of {allowed}"
-            if allowed
+            if meta["identifier"]
+            else f"one of {meta['allowed']}"
+            if meta["allowed"]
             else "a string"
         )
-        _err(where, f"field {key!r} must be {kind}, got {value!r}")
-    return value
+        _err(where, f"field {name!r} must be {kind}, got {value!r}")
 
-
-def _check_type_expression(where, field, value):
-    """Rejects raw array/function-pointer syntax in value_type/key_type --
-    neither can be expressed as a plain declarator prefix; a typedef is
-    needed instead (see the error message)."""
-    if "[" in value or "(" in value:
+    # Rejects raw array/function-pointer syntax in value_type/key_type --
+    # neither can be expressed as a plain declarator prefix; a typedef is
+    # needed instead.
+    if meta["type_expr"] and ("[" in value or "(" in value):
         _err(
             where,
-            f"field {field!r} = {value!r} looks like a raw array or function-pointer type, which "
+            f"field {name!r} = {value!r} looks like a raw array or function-pointer type, which "
             f"can't be spliced in as a plain declarator prefix (e.g. it would generate invalid C "
             f"like '{value} item;' instead of 'item[10];' or '(*item)(...)'). Define a typedef for "
             f"it instead (e.g. `typedef struct {{ int items[10]; }} my_array10_t;` or "
-            f"`typedef int (*my_fn_t)(int, int);`) and set {field!r} to that typedef's name -- and "
+            f"`typedef int (*my_fn_t)(int, int);`) and set {name!r} to that typedef's name -- and "
             f"add the header that defines it to this instantiation's 'includes' list, since the "
             f"generated .c is its own translation unit and won't otherwise see it.",
         )
 
 
-def validate_instantiation(instantiation, index):
-    where = f"instantiations[{index}]"
+def _build(cls, instantiation, where):
+    """Validates and constructs one template's config dataclass by walking
+    its declared fields -- each field's required/default/identifier/
+    allowed/type_expr rules live on the field itself (see field_spec), so
+    adding a field to a template means adding one line to its dataclass,
+    not a new call site here."""
+    kwargs = {}
+    for f in dataclasses.fields(cls):
+        if f.name not in instantiation:
+            if f.default is dataclasses.MISSING:
+                _err(where, f"missing required field {f.name!r}")
+            continue
+        value = instantiation[f.name]
+        _validate_field(where, f.name, value, f.metadata)
+        kwargs[f.name] = value
+    return cls(**kwargs)
 
-    if not isinstance(instantiation, dict):
-        _err(where, f"must be an object, got {instantiation!r}")
 
-    template = _field(instantiation, where, "template", allowed=tuple(TEMPLATE_SCHEMAS))
-    schema = TEMPLATE_SCHEMAS[template]
-
-    for field in schema["scalar_fields"]:
-        value = _field(instantiation, where, field)
-        _check_type_expression(where, field, value)
-
-    struct_name = _field(instantiation, where, "struct_name", identifier=True)
-    prefix = _field(instantiation, where, "prefix", identifier=True)
-    file_name = _field(instantiation, where, "file_name", default=None, identifier=True)
-    case_name = _field(
-        instantiation, where, "case", default=CASE_SNAKE, allowed=VALID_CASES
-    )
-    out_dir = _field(instantiation, where, "out_dir", default=".")
-
+def _validate_variants(instantiation, where, template):
     axes = TEMPLATE_VARIANTS.get(template, {})
     variants = instantiation.get("variants", {})
     if not isinstance(variants, dict):
@@ -154,24 +186,40 @@ def validate_instantiation(instantiation, index):
                 where,
                 f"variants[{axis!r}] = {name!r} is not a known variant (choices: {sorted(axes[axis])})",
             )
+    return variants
 
+
+def _validate_includes(instantiation, where):
     # Headers needed for value_type/key_type, if not a builtin.
     includes = instantiation.get("includes", [])
     if not isinstance(includes, list) or not all(isinstance(h, str) for h in includes):
         _err(where, "field 'includes' must be an array of strings (header paths)")
+    return includes
 
-    return {
-        "template": template,
-        "value_type": instantiation.get("value_type"),
-        "key_type": instantiation.get("key_type"),
-        "struct_name": struct_name,
-        "prefix": prefix,
-        "file_name": file_name,
-        "case": case_name,
-        "variants": variants,
-        "out_dir": out_dir,
-        "includes": includes,
-    }
+
+def validate_instantiation(instantiation, index):
+    where = f"instantiations[{index}]"
+
+    if not isinstance(instantiation, dict):
+        _err(where, f"must be an object, got {instantiation!r}")
+
+    template = instantiation.get("template")
+    if template not in TEMPLATE_SCHEMAS:
+        _err(
+            where,
+            f"field 'template' must be one of {tuple(TEMPLATE_SCHEMAS)}, got {template!r}",
+        )
+
+    config = _build(TEMPLATE_SCHEMAS[template], instantiation, where)
+
+    result = dataclasses.asdict(config)
+    result.setdefault(
+        "key_type", None
+    )  # templates without a key_type (e.g. dynamic_array)
+    result["template"] = template
+    result["variants"] = _validate_variants(instantiation, where, template)
+    result["includes"] = _validate_includes(instantiation, where)
+    return result
 
 
 def validate_config(raw_config):
@@ -188,12 +236,6 @@ def validate_config(raw_config):
 ###
 ### CASE CONVERSION
 ###
-
-# based on names.h
-CASE_SNAKE = "snake_case"
-CASE_CAMEL = "camelCase"
-CASE_PASCAL = "PascalCase"
-VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
 
 CASE_DEFINES = {
     CASE_CAMEL: "CVX_NAMES_CAMELCASE",
