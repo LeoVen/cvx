@@ -48,19 +48,19 @@ CASE_DEFINES = {
     CASE_PASCAL: "CVX_NAMES_PASCALCASE",
 }
 
-_LINE_COMMENT_RE = re.compile(r"^[ \t]*//.*\n?", re.MULTILINE)
+LINE_COMMENT_RE = re.compile(r"^[ \t]*//.*\n?", re.MULTILINE)
 # Only the #ifdef/#define/#endif skeleton is needed by the preprocessor --
 # names.h's own explanatory comments aren't for consumers of generated code
 # and would otherwise leak into it (comments are normally preserved, see
 # TEMPLATE EXPANSION below), so they're stripped once, up front.
-_NAMES_H_DEFS = _LINE_COMMENT_RE.sub("", NAMES_H_PATH.read_text())
+NAMES_H_DEFS = LINE_COMMENT_RE.sub("", NAMES_H_PATH.read_text())
 
 # cvx2/core.h's CVX_(A,B)/CVX__(A,B) token-paste helpers, defined here
 # directly (rather than letting the preprocessor see core.h for real) so
 # the rest of core.h (CVX_VTAB_DEFINITION, etc.) stays unresolved/literal
 # in generated output. Safe to let the real preprocessor fully resolve the
 # paste now that names.h has already supplied the correctly-cased suffix.
-_PASTE_HELPERS = "#define CVX__(A, B) A##B\n#define CVX_(A, B) CVX__(A, B)\n"
+PASTE_HELPERS = "#define CVX__(A, B) A##B\n#define CVX_(A, B) CVX__(A, B)\n"
 
 
 ###
@@ -73,10 +73,9 @@ COMPILER_FLAGS = {
     "cc": ["-E", "-C"],
 }
 
-_INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
-_DEFINE_LINE_RE = re.compile(r"^[ \t]*#define\b[^\n]*\n?", re.MULTILINE)
-_LINE_MARKER_RE = re.compile(r'^# \d+ "([^"]*)"')
-_SYSTEM_PREFIXES = (
+DEFINE_LINE_RE = re.compile(r"^[ \t]*#define\b[^\n]*\n?", re.MULTILINE)
+LINE_MARKER_RE = re.compile(r'^# \d+ "([^"]*)"')
+SYSTEM_PREFIXES = (
     "/usr",
     "/opt/homebrew",
     "/Library",
@@ -84,15 +83,14 @@ _SYSTEM_PREFIXES = (
     "<command-line>",
     "<command line>",
 )
-_EMPTY_CLANG_FORMAT_RE = re.compile(
+EMPTY_CLANG_FORMAT_RE = re.compile(
     r"[ \t]*//[ \t]*clang-format off[ \t]*\n[ \t]*//[ \t]*clang-format on[ \t]*\n"
 )
-_BLANK_RUN_RE = re.compile(r"\n{3,}")
+BLANK_RUN_RE = re.compile(r"\n{3,}")
 
-# Includes that exist only for the generator's own pipeline (standalone
-# fallback compilation, or feeding names.h's text in directly below) and
-# must never appear in generated output.
-_GENERATION_ONLY_INCLUDES = ("cvx2/fallback.h", "cvx2/names.h")
+
+INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
+GENERATION_ONLY_INCLUDES = ("cvx2/fallback.h", "cvx2/names.h")
 
 
 def _strip_includes(text):
@@ -100,10 +98,10 @@ def _strip_includes(text):
     resolves them) and returns (includes_block, remaining_text)."""
     includes = [
         inc
-        for inc in _INCLUDE_RE.findall(text)
-        if not any(g in inc for g in _GENERATION_ONLY_INCLUDES)
+        for inc in INCLUDE_RE.findall(text)
+        if not any(g in inc for g in GENERATION_ONLY_INCLUDES)
     ]
-    return "".join(includes), _INCLUDE_RE.sub("", text)
+    return "".join(includes), INCLUDE_RE.sub("", text)
 
 
 def _local_macro_defines(header_text):
@@ -111,7 +109,7 @@ def _local_macro_defines(header_text):
     template header's text, to prepend to the matching .c's text before
     preprocessing it: the .c relies on these via its own #include of the
     .h, which gets stripped along with every other #include."""
-    return "".join(_DEFINE_LINE_RE.findall(header_text))
+    return "".join(DEFINE_LINE_RE.findall(header_text))
 
 
 def _run_preprocessor(text, defines, compiler):
@@ -120,7 +118,14 @@ def _run_preprocessor(text, defines, compiler):
             f"unknown compiler {compiler!r}, expected one of {sorted(COMPILER_FLAGS)}"
         )
 
-    cmd = [compiler, *COMPILER_FLAGS[compiler], "-x", "c", *(f"-D{d}" for d in defines), "-",]
+    cmd = [
+        compiler,
+        *COMPILER_FLAGS[compiler],
+        "-x",
+        "c",
+        *(f"-D{d}" for d in defines),
+        "-",
+    ]
     try:
         result = subprocess.run(cmd, input=text, capture_output=True, text=True)
     except FileNotFoundError:
@@ -134,9 +139,9 @@ def _run_preprocessor(text, defines, compiler):
     out = []
     skip = False
     for line in result.stdout.splitlines():
-        m = _LINE_MARKER_RE.match(line)
+        m = LINE_MARKER_RE.match(line)
         if m:
-            skip = m.group(1).startswith(_SYSTEM_PREFIXES)
+            skip = m.group(1).startswith(SYSTEM_PREFIXES)
             continue
         if not skip:
             out.append(line)
@@ -146,10 +151,10 @@ def _run_preprocessor(text, defines, compiler):
 def expand(text, defines, compiler):
     includes, stripped = _strip_includes(text)
     expanded = _run_preprocessor(
-        _PASTE_HELPERS + _NAMES_H_DEFS + stripped, defines, compiler
+        PASTE_HELPERS + NAMES_H_DEFS + stripped, defines, compiler
     )
-    expanded = _EMPTY_CLANG_FORMAT_RE.sub("", expanded)
-    expanded = _BLANK_RUN_RE.sub("\n\n", expanded)
+    expanded = EMPTY_CLANG_FORMAT_RE.sub("", expanded)
+    expanded = BLANK_RUN_RE.sub("\n\n", expanded)
     return includes + expanded
 
 
@@ -181,19 +186,19 @@ TEMPLATE_VARIANTS = {
     },
 }
 
-_MISSING = object()
+MISSING = object()
 
 
 def _err(where, message):
     raise ConfigError(f"{where}: {message}")
 
 
-def _field(instantiation, where, key, default=_MISSING, identifier=False, allowed=None):
+def _field(instantiation, where, key, default=MISSING, identifier=False, allowed=None):
     """Reads and validates a single string field: required unless `default`
     is given, optionally must be a valid C identifier, optionally must be
     one of `allowed`."""
     if key not in instantiation:
-        if default is not _MISSING:
+        if default is not MISSING:
             return default
         _err(where, f"missing required field {key!r}")
 
