@@ -20,6 +20,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+# 1. Config Validation
+# 2. Macro Expansion
+# 3. File Generation
+
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 NAMES_H_PATH = Path(__file__).resolve().parent.parent / "names.h"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -31,140 +35,6 @@ class ConfigError(Exception):
 
 class PreprocessError(Exception):
     pass
-
-
-###
-### CASE CONVERSION
-###
-
-# based on names.h
-CASE_SNAKE = "snake_case"
-CASE_CAMEL = "camelCase"
-CASE_PASCAL = "PascalCase"
-VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
-
-CASE_DEFINES = {
-    CASE_CAMEL: "CVX_NAMES_CAMELCASE",
-    CASE_PASCAL: "CVX_NAMES_PASCALCASE",
-}
-
-LINE_COMMENT_RE = re.compile(r"^[ \t]*//.*\n?", re.MULTILINE)
-# Only the #ifdef/#define/#endif skeleton is needed by the preprocessor --
-# names.h's own explanatory comments aren't for consumers of generated code
-# and would otherwise leak into it (comments are normally preserved, see
-# TEMPLATE EXPANSION below), so they're stripped once, up front.
-NAMES_H_DEFS = LINE_COMMENT_RE.sub("", NAMES_H_PATH.read_text())
-
-# cvx2/core.h's CVX_(A,B)/CVX__(A,B) token-paste helpers, defined here
-# directly (rather than letting the preprocessor see core.h for real) so
-# the rest of core.h (CVX_VTAB_DEFINITION, etc.) stays unresolved/literal
-# in generated output. Safe to let the real preprocessor fully resolve the
-# paste now that names.h has already supplied the correctly-cased suffix.
-PASTE_HELPERS = "#define CVX__(A, B) A##B\n#define CVX_(A, B) CVX__(A, B)\n"
-
-
-###
-### TEMPLATE EXPANSION
-###
-
-COMPILER_FLAGS = {
-    "gcc": ["-E", "-C"],
-    "clang": ["-E", "-C"],
-    "cc": ["-E", "-C"],
-}
-
-DEFINE_LINE_RE = re.compile(r"^[ \t]*#define\b[^\n]*\n?", re.MULTILINE)
-LINE_MARKER_RE = re.compile(r'^# \d+ "([^"]*)"')
-SYSTEM_PREFIXES = (
-    "/usr",
-    "/opt/homebrew",
-    "/Library",
-    "<built-in>",
-    "<command-line>",
-    "<command line>",
-)
-EMPTY_CLANG_FORMAT_RE = re.compile(
-    r"[ \t]*//[ \t]*clang-format off[ \t]*\n[ \t]*//[ \t]*clang-format on[ \t]*\n"
-)
-BLANK_RUN_RE = re.compile(r"\n{3,}")
-
-
-INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
-GENERATION_ONLY_INCLUDES = ("cvx2/fallback.h", "cvx2/names.h")
-
-
-def _strip_includes(text):
-    """Pulls every #include line out of text (so the preprocessor never
-    resolves them) and returns (includes_block, remaining_text)."""
-    includes = [
-        inc
-        for inc in INCLUDE_RE.findall(text)
-        if not any(g in inc for g in GENERATION_ONLY_INCLUDES)
-    ]
-    return "".join(includes), INCLUDE_RE.sub("", text)
-
-
-def _local_macro_defines(header_text):
-    """Raw #define lines (FUNC, VTAB_V, etc.) copied verbatim out of a
-    template header's text, to prepend to the matching .c's text before
-    preprocessing it: the .c relies on these via its own #include of the
-    .h, which gets stripped along with every other #include."""
-    return "".join(DEFINE_LINE_RE.findall(header_text))
-
-
-def _run_preprocessor(text, defines, compiler):
-    if compiler not in COMPILER_FLAGS:
-        raise PreprocessError(
-            f"unknown compiler {compiler!r}, expected one of {sorted(COMPILER_FLAGS)}"
-        )
-
-    cmd = [
-        compiler,
-        *COMPILER_FLAGS[compiler],
-        "-x",
-        "c",
-        *(f"-D{d}" for d in defines),
-        "-",
-    ]
-    try:
-        result = subprocess.run(cmd, input=text, capture_output=True, text=True)
-    except FileNotFoundError:
-        raise PreprocessError(f"compiler {compiler!r} not found on PATH")
-
-    if result.returncode != 0:
-        raise PreprocessError(result.stderr)
-
-    # Keep only lines that trace back to our own input (stdin), not to any
-    # implicitly preincluded system file (e.g. glibc's stdc-predef.h).
-    out = []
-    skip = False
-    for line in result.stdout.splitlines():
-        m = LINE_MARKER_RE.match(line)
-        if m:
-            skip = m.group(1).startswith(SYSTEM_PREFIXES)
-            continue
-        if not skip:
-            out.append(line)
-    return "\n".join(out)
-
-
-def expand(text, defines, compiler):
-    includes, stripped = _strip_includes(text)
-    expanded = _run_preprocessor(
-        PASTE_HELPERS + NAMES_H_DEFS + stripped, defines, compiler
-    )
-    expanded = EMPTY_CLANG_FORMAT_RE.sub("", expanded)
-    expanded = BLANK_RUN_RE.sub("\n\n", expanded)
-    return includes + expanded
-
-
-def rewrite_self_include(text, template_name, generated_header_filename):
-    return re.sub(
-        rf'#include\s+"{re.escape(template_name)}\.h"',
-        f'#include "{generated_header_filename}"',
-        text,
-        count=1,
-    )
 
 
 ###
@@ -316,6 +186,126 @@ def validate_config(raw_config):
 
 
 ###
+### CASE CONVERSION
+###
+
+# based on names.h
+CASE_SNAKE = "snake_case"
+CASE_CAMEL = "camelCase"
+CASE_PASCAL = "PascalCase"
+VALID_CASES = (CASE_SNAKE, CASE_CAMEL, CASE_PASCAL)
+
+CASE_DEFINES = {
+    CASE_CAMEL: "CVX_NAMES_CAMELCASE",
+    CASE_PASCAL: "CVX_NAMES_PASCALCASE",
+}
+
+###
+### TEMPLATE EXPANSION
+###
+
+NAMES_H_DEFS = NAMES_H_PATH.read_text()
+PASTE_HELPERS = "#define CVX__(A, B) A##B\n#define CVX_(A, B) CVX__(A, B)\n"
+
+COMPILER_FLAGS = {
+    "gcc": ["-E", "-C"],
+    "clang": ["-E", "-C"],
+    "cc": ["-E", "-C"],
+}
+
+DEFINE_LINE_RE = re.compile(r"^[ \t]*#define\b[^\n]*\n?", re.MULTILINE)
+# Prepended as the first line of text handed to the preprocessor, and
+# located again in its output, to cut away whatever compiler-injected
+# preamble (built-in macros, glibc's stdc-predef.h, etc.) precedes our own
+# content -- see _run_preprocessor.
+STDIN_MARKER = "/* CVX_GENERATOR_STDIN_MARKER */"
+LINE_MARKER_RE = re.compile(r'^# \d+ "[^"]*"[^\n]*\n?', re.MULTILINE)
+EMPTY_CLANG_FORMAT_RE = re.compile(
+    r"[ \t]*//[ \t]*clang-format off[ \t]*\n[ \t]*//[ \t]*clang-format on[ \t]*\n"
+)
+BLANK_RUN_RE = re.compile(r"\n{3,}")
+
+
+INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
+GENERATION_ONLY_INCLUDES = ("cvx2/fallback.h", "cvx2/names.h")
+
+
+def _strip_includes(text):
+    """Pulls every #include line out of text (so the preprocessor never
+    resolves them) and returns (includes_block, remaining_text)."""
+    includes = [
+        inc
+        for inc in INCLUDE_RE.findall(text)
+        if not any(g in inc for g in GENERATION_ONLY_INCLUDES)
+    ]
+    return "".join(includes), INCLUDE_RE.sub("", text)
+
+
+def _local_macro_defines(header_text):
+    """Raw #define lines (FUNC, VTAB_V, etc.) copied verbatim out of a
+    template header's text, to prepend to the matching .c's text before
+    preprocessing it: the .c relies on these via its own #include of the
+    .h, which gets stripped along with every other #include."""
+    return "".join(DEFINE_LINE_RE.findall(header_text))
+
+
+def _run_preprocessor(text, defines, compiler):
+    if compiler not in COMPILER_FLAGS:
+        raise PreprocessError(
+            f"unknown compiler {compiler!r}, expected one of {sorted(COMPILER_FLAGS)}"
+        )
+
+    cmd = [
+        compiler,
+        *COMPILER_FLAGS[compiler],
+        "-x",
+        "c",
+        *(f"-D{d}" for d in defines),
+        "-",
+    ]
+    try:
+        result = subprocess.run(
+            cmd, input=f"{STDIN_MARKER}\n{text}", capture_output=True, text=True
+        )
+    except FileNotFoundError:
+        raise PreprocessError(f"compiler {compiler!r} not found on PATH")
+
+    if result.returncode != 0:
+        raise PreprocessError(result.stderr)
+
+    # Our own text starts right after STDIN_MARKER, which cuts away whatever
+    # compiler-injected preamble (built-in macros, glibc's stdc-predef.h,
+    # etc.) precedes it -- no need to inspect every "# N \"file\"" marker to
+    # tell our content apart from the compiler's.
+    marker_pos = result.stdout.find(STDIN_MARKER)
+    if marker_pos == -1:
+        raise PreprocessError(
+            "internal error: stdin marker missing from preprocessor output"
+        )
+    out = result.stdout[marker_pos + len(STDIN_MARKER) :]
+    return LINE_MARKER_RE.sub("", out)
+
+
+def expand(text, defines, compiler):
+    includes, stripped = _strip_includes(text)
+    expanded = _run_preprocessor(
+        PASTE_HELPERS + NAMES_H_DEFS + stripped, defines, compiler
+    )
+    expanded = EMPTY_CLANG_FORMAT_RE.sub("", expanded)
+    expanded = BLANK_RUN_RE.sub("\n\n", expanded)
+    return includes + expanded
+
+
+def rewrite_self_include(text, template_name, generated_header_filename):
+    return re.sub(
+        rf'#include\s+"{re.escape(template_name)}\.h"',
+        f'#include "{generated_header_filename}"',
+        text,
+        count=1,
+    )
+
+
+###
 ### GENERATION
 ###
 
@@ -338,9 +328,9 @@ def _defines_for(inst):
     if inst["case"] in CASE_DEFINES:
         defines.append(CASE_DEFINES[inst["case"]])
 
-    axes = TEMPLATE_VARIANTS.get(inst["template"], {})
-    for axis, name in inst["variants"].items():
-        defines.append(axes[axis][name])
+    variant = TEMPLATE_VARIANTS.get(inst["template"], {})
+    for choice, macro in inst["variants"].items():
+        defines.append(variant[choice][macro])
     return defines
 
 

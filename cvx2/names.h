@@ -153,4 +153,4 @@
 
 #endif
 
-#endif /* CVX2_NAMES_H */
+#endif
