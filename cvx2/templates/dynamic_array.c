@@ -208,25 +208,19 @@ enum cvx_flags FUNC(_pop_back)(struct CVX_SNAME *self, CVX_VAL *out)
     return CVX_FLAG_OK;
 }
 
-enum cvx_flags FUNC(_replace_front)(struct CVX_SNAME *self, CVX_VAL new_value, CVX_VAL *old_out)
+enum cvx_flags FUNC(_replace)(struct CVX_SNAME *self, size_t index, CVX_VAL new_value,
+                              CVX_VAL *old_out)
 {
     if (self->count == 0)
         return CVX_FLAG_EMPTY;
+    if (index >= self->count)
+        return CVX_FLAG_RANGE;
 
     if (old_out)
-        *old_out = self->buffer[0];
-    self->buffer[0] = new_value;
-    return CVX_FLAG_OK;
-}
+        *old_out = self->buffer[index];
 
-enum cvx_flags FUNC(_replace_back)(struct CVX_SNAME *self, CVX_VAL new_value, CVX_VAL *old_out)
-{
-    if (self->count == 0)
-        return CVX_FLAG_EMPTY;
+    self->buffer[index] = new_value;
 
-    if (old_out)
-        *old_out = self->buffer[self->count - 1];
-    self->buffer[self->count - 1] = new_value;
     return CVX_FLAG_OK;
 }
 
