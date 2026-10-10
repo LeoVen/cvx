@@ -88,17 +88,18 @@ class TestExpand(unittest.TestCase):
         self.assertNotIn("cvx2/names.h", out)
 
     def test_camel_case_cases_the_suffix_but_not_user_text(self):
-        # A single-word suffix like "_init"/"_vtabv" has no second word to
+        # A single-word suffix like "_init" has no second word to
         # capitalize, so camelCase leaves it unchanged (just minus the
-        # underscore) -- only a multi-word suffix shows real camelCasing.
+        # underscore) -- only a multi-word suffix (or one names.h spells
+        # out explicitly, like "_vtabv" -> "vtabV") shows real camelCasing.
         out = generator.expand(FIXTURE_HEADER, defines(case_define="CVX_NAMES_CAMELCASE"), COMPILER)
-        self.assertIn("struct my_thingvtabv", out)
+        self.assertIn("struct my_thingvtabV", out)
         self.assertIn("mtinit(struct my_thing *self)", out)
         self.assertIn("mt__privateHelper(struct my_thing *self)", out)
 
     def test_pascal_case_capitalizes_the_suffixs_own_first_word_too(self):
         out = generator.expand(FIXTURE_HEADER, defines(case_define="CVX_NAMES_PASCALCASE"), COMPILER)
-        self.assertIn("struct my_thingVtabv", out)
+        self.assertIn("struct my_thingVtabV", out)
         self.assertIn("mtInit(struct my_thing *self)", out)
         self.assertIn("mt__PrivateHelper(struct my_thing *self)", out)
 

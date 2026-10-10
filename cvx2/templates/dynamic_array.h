@@ -168,24 +168,12 @@ enum cvx_flags FUNC(_back)(struct CVX_SNAME *self, CVX_VAL *out);
  **/
 enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
 /**
- * @brief Inserts item at the front, growing the buffer if needed.
- *
- * @param self a non-NULL pointer to an initialized dynamic array
- * @param item the value to insert at index 0
- *
- * @note If the buffer is full, it gets reallocated. The new buffer's size
- * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
- *
- * Error Handling
- * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
- **/
-enum cvx_flags FUNC(_push_front)(struct CVX_SNAME *self, CVX_VAL item);
-/**
  * @brief Inserts item at index, growing the buffer if needed.
  *
  * @param self a non-NULL pointer to an initialized dynamic array
- * @param item the value to insert
  * @param index the position to insert at, must be 0 <= index <= count
+ * (0 = front, count = back)
+ * @param item the value to insert
  *
  * @note If the buffer is full, it gets reallocated. The new buffer's size
  * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
@@ -194,38 +182,13 @@ enum cvx_flags FUNC(_push_front)(struct CVX_SNAME *self, CVX_VAL item);
  * - CVX_FLAG_RANGE: if index is greater than count
  * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
  **/
-enum cvx_flags FUNC(_push_at)(struct CVX_SNAME *self, CVX_VAL item, size_t index);
-/**
- * @brief Inserts item at the back, growing the buffer if needed.
- *
- * @param self a non-NULL pointer to an initialized dynamic array
- * @param item the value to insert at index count
- *
- * @note If the buffer is full, it gets reallocated. The new buffer's size
- * depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
- *
- * Error Handling
- * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
- **/
-enum cvx_flags FUNC(_push_back)(struct CVX_SNAME *self, CVX_VAL item);
-/**
- * @brief Removes and returns the first element.
- *
- * @param self a non-NULL pointer to an initialized dynamic array
- * @param out out parameter for the removed element
- *
- * @note If `out` is NULL, the value is not set and ignored. The vacated slot
- * at the end of the buffer is zero-initialized; the buffer itself does not shrink.
- *
- * Error Handling
- * - CVX_FLAG_EMPTY: if the array is empty
- **/
-enum cvx_flags FUNC(_pop_front)(struct CVX_SNAME *self, CVX_VAL *out);
+enum cvx_flags FUNC(_push)(struct CVX_SNAME *self, size_t index, CVX_VAL item);
 /**
  * @brief Removes and returns the element at index.
  *
  * @param self a non-NULL pointer to an initialized dynamic array
  * @param index the position to remove, must be less than count
+ * (0 = front, count - 1 = back)
  * @param out out parameter for the removed element
  *
  * @note If `out` is NULL, the value is not set and ignored. The vacated slot
@@ -235,20 +198,7 @@ enum cvx_flags FUNC(_pop_front)(struct CVX_SNAME *self, CVX_VAL *out);
  * - CVX_FLAG_EMPTY: if the array is empty
  * - CVX_FLAG_RANGE: if index is greater than or equal to count
  **/
-enum cvx_flags FUNC(_pop_at)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
-/**
- * @brief Removes and returns the last element.
- *
- * @param self a non-NULL pointer to an initialized dynamic array
- * @param out out parameter for the removed element
- *
- * @note If `out` is NULL, the value is not set and ignored. The vacated slot
- * is zero-initialized; the buffer itself does not shrink.
- *
- * Error Handling
- * - CVX_FLAG_EMPTY: if the array is empty
- **/
-enum cvx_flags FUNC(_pop_back)(struct CVX_SNAME *self, CVX_VAL *out);
+enum cvx_flags FUNC(_pop)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
 /**
  * @brief Replaces the element at a given index, returning the old value through old_out.
  *
@@ -307,47 +257,38 @@ enum cvx_flags FUNC(_compare)(struct CVX_SNAME *left, struct CVX_SNAME *right, i
  **/
 enum cvx_flags FUNC(_sort)(struct CVX_SNAME *self);
 /**
- * @brief Inserts a sequence of values at the front, preserving their order.
+ * @brief Inserts a sequence of values at index, preserving their order.
  *
  * @param self a non-NULL pointer to an initialized dynamic array
+ * @param index the position to insert at, must be 0 <= index <= count
+ * (0 = front, count = back)
  * @param values a non-NULL pointer to the first of `size` elements to insert
  * @param size number of elements to read from `values`
  *
  * @note If the buffer does not have enough free capacity, it gets reallocated.
- * After the call, values[0]..values[size-1] occupy indices 0..size-1, in order,
- * with the array's previous contents shifted back by `size`.
+ * After the call, values[0]..values[size-1] occupy indices index..index+size-1,
+ * in order, with the array's contents at and after `index` shifted back by `size`.
  *
  * Error Handling
+ * - CVX_FLAG_RANGE: if index is greater than count
  * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
  **/
-enum cvx_flags FUNC(_seq_push_front)(struct CVX_SNAME *self, CVX_VAL *values, size_t size);
+enum cvx_flags FUNC(_seq_push)(struct CVX_SNAME *self, size_t index, CVX_VAL *values, size_t size);
 /**
- * @brief Appends a sequence of values at the back, preserving their order.
- *
- * @param self a non-NULL pointer to an initialized dynamic array
- * @param values a non-NULL pointer to the first of `size` elements to insert
- * @param size number of elements to read from `values`
- *
- * @note If the buffer does not have enough free capacity, it gets reallocated.
- *
- * Error Handling
- * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
- **/
-enum cvx_flags FUNC(_seq_push_back)(struct CVX_SNAME *self, CVX_VAL *values, size_t size);
-/**
- * @brief Initializes out with a copy of the elements in the half-open range [from, to).
+ * @brief Initializes out with a copy of the elements in the inclusive range [from, to].
  *
  * @param self a non-NULL pointer to an initialized dynamic array
  * @param from the first index included in the sublist, must be <= to
- * @param to the index right after the last one included in the sublist, must be <= count
+ * @param to the last index included in the sublist, must be less than count
  * @param out a non-NULL pointer to an uninitialized dynamic array
  *
  * @note Elements are copied with self->vtabv->copy if set, otherwise shallow-copied.
  * `self` is left unchanged.
  *
  * Error Handling
- * - CVX_FLAG_RANGE: if from > to, or to > count
+ * - CVX_FLAG_RANGE: if from > to, or to is greater than or equal to count
  * - CVX_FLAG_ALLOC: if allocation of out's buffer fails
+ * - any flag returned by vtabv->copy, if copying an element fails
  **/
 enum cvx_flags FUNC(_sublist)(struct CVX_SNAME *self, size_t from, size_t to,
                               struct CVX_SNAME *out);
@@ -362,6 +303,7 @@ enum cvx_flags FUNC(_sublist)(struct CVX_SNAME *self, size_t from, size_t to,
  *
  * Error Handling
  * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
+ * - any flag returned by vtabv->copy, if copying an element fails
  **/
 enum cvx_flags FUNC(_append)(struct CVX_SNAME *self, struct CVX_SNAME *src);
 /**
@@ -375,18 +317,9 @@ enum cvx_flags FUNC(_append)(struct CVX_SNAME *self, struct CVX_SNAME *src);
  *
  * Error Handling
  * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
+ * - any flag returned by vtabv->copy, if copying an element fails
  **/
 enum cvx_flags FUNC(_prepend)(struct CVX_SNAME *self, struct CVX_SNAME *src);
-/**
- * @brief True if item is present in self, compared using vtabv->comp.
- *
- * @param self a non-NULL pointer to an initialized dynamic array
- * @param item the value to search for
- *
- * @return true if an element comparing equal to item is found, false otherwise
- * (including when vtabv or vtabv->comp is not set)
- **/
-bool FUNC(_contains)(struct CVX_SNAME *self, CVX_VAL item);
 /**
  * @brief Finds the index of the first element comparing equal to item, using vtabv->comp.
  *
@@ -394,13 +327,29 @@ bool FUNC(_contains)(struct CVX_SNAME *self, CVX_VAL item);
  * @param item the value to search for
  * @param out out parameter for the index of the first match
  *
- * @note If `out` is NULL, the value is not set and ignored.
+ * @note If `out` is NULL, the value is not set and ignored -- this is also how
+ * to just check whether item is present: CVX_FLAG_OK means it is.
  *
  * Error Handling
  * - CVX_FLAG_VTAB: if vtabv or vtabv->comp is not set
  * - CVX_FLAG_NOT_FOUND: if no element compares equal to item
  **/
-enum cvx_flags FUNC(index_of)(struct CVX_SNAME *self, CVX_VAL item, size_t *out);
+enum cvx_flags FUNC(_index_of)(struct CVX_SNAME *self, CVX_VAL item, size_t *out);
+/**
+ * @brief Shrinks the array down to new_count elements, dropping the rest.
+ *
+ * @param self a non-NULL pointer to an initialized dynamic array
+ * @param new_count desired element count
+ *
+ * @note Passing 0 empties the array entirely, without freeing the buffer --
+ * this is cvx2's equivalent of other languages' "clear". Capacity is never
+ * touched; call `_shrink` afterward to reclaim memory. A no-op if new_count
+ * is already >= count.
+ *
+ * Error Handling
+ * - always returns CVX_FLAG_OK
+ **/
+enum cvx_flags FUNC(_truncate)(struct CVX_SNAME *self, size_t new_count);
 /**
  * @brief Shrinks the buffer's capacity down to count, freeing unused memory.
  *
@@ -414,12 +363,13 @@ enum cvx_flags FUNC(index_of)(struct CVX_SNAME *self, CVX_VAL item, size_t *out)
  **/
 enum cvx_flags FUNC(_shrink)(struct CVX_SNAME *self);
 /**
- * @brief Grows the buffer up to a given capacity, even if it is not yet full.
+ * @brief Grows the buffer to at least capacity, even if it is not yet full.
  *
  * @param self a non-NULL pointer to an initialized dynamic array
- * @param capacity new desired capacity for buffer
+ * @param capacity desired minimum capacity for buffer
  *
- * @note The new capacity depends on `CVX_BUFFER_GROWTH_RATE` and `CVX_BUFFER_MIN_SIZE`.
+ * @note A no-op if capacity is already <= self->capacity -- this only grows;
+ * use `_shrink` to reclaim memory instead.
  *
  * Error Handling
  * - CVX_FLAG_ALLOC: if reallocation of the buffer fails
