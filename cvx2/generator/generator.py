@@ -63,27 +63,24 @@ def field_spec(
     )
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(kw_only=True)
 class _InstantiationBase:
     struct_name: str = field_spec(identifier=True)
     prefix: str = field_spec(identifier=True)
-
-
-@dataclasses.dataclass
-class DynamicArrayConfig(_InstantiationBase):
-    value_type: str = field_spec(type_expr=True)
+    out_dir: str = field_spec(default=".")
     file_name: str = field_spec(default=None, identifier=True)
     case: str = field_spec(default=CASE_SNAKE, allowed=VALID_CASES)
-    out_dir: str = field_spec(default=".")
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(kw_only=True)
+class DynamicArrayConfig(_InstantiationBase):
+    value_type: str = field_spec(type_expr=True)
+
+
+@dataclasses.dataclass(kw_only=True)
 class HashtableConfig(_InstantiationBase):
     key_type: str = field_spec(type_expr=True)
     value_type: str = field_spec(type_expr=True)
-    file_name: str = field_spec(default=None, identifier=True)
-    case: str = field_spec(default=CASE_SNAKE, allowed=VALID_CASES)
-    out_dir: str = field_spec(default=".")
 
 
 # Adding a template means adding one small dataclass like the two above and
