@@ -80,7 +80,9 @@ class DynamicArrayConfig(_InstantiationBase):
 @dataclasses.dataclass(kw_only=True)
 class HashtableConfig(_InstantiationBase):
     key_type: str = field_spec(type_expr=True)
-    value_type: str = field_spec(type_expr=True)
+    # Required when variants.kind == "map" (the default), forbidden when
+    # == "set" -- see _validate_hashtable_kind.
+    value_type: str = field_spec(default=None, type_expr=True)
 
 
 # Adding a template means adding one small dataclass like the two above and
@@ -96,7 +98,15 @@ TEMPLATE_VARIANTS = {
             "open_addressing": "CVX2_COLLISION_OPEN_ADDRESSING",
             "separate_chaining": "CVX2_COLLISION_SEPARATE_CHAINING",
         },
+        "kind": {
+            "map": "CVX2_KIND_MAP",
+            "set": "CVX2_KIND_SET",
+        },
     },
+}
+
+TEMPLATE_VARIANT_DEFAULTS = {
+    "hashtable": {"kind": "map"},
 }
 
 
@@ -159,6 +169,7 @@ def _build(cls, instantiation, where):
 
 def _validate_variants(instantiation, where, template):
     axes = TEMPLATE_VARIANTS.get(template, {})
+    defaults = TEMPLATE_VARIANT_DEFAULTS.get(template, {})
     variants = instantiation.get("variants", {})
     if not isinstance(variants, dict):
         _err(
@@ -167,6 +178,9 @@ def _validate_variants(instantiation, where, template):
         )
     for axis, names in axes.items():
         if axis not in variants:
+            if axis in defaults:
+                variants[axis] = defaults[axis]
+                continue
             _err(
                 where,
                 f"template {template!r} requires variants[{axis!r}] to be set (choices: {sorted(names)})",
@@ -194,6 +208,24 @@ def _validate_includes(instantiation, where):
     return includes
 
 
+def _validate_hashtable_kind(result, where):
+    """A hashtable with variants.kind == "set" stores keys only (no
+    value_type); == "map" (the default) stores key -> value_type, like
+    before this axis existed."""
+    kind = result["variants"]["kind"]
+    if kind == "map" and result["value_type"] is None:
+        _err(
+            where,
+            'hashtable with variants["kind"] = "map" requires \'value_type\' to be set',
+        )
+    if kind == "set" and result["value_type"] is not None:
+        _err(
+            where,
+            'hashtable with variants["kind"] = "set" must not set \'value_type\' '
+            "-- a set has no values, only keys",
+        )
+
+
 def validate_instantiation(instantiation, index):
     where = f"instantiations[{index}]"
 
@@ -216,6 +248,10 @@ def validate_instantiation(instantiation, index):
     result["template"] = template
     result["variants"] = _validate_variants(instantiation, where, template)
     result["includes"] = _validate_includes(instantiation, where)
+
+    if template == "hashtable":
+        _validate_hashtable_kind(result, where)
+
     return result
 
 
@@ -358,10 +394,11 @@ def _include_directive(header):
 
 def _defines_for(inst):
     defines = [
-        f"CVX_VAL={inst['value_type']}",
         f"CVX_SNAME={inst['struct_name']}",
         f"CVX_PFX={inst['prefix']}",
     ]
+    if inst["value_type"] is not None:
+        defines.append(f"CVX_VAL={inst['value_type']}")
     if inst["key_type"] is not None:
         defines.append(f"CVX_KEY={inst['key_type']}")
     if inst["case"] in CASE_DEFINES:

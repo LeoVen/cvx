@@ -22,7 +22,7 @@
         },
         "value_type": {
           "type": "string",
-          "description": "Required for both templates. A C type expression, e.g. \"int\" or \"char *\"."
+          "description": "Required for \"dynamic_array\". Required for \"hashtable\" when variants.kind is \"map\" (the default); must be omitted when variants.kind is \"set\". A C type expression, e.g. \"int\" or \"char *\"."
         },
         "key_type": {
           "type": "string",
@@ -48,12 +48,18 @@
         },
         "variants": {
           "type": "object",
-          "description": "Required key set depends on `template`: dynamic_array uses none; hashtable requires \"collision\".",
+          "description": "Required key set depends on `template`: dynamic_array uses none; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
           "properties": {
             "collision": {
               "type": "string",
               "enum": ["open_addressing", "separate_chaining"],
               "description": "hashtable only."
+            },
+            "kind": {
+              "type": "string",
+              "enum": ["map", "set"],
+              "default": "map",
+              "description": "hashtable only. \"map\" stores key_type -> value_type (value_type required); \"set\" stores key_type only (value_type must be omitted)."
             }
           },
           "additionalProperties": false

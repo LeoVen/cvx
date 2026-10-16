@@ -39,7 +39,9 @@ class TestValidateConfig(unittest.TestCase):
 
     def test_valid_hashtable_requires_variants(self):
         result = generator.validate_config({"instantiations": [ht()]})
-        self.assertEqual(result[0]["variants"], {"collision": "open_addressing"})
+        self.assertEqual(
+            result[0]["variants"], {"collision": "open_addressing", "kind": "map"}
+        )
 
     def test_upper_camel_case_is_a_valid_case(self):
         result = generator.validate_config({"instantiations": [da(case="PascalCase")]})
@@ -65,7 +67,31 @@ class TestValidateConfig(unittest.TestCase):
         result = generator.validate_config(
             {"instantiations": [ht(variants={"collision": "separate_chaining"})]}
         )
-        self.assertEqual(result[0]["variants"], {"collision": "separate_chaining"})
+        self.assertEqual(
+            result[0]["variants"], {"collision": "separate_chaining", "kind": "map"}
+        )
+
+    def test_hashtable_kind_defaults_to_map(self):
+        result = generator.validate_config({"instantiations": [ht()]})
+        self.assertEqual(result[0]["variants"]["kind"], "map")
+
+    def test_hashtable_kind_set_requires_no_value_type(self):
+        bad = ht(variants={"collision": "open_addressing", "kind": "set"})
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [bad]})
+
+    def test_hashtable_kind_set_without_value_type_is_valid(self):
+        config = ht(variants={"collision": "open_addressing", "kind": "set"})
+        del config["value_type"]
+        result = generator.validate_config({"instantiations": [config]})
+        self.assertIsNone(result[0]["value_type"])
+        self.assertEqual(result[0]["variants"]["kind"], "set")
+
+    def test_hashtable_kind_map_requires_value_type(self):
+        config = ht(variants={"collision": "open_addressing", "kind": "map"})
+        del config["value_type"]
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [config]})
 
     def test_unknown_template_errors(self):
         with self.assertRaises(generator.ConfigError):
