@@ -10,14 +10,14 @@
 #include "generated/int_map_sc.h"
 #include "types.h"
 
-static int int_comp(int a, int b)
+static int int_comp(int const *a, int const *b)
 {
-    return a - b;
+    return *a - *b;
 }
 
-static size_t int_hash(int v)
+static size_t int_hash(int const *v)
 {
-    return (size_t)v;
+    return (size_t)*v;
 }
 
 static void test_dynamic_array(void)
