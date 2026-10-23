@@ -32,7 +32,7 @@ enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self)
         if (self->vtabv && self->vtabv->drop)
         {
             for (size_t i = 0; i < self->count; i++)
-                self->vtabv->drop(self->buffer[i]);
+                self->vtabv->drop(&self->buffer[i]);
         }
         free(self->buffer);
         self->buffer = NULL;
@@ -57,7 +57,7 @@ enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone)
         for (size_t i = 0; i < orig->count; i++)
         {
             CVX_VAL cloned;
-            enum cvx_flags flag = clone->vtabv->copy(orig->buffer[i], &cloned);
+            enum cvx_flags flag = clone->vtabv->copy(&orig->buffer[i], &cloned);
 
             if (flag != CVX_FLAG_OK)
                 return flag;
@@ -185,7 +185,7 @@ enum cvx_flags FUNC(_index_of)(struct CVX_SNAME *self, CVX_VAL item, size_t *out
 
     for (size_t i = 0; i < self->count; i++)
     {
-        if (self->vtabv->comp(self->buffer[i], item) == 0)
+        if (self->vtabv->comp(&self->buffer[i], &item) == 0)
         {
             if (out)
                 *out = i;
@@ -204,7 +204,7 @@ enum cvx_flags FUNC(_truncate)(struct CVX_SNAME *self, size_t new_count)
     if (self->vtabv && self->vtabv->drop)
     {
         for (size_t i = new_count; i < self->count; i++)
-            self->vtabv->drop(self->buffer[i]);
+            self->vtabv->drop(&self->buffer[i]);
     }
 
     memset(self->buffer + new_count, 0, (self->count - new_count) * sizeof(CVX_VAL));
@@ -226,7 +226,7 @@ enum cvx_flags FUNC(_sublist)(struct CVX_SNAME *self, size_t from, size_t to, st
     {
         for (size_t i = from; i <= to; i++)
         {
-            flag = out->vtabv->copy(self->buffer[i], &out->buffer[out->count]);
+            flag = out->vtabv->copy(&self->buffer[i], &out->buffer[out->count]);
             if (flag != CVX_FLAG_OK)
                 return flag;
             out->count++;
@@ -253,7 +253,7 @@ enum cvx_flags FUNC(_append)(struct CVX_SNAME *self, struct CVX_SNAME *src)
     {
         for (size_t i = 0; i < src->count; i++)
         {
-            enum cvx_flags flag = self->vtabv->copy(src->buffer[i], &self->buffer[self->count]);
+            enum cvx_flags flag = self->vtabv->copy(&src->buffer[i], &self->buffer[self->count]);
             if (flag != CVX_FLAG_OK)
                 return flag;
             self->count++;
@@ -283,7 +283,7 @@ enum cvx_flags FUNC(_prepend)(struct CVX_SNAME *self, struct CVX_SNAME *src)
     {
         for (size_t i = 0; i < src->count; i++)
         {
-            enum cvx_flags flag = self->vtabv->copy(src->buffer[i], &self->buffer[i]);
+            enum cvx_flags flag = self->vtabv->copy(&src->buffer[i], &self->buffer[i]);
             if (flag != CVX_FLAG_OK)
                 return flag;
         }
@@ -341,7 +341,7 @@ enum cvx_flags FUNC(_compare)(struct CVX_SNAME *left, struct CVX_SNAME *right, i
 
     for (size_t i = 0; i < min_count; i++)
     {
-        int cmp = cmp_func(left->buffer[i], right->buffer[i]);
+        int cmp = cmp_func(&left->buffer[i], &right->buffer[i]);
         if (cmp != 0)
         {
             if (out)
@@ -368,7 +368,7 @@ enum cvx_flags FUNC(_sort)(struct CVX_SNAME *self)
     {
         for (size_t j = 0; j < self->count - 1 - i; j++)
         {
-            if (self->vtabv->comp(self->buffer[j], self->buffer[j + 1]) > 0)
+            if (self->vtabv->comp(&self->buffer[j], &self->buffer[j + 1]) > 0)
                 FUNC(_swap)(self, j, j + 1);
         }
     }

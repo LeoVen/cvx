@@ -40,14 +40,14 @@ enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val)
     enum cvx_flags flag = CVX_FLAG_OK;
     struct NODE *probe = self->root;
 
-    size_t hash = self->vtabk->hash(key);
+    size_t hash = self->vtabk->hash(&key);
 
     for (size_t depth = 0; depth < CVX_HAMT_DEPTH; depth++)
     {
         if (probe->type == CVX_HAMT_NODE_LEAF)
         {
             // TODO: duplicate or insert and replace?
-            if (self->vtabk->comp(key, probe->as.leaf.key) == 0)
+            if (self->vtabk->comp(&key, &probe->as.leaf.key) == 0)
                 return CVX_FLAG_DUPLICATE;
             else
             {
@@ -127,13 +127,13 @@ enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out)
 
     struct NODE *probe = self->root;
 
-    CVX_HAMT_HASH_T hash = (CVX_HAMT_HASH_T)self->vtabk->hash(key);
+    CVX_HAMT_HASH_T hash = (CVX_HAMT_HASH_T)self->vtabk->hash(&key);
 
     for (size_t depth = 0; depth < CVX_HAMT_DEPTH; depth++)
     {
         if (probe->type == CVX_HAMT_NODE_LEAF)
         {
-            if (self->vtabk->comp(key, probe->as.leaf.key) == 0)
+            if (self->vtabk->comp(&key, &probe->as.leaf.key) == 0)
             {
                 *out = probe->as.leaf.val;
                 return CVX_FLAG_OK;
