@@ -25,6 +25,36 @@
       "out_dir": "output/cvx"
     },
     {
+      "template": "linked_list",
+      "value_type": "void *",
+      "struct_name": "SinglyLinkedList",
+      "prefix": "sll",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "singly_linked_list",
+      "variants": {
+        "node": "single"
+      },
+      "out_dir": "output/cvx"
+    },
+    {
+      "template": "linked_list",
+      "value_type": "void *",
+      "struct_name": "DoublyLinkedList",
+      "prefix": "dll",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "doubly_linked_list",
+      "variants": {
+        "node": "double"
+      },
+      "out_dir": "output/cvx"
+    },
+    {
       "template": "hashtable",
       "key_type": "void *",
       "value_type": "void *",

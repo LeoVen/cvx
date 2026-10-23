@@ -38,6 +38,7 @@
           "enum": [
             "dynamic_array",
             "circular_buffer",
+            "linked_list",
             "hamt",
             "hashtable"
           ]
@@ -82,7 +83,7 @@
         },
         "variants": {
           "type": "object",
-          "description": "Required key set depends on `template`: dynamic_array uses none; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
+          "description": "Required key set depends on `template`: dynamic_array, circular_buffer and hamt use none; linked_list requires \"node\"; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
           "properties": {
             "collision": {
               "type": "string",
@@ -100,6 +101,14 @@
               ],
               "default": "map",
               "description": "hashtable only. \"map\" stores key_type -> value_type (value_type required); \"set\" stores key_type only (value_type must be omitted)."
+            },
+            "node": {
+              "type": "string",
+              "enum": [
+                "single",
+                "double"
+              ],
+              "description": "linked_list only. \"single\" links each node to the next one; \"double\" also links it to the previous one."
             }
           },
           "additionalProperties": false

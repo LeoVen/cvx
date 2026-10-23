@@ -41,6 +41,13 @@
 #endif
 #endif
 
+// Linked List
+#ifndef CVX2_NODE_SINGLE
+#ifndef CVX2_NODE_DOUBLE
+#define CVX2_NODE_DOUBLE
+#endif
+#endif
+
 #endif // CVX_ENABLE_FALLBACK
 
 #endif // CVX_FALLBACK_H

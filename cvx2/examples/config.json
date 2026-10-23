@@ -103,6 +103,41 @@
       },
       "file_name": "str_ring",
       "out_dir": "generated"
+    },
+    {
+      "template": "linked_list",
+      "value_type": "int",
+      "struct_name": "int_slist",
+      "prefix": "isl",
+      "variants": {
+        "node": "single"
+      },
+      "out_dir": "generated"
+    },
+    {
+      "template": "linked_list",
+      "value_type": "int",
+      "struct_name": "int_dlist",
+      "prefix": "idl",
+      "variants": {
+        "node": "double"
+      },
+      "out_dir": "generated"
+    },
+    {
+      "template": "linked_list",
+      "value_type": "char *",
+      "struct_name": "StrList",
+      "prefix": "sl",
+      "case": {
+        "function": "PascalCase",
+        "struct": "PascalCase"
+      },
+      "file_name": "str_list",
+      "variants": {
+        "node": "double"
+      },
+      "out_dir": "generated"
     }
   ]
 }

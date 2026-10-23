@@ -8,9 +8,12 @@
 #include "generated/binop_list.h"
 #include "generated/int10_array.h"
 #include "generated/int_array.h"
+#include "generated/int_dlist.h"
 #include "generated/int_map_oa.h"
 #include "generated/int_map_sc.h"
 #include "generated/int_ring.h"
+#include "generated/int_slist.h"
+#include "generated/str_list.h"
 #include "generated/str_ring.h"
 #include "types.h"
 
@@ -383,6 +386,266 @@ static void test_circular_buffer_of_owned_strings(void)
     printf("circular_buffer<char *> (copy/drop): OK\n");
 }
 
+#define PASTE_(A, B) A##B
+#define PASTE(A, B) PASTE_(A, B)
+
+// Walks the list checking count, tail and (for double lists) every prev link,
+// then compares the elements against expected.
+static void isl_check(struct int_slist *list, const int *expected, size_t count)
+{
+    assert(list->count == count);
+    assert((list->head == NULL) == (count == 0) && (list->tail == NULL) == (count == 0));
+    size_t i = 0;
+    for (struct int_slist_node *node = list->head; node; node = node->next, i++)
+    {
+        assert(i < count && node->value == expected[i]);
+        if (!node->next)
+            assert(node == list->tail);
+    }
+    assert(i == count);
+}
+
+static void idl_check(struct int_dlist *list, const int *expected, size_t count)
+{
+    assert(list->count == count);
+    assert((list->head == NULL) == (count == 0) && (list->tail == NULL) == (count == 0));
+    size_t i = 0;
+    struct int_dlist_node *prev = NULL;
+    for (struct int_dlist_node *node = list->head; node; node = node->next, i++)
+    {
+        assert(i < count && node->value == expected[i]);
+        assert(node->prev == prev);
+        prev = node;
+    }
+    assert(i == count && prev == list->tail);
+}
+
+#define CHECK(PFX, list, ...)                                                          \
+    do                                                                                  \
+    {                                                                                   \
+        const int expected[] = { __VA_ARGS__ };                                         \
+        PASTE(PFX, _check)(list, expected, sizeof(expected) / sizeof(expected[0]));     \
+    } while (0)
+
+#define CHECK_EMPTY(PFX, list) PASTE(PFX, _check)(list, NULL, 0)
+
+// The API shared by both variants, with PFX the function prefix and SNAME the struct name.
+#define TEST_LINKED_LIST_COMMON(PFX, SNAME)                                            \
+    static void PASTE(test_linked_list_, PFX)(void)                                     \
+    {                                                                                   \
+        struct PASTE(SNAME, _vtabv) vtabv = { .comp = int_comp };                       \
+        struct SNAME list, other, clone;                                                \
+        struct PASTE(SNAME, _node) *node = NULL;                                        \
+        int out = 0;                                                                    \
+        size_t index = 0;                                                               \
+                                                                                        \
+        assert(PASTE(PFX, _init)(&list, &vtabv) == CVX_FLAG_OK);                        \
+        CHECK_EMPTY(PFX, &list);                                                        \
+        assert(PASTE(PFX, _empty)(&list));                                              \
+        assert(PASTE(PFX, _front)(&list, &out) == CVX_FLAG_EMPTY);                      \
+        assert(PASTE(PFX, _back)(&list, &out) == CVX_FLAG_EMPTY);                       \
+        assert(PASTE(PFX, _pop)(&list, 0, &out) == CVX_FLAG_EMPTY);                     \
+        assert(PASTE(PFX, _replace)(&list, 0, 1, NULL) == CVX_FLAG_EMPTY);              \
+        assert(PASTE(PFX, _get)(&list, 0, &out) == CVX_FLAG_RANGE);                     \
+                                                                                        \
+        assert(PASTE(PFX, _push)(&list, 0, 2) == CVX_FLAG_OK);                          \
+        assert(PASTE(PFX, _push)(&list, 1, 4) == CVX_FLAG_OK);                          \
+        assert(PASTE(PFX, _push)(&list, 0, 1) == CVX_FLAG_OK);                          \
+        assert(PASTE(PFX, _push)(&list, 2, 3) == CVX_FLAG_OK);                          \
+        assert(PASTE(PFX, _push)(&list, 9, 0) == CVX_FLAG_RANGE);                       \
+        CHECK(PFX, &list, 1, 2, 3, 4);                                                  \
+        assert(PASTE(PFX, _front)(&list, &out) == CVX_FLAG_OK && out == 1);             \
+        assert(PASTE(PFX, _back)(&list, &out) == CVX_FLAG_OK && out == 4);              \
+        for (int i = 0; i < 4; i++)                                                     \
+            assert(PASTE(PFX, _get)(&list, (size_t)i, &out) == CVX_FLAG_OK && out == i + 1); \
+                                                                                        \
+        assert(PASTE(PFX, _replace)(&list, 1, 20, &out) == CVX_FLAG_OK && out == 2);    \
+        assert(PASTE(PFX, _replace)(&list, 4, 0, NULL) == CVX_FLAG_RANGE);              \
+        CHECK(PFX, &list, 1, 20, 3, 4);                                                 \
+        assert(PASTE(PFX, _replace)(&list, 1, 2, NULL) == CVX_FLAG_OK);                 \
+                                                                                        \
+        assert(PASTE(PFX, _index_of)(&list, 3, &index) == CVX_FLAG_OK && index == 2);   \
+        assert(PASTE(PFX, _index_of)(&list, 99, NULL) == CVX_FLAG_NOT_FOUND);           \
+        assert(PASTE(PFX, _find)(&list, 3, &node) == CVX_FLAG_OK && node->value == 3);  \
+        assert(PASTE(PFX, _find)(&list, 99, &node) == CVX_FLAG_NOT_FOUND);              \
+                                                                                        \
+        assert(PASTE(PFX, _insert_after)(&list, NULL, 0) == CVX_FLAG_OK);               \
+        assert(PASTE(PFX, _insert_after)(&list, list.tail, 5) == CVX_FLAG_OK);          \
+        assert(PASTE(PFX, _find)(&list, 2, &node) == CVX_FLAG_OK);                      \
+        assert(PASTE(PFX, _insert_after)(&list, node, 25) == CVX_FLAG_OK);              \
+        CHECK(PFX, &list, 0, 1, 2, 25, 3, 4, 5);                                        \
+                                                                                        \
+        assert(PASTE(PFX, _pop)(&list, 6, &out) == CVX_FLAG_OK && out == 5);            \
+        assert(PASTE(PFX, _pop)(&list, 0, &out) == CVX_FLAG_OK && out == 0);            \
+        assert(PASTE(PFX, _pop)(&list, 2, NULL) == CVX_FLAG_OK);                        \
+        assert(PASTE(PFX, _pop)(&list, 4, &out) == CVX_FLAG_RANGE);                     \
+        CHECK(PFX, &list, 1, 2, 3, 4);                                                  \
+                                                                                        \
+        assert(PASTE(PFX, _reverse)(&list) == CVX_FLAG_OK);                             \
+        CHECK(PFX, &list, 4, 3, 2, 1);                                                  \
+        assert(PASTE(PFX, _sort)(&list) == CVX_FLAG_OK);                                \
+        CHECK(PFX, &list, 1, 2, 3, 4);                                                  \
+                                                                                        \
+        assert(PASTE(PFX, _init)(&other, &vtabv) == CVX_FLAG_OK);                       \
+        assert(PASTE(PFX, _splice)(&list, 0, &other) == CVX_FLAG_OK);                   \
+        assert(PASTE(PFX, _splice)(&list, 0, &list) == CVX_FLAG_INVALID);               \
+        assert(PASTE(PFX, _splice)(&list, 5, &other) == CVX_FLAG_RANGE);                \
+        assert(PASTE(PFX, _push)(&other, 0, 10) == CVX_FLAG_OK);                        \
+        assert(PASTE(PFX, _push)(&other, 1, 11) == CVX_FLAG_OK);                        \
+        assert(PASTE(PFX, _splice)(&list, 1, &other) == CVX_FLAG_OK);                   \
+        CHECK_EMPTY(PFX, &other);                                                       \
+        CHECK(PFX, &list, 1, 10, 11, 2, 3, 4);                                          \
+        assert(PASTE(PFX, _push)(&other, 0, 12) == CVX_FLAG_OK);                        \
+        assert(PASTE(PFX, _splice)(&list, list.count, &other) == CVX_FLAG_OK);          \
+        assert(PASTE(PFX, _push)(&other, 0, 0) == CVX_FLAG_OK);                         \
+        assert(PASTE(PFX, _splice)(&list, 0, &other) == CVX_FLAG_OK);                   \
+        CHECK(PFX, &list, 0, 1, 10, 11, 2, 3, 4, 12);                                   \
+        assert(PASTE(PFX, _push)(&list, list.count, 13) == CVX_FLAG_OK);                \
+        CHECK(PFX, &list, 0, 1, 10, 11, 2, 3, 4, 12, 13);                               \
+                                                                                        \
+        int cmp = 0;                                                                    \
+        assert(PASTE(PFX, _clone)(&list, &clone) == CVX_FLAG_OK);                       \
+        CHECK(PFX, &clone, 0, 1, 10, 11, 2, 3, 4, 12, 13);                              \
+        assert(PASTE(PFX, _compare)(&list, &clone, &cmp) == CVX_FLAG_OK && cmp == 0);   \
+        assert(PASTE(PFX, _replace)(&clone, 3, 99, NULL) == CVX_FLAG_OK);               \
+        assert(PASTE(PFX, _compare)(&list, &clone, &cmp) == CVX_FLAG_OK && cmp < 0);    \
+        assert(PASTE(PFX, _truncate)(&clone, 2) == CVX_FLAG_OK);                        \
+        CHECK(PFX, &clone, 0, 1);                                                       \
+        assert(PASTE(PFX, _compare)(&list, &clone, &cmp) == CVX_FLAG_OK && cmp > 0);    \
+        assert(PASTE(PFX, _push)(&clone, clone.count, 7) == CVX_FLAG_OK);               \
+        CHECK(PFX, &clone, 0, 1, 7);                                                    \
+        assert(PASTE(PFX, _truncate)(&clone, 0) == CVX_FLAG_OK);                        \
+        CHECK_EMPTY(PFX, &clone);                                                       \
+        PASTE(PFX, _drop)(&clone);                                                      \
+                                                                                        \
+        assert(PASTE(PFX, _truncate)(&list, 0) == CVX_FLAG_OK);                         \
+        unsigned seed = 12345;                                                          \
+        for (int i = 0; i < 101; i++)                                                   \
+        {                                                                               \
+            seed = seed * 1103515245u + 12345u;                                         \
+            assert(PASTE(PFX, _push)(&list, list.count, (int)(seed >> 16) % 50) == CVX_FLAG_OK); \
+        }                                                                               \
+        assert(PASTE(PFX, _sort)(&list) == CVX_FLAG_OK);                                \
+        assert(list.count == 101);                                                      \
+        int last = -1;                                                                  \
+        for (size_t i = 0; i < list.count; i++)                                         \
+        {                                                                               \
+            assert(PASTE(PFX, _get)(&list, i, &out) == CVX_FLAG_OK && out >= last);     \
+            last = out;                                                                 \
+        }                                                                               \
+        assert(PASTE(PFX, _back)(&list, &out) == CVX_FLAG_OK && out == last);           \
+                                                                                        \
+        struct PASTE(SNAME, _vtabv) no_comp = { 0 };                                    \
+        list.vtabv = &no_comp;                                                          \
+        assert(PASTE(PFX, _sort)(&list) == CVX_FLAG_VTAB);                              \
+        assert(PASTE(PFX, _find)(&list, 1, &node) == CVX_FLAG_VTAB);                    \
+        assert(PASTE(PFX, _index_of)(&list, 1, NULL) == CVX_FLAG_VTAB);                 \
+                                                                                        \
+        PASTE(PFX, _drop)(&list);                                                       \
+        PASTE(PFX, _drop)(&other);                                                      \
+        printf("linked_list (" #PFX "): OK\n");                                         \
+    }
+
+TEST_LINKED_LIST_COMMON(isl, int_slist)
+TEST_LINKED_LIST_COMMON(idl, int_dlist)
+
+static void test_linked_list_single_remove_after(void)
+{
+    struct int_slist list;
+    int out = 0;
+
+    assert(isl_init(&list, NULL) == CVX_FLAG_OK);
+    assert(isl_remove_after(&list, NULL, &out) == CVX_FLAG_EMPTY);
+
+    for (int i = 1; i <= 4; i++)
+        assert(isl_push(&list, list.count, i) == CVX_FLAG_OK);
+
+    assert(isl_remove_after(&list, list.tail, &out) == CVX_FLAG_RANGE);
+    assert(isl_remove_after(&list, NULL, &out) == CVX_FLAG_OK && out == 1);
+    CHECK(isl, &list, 2, 3, 4);
+    assert(isl_remove_after(&list, list.head, &out) == CVX_FLAG_OK && out == 3);
+    CHECK(isl, &list, 2, 4);
+    assert(isl_remove_after(&list, list.head, NULL) == CVX_FLAG_OK);
+    CHECK(isl, &list, 2);
+    assert(isl_remove_after(&list, NULL, NULL) == CVX_FLAG_OK);
+    CHECK_EMPTY(isl, &list);
+
+    isl_drop(&list);
+    printf("linked_list single remove_after: OK\n");
+}
+
+static void test_linked_list_double_node_ops(void)
+{
+    struct int_dlist list;
+    int out = 0;
+
+    assert(idl_init(&list, NULL) == CVX_FLAG_OK);
+    assert(idl_insert_before(&list, NULL, 3) == CVX_FLAG_OK);
+    assert(idl_insert_before(&list, NULL, 4) == CVX_FLAG_OK);
+    assert(idl_insert_before(&list, list.head, 1) == CVX_FLAG_OK);
+    assert(idl_insert_before(&list, list.tail->prev, 2) == CVX_FLAG_OK);
+    CHECK(idl, &list, 1, 2, 3, 4);
+
+    assert(idl_remove(&list, list.head->next, &out) == CVX_FLAG_OK && out == 2);
+    CHECK(idl, &list, 1, 3, 4);
+    assert(idl_remove(&list, list.tail, &out) == CVX_FLAG_OK && out == 4);
+    CHECK(idl, &list, 1, 3);
+    assert(idl_remove(&list, list.head, NULL) == CVX_FLAG_OK);
+    CHECK(idl, &list, 3);
+    assert(idl_remove(&list, list.head, &out) == CVX_FLAG_OK && out == 3);
+    CHECK_EMPTY(idl, &list);
+
+    // Walking backwards from the tail for indices past the middle.
+    for (int i = 0; i < 9; i++)
+        assert(idl_push(&list, list.count, i) == CVX_FLAG_OK);
+    for (size_t i = 0; i < list.count; i++)
+        assert(idl_get(&list, i, &out) == CVX_FLAG_OK && out == (int)i);
+    assert(idl_pop(&list, 7, &out) == CVX_FLAG_OK && out == 7);
+    CHECK(idl, &list, 0, 1, 2, 3, 4, 5, 6, 8);
+
+    idl_drop(&list);
+    printf("linked_list double insert_before/remove: OK\n");
+}
+
+static void test_linked_list_of_owned_strings(void)
+{
+    struct StrListVtabV vtabv = { .copy = str_copy, .drop = str_drop };
+    struct StrList list, clone, other;
+    char *out = NULL;
+    size_t drops = str_drops;
+
+    assert(slInit(&list, &vtabv) == CVX_FLAG_OK);
+    assert(slPush(&list, 0, str_new("a")) == CVX_FLAG_OK);
+    assert(slPush(&list, 1, str_new("b")) == CVX_FLAG_OK);
+    assert(slPush(&list, 2, str_new("c")) == CVX_FLAG_OK);
+
+    assert(slClone(&list, &clone) == CVX_FLAG_OK);
+    char *cloned = NULL;
+    assert(slGet(&clone, 0, &cloned) == CVX_FLAG_OK && strcmp(cloned, "a") == 0);
+    assert(slGet(&list, 0, &out) == CVX_FLAG_OK && out != cloned);
+
+    assert(slPop(&list, 1, NULL) == CVX_FLAG_OK); // drops "b"
+    assert(str_drops == drops + 1);
+    assert(slReplace(&list, 0, str_new("A"), NULL) == CVX_FLAG_OK); // drops "a"
+    assert(str_drops == drops + 2);
+    assert(slPop(&list, 0, &out) == CVX_FLAG_OK && strcmp(out, "A") == 0); // caller owns it
+    free(out);
+    assert(str_drops == drops + 2);
+
+    assert(slInit(&other, &vtabv) == CVX_FLAG_OK);
+    assert(slPush(&other, 0, str_new("z")) == CVX_FLAG_OK);
+    assert(slSplice(&list, 0, &other) == CVX_FLAG_OK);
+    assert(slTruncate(&list, 1) == CVX_FLAG_OK); // drops "c"
+    assert(str_drops == drops + 3);
+
+    slDrop(&list);  // drops "z"
+    slDrop(&clone); // drops the copies of "a", "b", "c"
+    slDrop(&other);
+    assert(str_drops == drops + 7);
+
+    printf("linked_list<char *> (copy/drop): OK\n");
+}
+
 int main(void)
 {
     test_dynamic_array();
@@ -393,6 +656,11 @@ int main(void)
     test_circular_buffer();
     test_circular_buffer_linearize_every_head();
     test_circular_buffer_of_owned_strings();
+    test_linked_list_isl();
+    test_linked_list_idl();
+    test_linked_list_single_remove_after();
+    test_linked_list_double_node_ops();
+    test_linked_list_of_owned_strings();
     printf("all cvx2 smoke tests passed\n");
     return 0;
 }

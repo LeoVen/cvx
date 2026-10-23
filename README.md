@@ -136,6 +136,8 @@ Every template includes `cvx2/fallback.h`, which defines default placeholder val
   - variants: None
 - `circular_buffer`: A fixed-capacity ring buffer. Pushing onto a full buffer overwrites the element at the opposite end
   - variants: None
+- `linked_list`: A linked list owning its nodes. Nodes are public, so a `struct ..._node *` can be used as a position for O(1) inserts and removals
+  - node: `single` or `double` (required)
 - `hashtable`: A hashtable
   - kind: `map` (default) or `set`
   - collision: `open_addressing` or `separate_chaining`

@@ -86,6 +86,23 @@ class TestValidateConfig(unittest.TestCase):
                 {"instantiations": [da(template="circular_buffer", variants={"kind": "map"})]}
             )
 
+    def test_valid_linked_list(self):
+        for node in ("single", "double"):
+            result = generator.validate_config(
+                {"instantiations": [da(template="linked_list", variants={"node": node})]}
+            )
+            self.assertEqual(result[0]["variants"], {"node": node})
+
+    def test_linked_list_requires_node_variant(self):
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [da(template="linked_list")]})
+
+    def test_linked_list_unknown_node_variant_errors(self):
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config(
+                {"instantiations": [da(template="linked_list", variants={"node": "triple"})]}
+            )
+
     def test_hashtable_missing_variants_axis_errors(self):
         bad = ht()
         del bad["variants"]

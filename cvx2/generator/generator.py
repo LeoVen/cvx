@@ -84,6 +84,11 @@ class CircularBufferConfig(_InstantiationBase):
 
 
 @dataclasses.dataclass(kw_only=True)
+class LinkedListConfig(_InstantiationBase):
+    value_type: str = field_spec(type_expr=True)
+
+
+@dataclasses.dataclass(kw_only=True)
 class HashtableConfig(_InstantiationBase):
     key_type: str = field_spec(type_expr=True)
     # Required when variants.kind == "map" (the default), forbidden when
@@ -102,11 +107,18 @@ class HamtConfig(_InstantiationBase):
 TEMPLATE_SCHEMAS = {
     "dynamic_array": DynamicArrayConfig,
     "circular_buffer": CircularBufferConfig,
+    "linked_list": LinkedListConfig,
     "hashtable": HashtableConfig,
     "hamt": HamtConfig,
 }
 
 TEMPLATE_VARIANTS = {
+    "linked_list": {
+        "node": {
+            "single": "CVX2_NODE_SINGLE",
+            "double": "CVX2_NODE_DOUBLE",
+        },
+    },
     "hashtable": {
         "collision": {
             "open_addressing": "CVX2_COLLISION_OPEN_ADDRESSING",
