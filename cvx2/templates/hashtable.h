@@ -1,5 +1,5 @@
 /**
- * @file hashtable.h
+ * @file
  * @author Leonardo Vencovsky
  * @brief A hashtable mapping CVX_KEY -> CVX_VAL, or a bare set of CVX_KEY.
  * @version 0.0.1

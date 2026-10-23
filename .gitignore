@@ -64,5 +64,6 @@ docs/output/
 # artifact, not source -- see cvx2/examples/config.json for the source of
 # truth that produces it)
 cvx2/examples/generated/
+cvx2/docs/output/
 __pycache__/
 *.pyc

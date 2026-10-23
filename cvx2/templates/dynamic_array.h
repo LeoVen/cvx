@@ -1,5 +1,5 @@
 /**
- * @file hamt.h
+ * @file
  * @author Leonardo Vencovsky
  * @brief A dynamically-resizing array.
  * @version 0.0.1
