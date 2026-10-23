@@ -192,8 +192,9 @@ enum cvx_flags FUNC(_push)(struct CVX_SNAME *self, size_t index, CVX_VAL item);
  * (0 = front, count - 1 = back)
  * @param out out parameter for the removed element
  *
- * @note If `out` is NULL, the value is not set and ignored. The vacated slot
- * at the end of the buffer is zero-initialized; the buffer itself does not shrink.
+ * @note If `out` is NULL, the element is dropped (vtabv->drop, if set).
+ * Otherwise ownership of it moves to the caller. The vacated slot at the end of
+ * the buffer is zero-initialized; the buffer itself does not shrink.
  *
  * Error Handling
  * - CVX_FLAG_EMPTY: if the array is empty
@@ -208,7 +209,8 @@ enum cvx_flags FUNC(_pop)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
  * @param new_value the value written at `index`
  * @param old_out out parameter for the value previously stored at `index`
  *
- * @note If `old_out` is NULL, the old value is not set and ignored.
+ * @note If `old_out` is NULL, the old value is dropped (vtabv->drop, if set).
+ * Otherwise ownership of it moves to the caller.
  *
  * Error Handling
  * - CVX_FLAG_EMPTY: if the array is empty

@@ -163,6 +163,8 @@ enum cvx_flags FUNC(_pop_back)(struct CVX_SNAME *self, CVX_VAL *out)
 
     if (out)
         *out = self->buffer[physical];
+    else
+        FUNC(__drop_element)(self, physical);
     self->buffer[physical] = (CVX_VAL){ 0 };
     return CVX_FLAG_OK;
 }
@@ -174,6 +176,8 @@ enum cvx_flags FUNC(_pop_front)(struct CVX_SNAME *self, CVX_VAL *out)
 
     if (out)
         *out = self->buffer[self->head];
+    else
+        FUNC(__drop_element)(self, self->head);
     self->buffer[self->head] = (CVX_VAL){ 0 };
 
     self->head = (self->head + 1) % self->capacity;

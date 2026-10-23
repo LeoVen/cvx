@@ -216,7 +216,8 @@ enum cvx_flags FUNC(_push_front)(struct CVX_SNAME *self, CVX_VAL item);
  * @param self a non-NULL pointer to an initialized circular buffer
  * @param out out parameter for the removed element
  *
- * @note If `out` is NULL, the value is not set and ignored. The vacated slot is
+ * @note If `out` is NULL, the element is dropped (vtabv->drop, if set).
+ * Otherwise ownership of it moves to the caller. The vacated slot is
  * zero-initialized.
  *
  * Error Handling
@@ -229,7 +230,8 @@ enum cvx_flags FUNC(_pop_back)(struct CVX_SNAME *self, CVX_VAL *out);
  * @param self a non-NULL pointer to an initialized circular buffer
  * @param out out parameter for the removed element
  *
- * @note If `out` is NULL, the value is not set and ignored. The vacated slot is
+ * @note If `out` is NULL, the element is dropped (vtabv->drop, if set).
+ * Otherwise ownership of it moves to the caller. The vacated slot is
  * zero-initialized.
  *
  * Error Handling

@@ -150,6 +150,8 @@ enum cvx_flags FUNC(_pop)(struct CVX_SNAME *self, size_t index, CVX_VAL *out)
 
     if (out)
         *out = self->buffer[index];
+    else if (self->vtabv && self->vtabv->drop)
+        self->vtabv->drop(&self->buffer[index]);
 
     memmove(self->buffer + index, self->buffer + index + 1,
             (self->count - index - 1) * sizeof(CVX_VAL));
@@ -306,6 +308,8 @@ enum cvx_flags FUNC(_replace)(struct CVX_SNAME *self, size_t index, CVX_VAL new_
 
     if (old_out)
         *old_out = self->buffer[index];
+    else if (self->vtabv && self->vtabv->drop)
+        self->vtabv->drop(&self->buffer[index]);
 
     self->buffer[index] = new_value;
 
