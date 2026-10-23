@@ -1,214 +1,193 @@
 # cvx
 
-A modern C library of generic data structures built on templating header files.
-
-There are two main types of data structures:
-
-**Implementations** are data structures that provide a wide range of operations, even if they are sometimes slow. These are generalist containers.
-
-**Interfaces** are abstractions that can be implemented by multiple data structures. They define a set of functions in a `vtable` and you can "cast" an implementation type to an interface type.
+A modern C library of generic data structures that are generated based on templates.
+The resulting code is a clean (of macros) and type safe C code that can be inspected.
 
 ---
 
 ## Quick start
 
-Check out the examples folder to see more examples.
+Describe the containers you want in a JSON config:
+
+```json
+{
+  "instantiations": [
+    {
+      "template": "dynamic_array",
+      "value_type": "int",
+      "struct_name": "int_array",
+      "prefix": "ia",
+      "out_dir": "generated"
+    }
+  ]
+}
+```
+
+Run the generator. `--compiler` is the C compiler used to expand the templates (`gcc`, `clang` or `cc`):
+
+```sh
+python3 cvx2/generator/generator.py --config config.json --compiler gcc
+# wrote generated/int_array.h
+# wrote generated/int_array.c
+```
+
+`out_dir` is resolved relative to the config file. The output is plain C: no template macros are left in it, so it reads like hand-written code and works with any LSP.
+
+Use it like any other header/source pair:
 
 ```c
 #include <stdio.h>
 
-// 1. Define the interface type
-#define V         int             // data type for the stack interface
-#define INTERFACE stack           // name of the struct
-#include "cvx/interface/stack.h"
+#include "generated/int_array.h"
 
-// 2. Instantiate an implementation
-#define V          int            // data type for my dynamic array implementation
-#define SNAME      my_list        // name of my dynamic array (e.g. struct my_list)
-#define PFX        ml             // prefix to all functions
-#define TAG        1              // unique tag for this implementation
-#define IMPL_STACK stack          // generates the ml_as_stack() "cast"
-#include "cvx/dynamic_array.h"
-
-#include "cvx/interface_macros.h" // utility macros when working with interfaces
+static int int_comp(int const *a, int const *b)
+{
+    return (*a > *b) - (*a < *b);
+}
 
 int main(void)
 {
-    struct stack s = ml_as_stack(ml_new_with(NULL, 8));
+    struct int_array_vtabv vtabv = { .comp = int_comp };
+    struct int_array arr;
 
-    cvx_push(&s, 10);
-    cvx_push(&s, 20);
-    cvx_push(&s, 30);
+    if (ia_init(&arr, &vtabv, 0) != CVX_FLAG_OK)
+        return 1;
 
-    int out = cvx_pop(&s);
-    printf("Pop: %d\nPeek: %d\n", out, cvx_peek(&s));
+    ia_push(&arr, ia_count(&arr), 30);
+    ia_push(&arr, ia_count(&arr), 10);
+    ia_push(&arr, ia_count(&arr), 20);
+    ia_sort(&arr);
 
-    cvx_drop(&s);
+    for (size_t i = 0; i < ia_count(&arr); i++)
+    {
+        int value;
+        ia_get(&arr, i, &value);
+        printf("%d\n", value);
+    }
+
+    ia_drop(&arr);
+    return 0;
 }
 ```
 
----
+The generated files include `cvx2/core.h` and `cvx2/flags.h`, so compile with the repository root on the include path:
 
-## Available Implementations and Interfaces
+```sh
+gcc -I path/to/cvx main.c generated/int_array.c -o main
+```
 
-### Available implementations
+### Configuration
 
-| Header | Description | Interfaces | Iterators |
-|---|---|---|---|
-| `cvx/dynamic_array.h` | Growable contiguous array. O(1) amortized push/pop at back, O(n) at front. | `stack` | `random_access_iterator` |
-| `cvx/slinked_list.h` | Singly linked list with head and tail pointers. O(1) push/pop at front; O(n) at back. | `stack`, `queue` | `forward_iterator` |
+Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is in `cvx2/generator/config.schema.json`.
 
-### Available interfaces
-
-| Header | Operations |
-|---|---|
-| `cvx/interface/stack.h` | `push`, `pop`, `peek`, `replace`, `count`, `new`, `clone`, `drop` |
-| `cvx/interface/queue.h` | `enqueue`, `dequeue`, `count`, `new`, `clone`, `drop` |
-
-### Available iterators
-
-| Header | Operations |
-|---|---|
-| `cvx/iter/forward_iterator.h` | `start`, `drop`, `at_start`, `at_end`, `count`, `to_start`, `next`, `forward`, `value`, `index` |
-| `cvx/iter/bidirectional_iterator.h` | `start`, `end`, `drop`, `at_start`, `at_end`, `count`, `to_start`, `to_end`, `next`, `prev`, `forward`, `backward`, `value`, `index` |
-| `cvx/iter/random_access_iterator.h` | `start`, `end`, `drop`, `at_start`, `at_end`, `count`, `to_start`, `to_end`, `next`, `prev`, `forward`, `backward`, `go_to`, `value`, `index` |
+| Field | Required | Description |
+|---|---|---|
+| `template` | yes | `dynamic_array`, `hashtable`, etc. See [Templates](#templates)|
+| `struct_name` | yes | Name of the generated struct, also the prefix of its helper structs (e.g. `int_array_vtabv`) |
+| `prefix` | yes | Prefix of every generated function (e.g. `ia` gives `ia_push`) |
+| `value_type` | depends | Element type. Depends on the data structure |
+| `key_type` | depends | Key type. Depends on the data structure |
+| `file_name` | no | Basename of the generated files and include guard. Defaults to `struct_name` |
+| `case` | no | Naming case, see [Case](#case). Defaults to snake_case for both functions and structs |
+| `variants` | depends | Template-specific choices, see [Templates](#templates) |
+| `includes` | no | Headers to include at the top of the generated `.h`, needed for any non-builtin type. `"<stdint.h>"` is emitted as a system include, anything else as a quoted path |
+| `out_dir` | no | Output directory, relative to the config file. Defaults to `.` |
 
 ---
 
-## Implementations
+## Limitations
 
-An implementation is instantiated by defining a set of macros and then including a header. Each `#include` produces a new and independent concrete type.
+### Key and value types
+
+`value_type` and `key_type` are spliced into the templates as plain text, so they must be types that can be declared as `T name;` and assigned with `=`.
+
+- **Raw array and function pointer types are rejected.** `int[10]` or `int (*)(int, int)` can't be used as a declarator prefix (the generator would emit `int[10] item;`). Wrap them in a typedef instead and add the header that defines it to `includes`:
+
+  ```c
+  typedef struct { int items[10]; } int10_t; // fixed-size array
+  typedef int (*binop_fn)(int, int);         // function pointer
+  ```
+
+- **Array typedefs don't work.** `typedef int arr10[10];` arrays can't be assigned, so the generated code won't compile. Wrap the array in a struct as above.
+- **`const`-qualified types don't work.** e.g. `const int` or `char *const`. The containers assign into their slots, which a `const` type forbids. A pointer *to* const data is fine (`const char *`).
+- **Non-builtin types need `includes`.** Each generated `.c` is its own translation unit and only includes its own generated `.h`, so any struct, enum or typedef used as a type must have its header listed in the instantiation's `includes`.
+
+### Callbacks
+
+Callbacks receive elements by pointer (`T const *` for read-only access, `T *` for `drop`/the copy destination).
+
+- **`const` is shallow.** `T const *` stops a callback from modifying the stored element itself, but not what it points to. For `T = char *` a comparator receives `char *const *`: it can't repoint the stored pointer, but it can still write to the characters.
+- **The hash function takes no seed or context.** `size_t (*)(T const *)` has no per-table state, so seeding needs to use a global state.
+
+---
+
+## Templates
+
+Templates live in `cvx2/templates/` as a `.h`/`.c` pair written in ordinary C, with placeholder macros where the types and names go. To generate an instantiation, the generator:
+
+1. Turns the config into `-D` defines (`CVX_VAL=int`, `CVX_SNAME=int_array`, ...).
+2. Pulls out the `#include` lines so the preprocessor doesn't inline other headers.
+3. Runs the compiler's preprocessor (`-E -C`, keeping comments) over the template, which resolves every placeholder and selects the `#if` branches for the chosen variants.
+4. Puts the includes back, adds an include guard and writes the result.
+
+Every template includes `cvx2/fallback.h`, which defines default placeholder values when `CVX_ENABLE_FALLBACK` is set. This lets clangd understand a template opened directly, it has no effect on generation.
+
+- `dynamic_array`: A growable array
+  - variants: None
+- `circular_buffer`: A fixed-capacity ring buffer. Pushing onto a full buffer overwrites the element at the opposite end
+  - variants: None
+- `hashtable`: A hashtable
+  - kind: `map` (default) or `set`
+  - collision: `open_addressing` or `separate_chaining`
+- `hamt`: Hash array mapped tree
+  - variants: None
 
 ### Macros
 
+These are the placeholders a template uses. The generator defines them from the config.
+
 | Macro | Required | Description |
 |---|---|---|
-| `V` | yes | The value type stored in the container (e.g. `int`, `char *`, `struct point`) |
-| `K` | key-value only | The key type (same as `V` but for key-value containers) |
-| `SNAME` | yes | The name of the generated struct (e.g. `my_list` becomes `struct my_list`) |
-| `PFX` | yes | Prefix for all generated functions (e.g. `ml` becomes `ml_push_back(...)`) |
-| `TAG` | yes | A unique integer that identifies this container type at runtime. Must be distinct from every other `TAG` in the same program. |
+| `CVX_VAL` | value containers | The value type stored in the container (e.g. `int`, `char *`, `struct point`) |
+| `CVX_KEY` | key-value containers | The key type |
+| `CVX_SNAME` | yes | The name of the generated struct (e.g. `int_array` becomes `struct int_array`) |
+| `CVX_PFX` | yes | Prefix for all generated functions (e.g. `ia` becomes `ia_push(...)`) |
+| `CVX2_*` | depends | Data structures can have more options |
 
-All macros are automatically undefined after the `#include` via `undef.h`, so there is no risk of them leaking into subsequent templates.
+### Case
 
-### User type virtual tables
+`case` sets the naming style of the suffixes the generator appends, separately for functions and structs:
 
-Each instantiated container generates a `struct <SNAME>_vtabv` type that holds optional (some times mandatory) function pointers for element operations. You create one and pass it to the constructor. A `NULL` value is allowed when no callbacks are needed.
-
-```c
-// The generated vtabv struct has these fields
-struct my_list_vtabv {
-    int    (*comp)(V, V);   // compare two elements - required for ordered structures
-    V      (*copy)(V);      // deep-copy an element - optionally called by clone()
-    void   (*drop)(V);      // free an element      - optionally called by drop() and clear()
-    size_t (*hash)(V);      // hash an element      - required for hash-based structures
-    int    (*prio)(V, V);   // compare priorities   - required for priority queues
-};
+```json
+"case": { "function": "snake_case", "struct": "PascalCase" }
 ```
 
-**Example - dynamic array of heap-allocated strings:**
+Either key can be omitted and defaults to `snake_case`. Only the suffixes are converted: `struct_name` and `prefix` are used exactly as written, and the suffix is joined to them directly.
 
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+| Case | Function (`prefix: "ia"`) | Struct (`struct_name: "IntArray"`) |
+|---|---|---|
+| `snake_case` | `ia_push`, `ia_index_of` | `IntArray_vtabv` |
+| `camelCase` | `iapush`, `iaindexOf` | `IntArrayvtabV` |
+| `PascalCase` | `iaPush`, `iaIndexOf` | `IntArrayVtabV` |
 
-#define V         char *
-#define SNAME     str_array
-#define PFX       sa
-#define TAG       1
-#include "cvx/dynamic_array.h"
+Suffix spellings come from `cvx2/names.h`.
+Private functions do not follow this casing and are always written as they are, e.g. `FUNC(__assert_capacity)` with prefix `da` gives `da__assert_capacity`.
 
-char *str_copy(char *s) { return strdup(s); }
-void  str_drop(char *s) { free(s); }
-
-int main(void)
-{
-    // Build a vtabv with copy and drop - no comp/hash/prio needed here
-    struct str_array_vtabv cbs = { .clone = str_copy, .drop = str_drop };
-
-    cvx_container *col = sa_new_with(&cbs, 8);
-
-    sa_push_back(col, strdup("hello"));
-    sa_push_back(col, strdup("world"));
-
-    // clone() calls str_copy on each element - original and clone are independent
-    cvx_container *clone = sa_clone(col);
-
-    printf("%s %s\n", sa_get(col, 0), sa_get(clone, 1));
-
-    sa_drop(col);   // calls str_drop on each element, then frees the array
-    sa_drop(clone);
-}
-```
-
-For key-value structures a matching `struct <SNAME>_vtabk` is generated for the key type, with the same set of fields.
-
-## Interfaces
-
-An interface is a `struct` type consisting of an `instance` pointer and a `vtable` pointer. Multiple data structures can implement one interface.
-
-Usually, when working with this pattern, you have `void *` pointers. This library instead uses a `cvx_container` type, which holds extra information for error handling.
-
-### Declaring an interface
-
-```c
-#define V         int
-#define INTERFACE stack
-#include "cvx/intf/stack.h"
-// produces: struct stack { cvx_container *instance; struct stack_vtable *vtable; }
-```
-
-### Casting an implementation to an interface
-
-Define `IMPL_<INTERFACE>` when you want to be able to cast an implementation to an interface:
-
-```c
-#define V         int
-#define SNAME     my_list
-#define PFX       ml
-#define TAG       1
-#define IMPL_STACK stack   // must match the INTERFACE name declared above
-#include "cvx/dynamic_array.h"
-// generates: struct stack ml_as_stack(cvx_container *instance)
-```
-
-Then cast at construction time:
-
-```c
-struct stack s = ml_as_stack(ml_new_with(8));
-```
-
-The same interface can back different implementations simultaneously:
-
-```c
-struct stack array_stack  = ml_as_stack(ml_new_with(8));
-struct stack linked_stack = sl_as_stack(sl_new());
-// both satisfy `struct stack` - pass either to the same function
-```
-
-### Interface macros
-
-```c
-#include "cvx/interface_macros"
-```
-
-It is annoying to call functions from interfaces via the `vtable`. For example, given that `s` is a stack, to push an item you need to: `s->vtable->push(s->instance, item)`.
-
-Instead you can use these macros and simply: `cvx_push(s, item)`. Neat!
+---
 
 ## Error handling
 
-Every `cvx_container` carries a `flag` field of type `enum cvx_flags`. Functions set this field instead of returning error codes, so the caller can inspect it after any operation.
+Every operation that can fail returns an `enum cvx_flags`, and results are written through out-pointers:
 
 ```c
-sc_pop_back(col, &out);
-if (col->flag != CVX_FLAG_OK) { /* handle error */ }
-
-// or via an interface:
-cvx_pop(&s, &out);
-if (cvx_flag(&s) != CVX_FLAG_OK) { /* handle error */ }
+int value;
+enum cvx_flags flag = ia_get(&arr, 99, &value);
+if (flag != CVX_FLAG_OK)
+    fprintf(stderr, "%s: %s\n", cvx_flags_str[flag], cvx_flags_description[flag]);
+// RANGE: Index out of range
 ```
+
+`cvx_flags_str` and `cvx_flags_description` are indexed by flag value.
 
 | Flag | Value | Meaning |
 |---|---|---|
@@ -222,11 +201,7 @@ if (cvx_flag(&s) != CVX_FLAG_OK) { /* handle error */ }
 | `CVX_FLAG_INVALID` | 7 | Invalid argument or operation |
 | `CVX_FLAG_DUPLICATE` | 8 | Duplicate key or value |
 | `CVX_FLAG_ERROR` | 9 | Generic or unknown error |
-
-
-### Tags and `CVX_FLAG_WRONG_TAG`
-
-Every implementation must be given a **unique `TAG`** integer. The tag is embedded in `cvx_container.tag` at construction and checked at the start of every function. Passing the wrong container to a function (e.g. a linked list where a dynamic array is expected) sets `CVX_FLAG_WRONG_TAG` and returns immediately rather than corrupting memory.
+| `CVX_FLAG_VTAB` | 10 | A required vtab callback was not provided (e.g. `comp` for `sort`) |
 
 ---
 
@@ -234,8 +209,8 @@ Every implementation must be given a **unique `TAG`** integer. The tag is embedd
 
 Required tooling
 
-- gcc
-- clang
+- python3 (3.10+)
+- gcc or clang
 - clang-format
 - valgrind
   - If you are not on linux, you can use the provided Dockerfile (you'll need docker)
@@ -247,31 +222,39 @@ Required tooling
 - bear
   - `brew install bear`
 
-## Building and running
-
-There is no build process. This is a header-only library.
+## Running stuff
 
 The project uses [`just`](https://github.com/casey/just) as a command runner and [`watchexec`](https://github.com/watchexec/watchexec) for live reloading.
 
 ```sh
-# Run and watch a top-level .c file (e.g. main.c → ./bin/main)
+# Run and watch a top-level .c file (e.g. main.c -> ./bin/main)
 just watch main
 
-# Run and watch an example (e.g. examples/hanoi.c → ./bin/hanoi)
+# Run and watch an example (e.g. examples/hanoi.c -> ./bin/hanoi)
 just example hanoi
 
 # Auto-format all .c and .h files with clang-format
 just format
+
+# Generate cvx2/examples/config.json
+just cvx2-generate gcc
+
+# Generate cvx2/docs/config.json and build the Doxygen docs into docs/output
+just docs
 ```
 
 ---
 
 ## Testing
 
-Tests live in `tests/` as header-only files and are included in `tests.c`.
+```sh
+just cvx2-test
+```
+
+This runs the generator's unit tests in `cvx2/generator/tests/`. The end-to-end test generates `cvx2/examples/config.json`, compiles the output together with `cvx2/examples/smoke.c` and runs it, so it needs `gcc`, `clang` or `cc` on `PATH`.
+
+The legacy `cvx/` library has its own tests in `tests/`, included from `tests.c`:
 
 ```sh
 gcc -Wall -Wextra -I . tests.c -o bin/tests && ./bin/tests
 ```
-
-The test framework is located in `tests/cvxtest.h`. Check it out if you want to know more.
