@@ -97,6 +97,9 @@ jobs:
       - name: Install Doxygen
         run: sudo apt-get install -y doxygen
 
+      - name: Generate headers for docs
+        run: python3 cvx2/generator/generator.py --config cvx2/docs/config.json --compiler gcc
+
       - name: Generate docs
         run: doxygen docs/Doxyfile
 
