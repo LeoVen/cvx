@@ -1,5 +1,5 @@
 /**
- * @file hamt.h
+ * @file
  * @author Leonardo Vencovsky
  * @brief Hash Array Mapped Trie
  * @version 0.0.1

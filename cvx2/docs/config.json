@@ -10,7 +10,7 @@
         "struct": "PascalCase"
       },
       "file_name": "dynamic_array",
-      "out_dir": "output"
+      "out_dir": "output/cvx"
     },
     {
       "template": "circular_buffer",
@@ -39,7 +39,7 @@
         "kind": "map",
         "collision": "separate_chaining"
       },
-      "out_dir": "output"
+      "out_dir": "output/cvx"
     },
     {
       "template": "hashtable",
@@ -55,7 +55,7 @@
         "kind": "set",
         "collision": "open_addressing"
       },
-      "out_dir": "output"
+      "out_dir": "output/cvx"
     },
     {
       "template": "hamt",
@@ -68,7 +68,7 @@
         "struct": "PascalCase"
       },
       "file_name": "hamt",
-      "out_dir": "output"
+      "out_dir": "output/cvx"
     }
   ]
 }
