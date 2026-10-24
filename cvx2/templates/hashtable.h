@@ -13,10 +13,10 @@
 #error "hashtable.h requires CVX_KEY to be defined (the key type)"
 #endif
 #if defined(CVX2_KIND_MAP) && !defined(CVX_VAL)
-#error "hashtable.h requires CVX_VAL to be defined when variants.kind is \"map\""
+#error "hashtable.h requires CVX_VAL to be defined when options.kind is \"map\""
 #endif
 #if defined(CVX2_KIND_SET) && defined(CVX_VAL)
-#error "hashtable.h: CVX_VAL must not be defined when variants.kind is \"set\" (a set has no values)"
+#error "hashtable.h: CVX_VAL must not be defined when options.kind is \"set\" (a set has no values)"
 #endif
 #ifndef CVX_SNAME
 #error "hashtable.h requires CVX_SNAME to be defined (the struct name)"
@@ -59,7 +59,7 @@ struct VTAB_K
 /**
  * @brief Virtual table of optional callbacks used to manage CVX_VAL values.
  *
- * @note Only present when variants.kind is "map".
+ * @note Only present when options.kind is "map".
  *
  * @note When `copy` is NULL, values are shallow-copied with memcpy instead.
  * @note When `drop` is NULL, values are released without any extra cleanup.
@@ -85,7 +85,7 @@ struct ENTRY
 {
     CVX_KEY key; //!< Stored key
 #ifdef CVX2_KIND_MAP
-    CVX_VAL val; //!< Stored value; only present when variants.kind is "map"
+    CVX_VAL val; //!< Stored value; only present when options.kind is "map"
 #endif
     size_t dist; //!< Displacement from the key's home slot (robin hood)
     int state;   //!< CVX2_HT_ENTRY_EMPTY / _FILLED / _DELETED; internal, do not modify
@@ -104,7 +104,7 @@ struct CVX_SNAME
     double load;          //!< Resize threshold (count >= capacity * load)
     struct VTAB_K *vtabk; //!< Virtual table for CVX_KEY; hash and comp are required
 #ifdef CVX2_KIND_MAP
-    struct VTAB_V *vtabv; //!< Virtual table for CVX_VAL; only present when variants.kind is "map"
+    struct VTAB_V *vtabv; //!< Virtual table for CVX_VAL; only present when options.kind is "map"
 #endif
     struct ENTRY *buffer; //!< Open-addressing slot buffer, capacity entries long
 };
@@ -120,7 +120,7 @@ struct NODE
 {
     CVX_KEY key; //!< Stored key
 #ifdef CVX2_KIND_MAP
-    CVX_VAL val; //!< Stored value; only present when variants.kind is "map"
+    CVX_VAL val; //!< Stored value; only present when options.kind is "map"
 #endif
     struct NODE *next; //!< Next entry in this bucket's chain, or NULL
 };
@@ -137,7 +137,7 @@ struct CVX_SNAME
     double load;          //!< Resize threshold (count >= capacity * load)
     struct VTAB_K *vtabk; //!< Virtual table for CVX_KEY; hash and comp are required
 #ifdef CVX2_KIND_MAP
-    struct VTAB_V *vtabv; //!< Virtual table for CVX_VAL; only present when variants.kind is "map"
+    struct VTAB_V *vtabv; //!< Virtual table for CVX_VAL; only present when options.kind is "map"
 #endif
     struct NODE **buckets; //!< Array of capacity bucket heads, each a chain of struct NODE
 };

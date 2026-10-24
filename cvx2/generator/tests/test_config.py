@@ -24,7 +24,7 @@ def ht(**overrides):
         "value_type": "int",
         "struct_name": "my_map",
         "prefix": "mm",
-        "variants": {"collision": "open_addressing"},
+        "options": {"collision": "open_addressing"},
     }
     base.update(overrides)
     return base
@@ -37,10 +37,10 @@ class TestValidateConfig(unittest.TestCase):
         self.assertEqual(result[0]["case"], {"function": "snake_case", "struct": "snake_case"})
         self.assertEqual(result[0]["out_dir"], ".")
 
-    def test_valid_hashtable_requires_variants(self):
+    def test_valid_hashtable_requires_options(self):
         result = generator.validate_config({"instantiations": [ht()]})
         self.assertEqual(
-            result[0]["variants"], {"collision": "open_addressing", "kind": "map"}
+            result[0]["options"], {"collision": "open_addressing", "kind": "map"}
         )
 
     def test_upper_camel_case_is_a_valid_case(self):
@@ -80,27 +80,27 @@ class TestValidateConfig(unittest.TestCase):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
-    def test_circular_buffer_rejects_variants(self):
+    def test_circular_buffer_rejects_options(self):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config(
-                {"instantiations": [da(template="circular_buffer", variants={"kind": "map"})]}
+                {"instantiations": [da(template="circular_buffer", options={"kind": "map"})]}
             )
 
     def test_valid_linked_list(self):
         for node in ("single", "double"):
             result = generator.validate_config(
-                {"instantiations": [da(template="linked_list", variants={"node": node})]}
+                {"instantiations": [da(template="linked_list", options={"node": node})]}
             )
-            self.assertEqual(result[0]["variants"], {"node": node})
+            self.assertEqual(result[0]["options"], {"node": node})
 
-    def test_linked_list_requires_node_variant(self):
+    def test_linked_list_requires_node_option(self):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [da(template="linked_list")]})
 
-    def test_linked_list_unknown_node_variant_errors(self):
+    def test_linked_list_unknown_node_option_errors(self):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config(
-                {"instantiations": [da(template="linked_list", variants={"node": "triple"})]}
+                {"instantiations": [da(template="linked_list", options={"node": "triple"})]}
             )
 
     def test_valid_binary_heap(self):
@@ -113,48 +113,48 @@ class TestValidateConfig(unittest.TestCase):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
-    def test_hashtable_missing_variants_axis_errors(self):
+    def test_hashtable_missing_options_axis_errors(self):
         bad = ht()
-        del bad["variants"]
+        del bad["options"]
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
     def test_hashtable_unknown_axis_errors(self):
-        bad = ht(variants={"collision": "open_addressing", "nonexistent_axis": "x"})
+        bad = ht(options={"collision": "open_addressing", "nonexistent_axis": "x"})
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
-    def test_hashtable_unknown_variant_name_errors(self):
-        bad = ht(variants={"collision": "quantum_probing"})
+    def test_hashtable_unknown_option_name_errors(self):
+        bad = ht(options={"collision": "quantum_probing"})
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
-    def test_hashtable_separate_chaining_is_a_valid_variant(self):
+    def test_hashtable_separate_chaining_is_a_valid_option(self):
         result = generator.validate_config(
-            {"instantiations": [ht(variants={"collision": "separate_chaining"})]}
+            {"instantiations": [ht(options={"collision": "separate_chaining"})]}
         )
         self.assertEqual(
-            result[0]["variants"], {"collision": "separate_chaining", "kind": "map"}
+            result[0]["options"], {"collision": "separate_chaining", "kind": "map"}
         )
 
     def test_hashtable_kind_defaults_to_map(self):
         result = generator.validate_config({"instantiations": [ht()]})
-        self.assertEqual(result[0]["variants"]["kind"], "map")
+        self.assertEqual(result[0]["options"]["kind"], "map")
 
     def test_hashtable_kind_set_requires_no_value_type(self):
-        bad = ht(variants={"collision": "open_addressing", "kind": "set"})
+        bad = ht(options={"collision": "open_addressing", "kind": "set"})
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [bad]})
 
     def test_hashtable_kind_set_without_value_type_is_valid(self):
-        config = ht(variants={"collision": "open_addressing", "kind": "set"})
+        config = ht(options={"collision": "open_addressing", "kind": "set"})
         del config["value_type"]
         result = generator.validate_config({"instantiations": [config]})
         self.assertIsNone(result[0]["value_type"])
-        self.assertEqual(result[0]["variants"]["kind"], "set")
+        self.assertEqual(result[0]["options"]["kind"], "set")
 
     def test_hashtable_kind_map_requires_value_type(self):
-        config = ht(variants={"collision": "open_addressing", "kind": "map"})
+        config = ht(options={"collision": "open_addressing", "kind": "map"})
         del config["value_type"]
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [config]})

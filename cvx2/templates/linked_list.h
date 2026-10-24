@@ -1,8 +1,8 @@
 /**
  * @file
  * @author Leonardo Vencovsky
- * @brief A linked list, either singly (variants.node = "single") or doubly
- * (variants.node = "double") linked.
+ * @brief A linked list, either singly (options.node = "single") or doubly
+ * (options.node = "double") linked.
  * @version 0.0.1
  *
  * The list owns its nodes: they are allocated by the insert functions and freed

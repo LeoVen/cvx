@@ -82,7 +82,7 @@
             "struct": "snake_case"
           }
         },
-        "variants": {
+        "options": {
           "type": "object",
           "description": "Required key set depends on `template`: dynamic_array, circular_buffer, binary_heap and hamt use none; linked_list requires \"node\"; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
           "properties": {

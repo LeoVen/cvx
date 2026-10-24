@@ -89,7 +89,7 @@ Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is 
 | `key_type` | depends | Key type. Depends on the data structure |
 | `file_name` | no | Basename of the generated files and include guard. Defaults to `struct_name` |
 | `case` | no | Naming case, see [Case](#case). Defaults to snake_case for both functions and structs |
-| `variants` | depends | Template-specific choices, see [Templates](#templates) |
+| `options` | depends | Template-specific choices, see [Templates](#templates) |
 | `includes` | no | Headers to include at the top of the generated `.h`, needed for any non-builtin type. `"<stdint.h>"` is emitted as a system include, anything else as a quoted path |
 | `out_dir` | no | Output directory, relative to the config file. Defaults to `.` |
 
@@ -127,24 +127,24 @@ Templates live in `cvx2/templates/` as a `.h`/`.c` pair written in ordinary C, w
 
 1. Turns the config into `-D` defines (`CVX_VAL=int`, `CVX_SNAME=int_array`, ...).
 2. Pulls out the `#include` lines so the preprocessor doesn't inline other headers.
-3. Runs the compiler's preprocessor (`-E -C`, keeping comments) over the template, which resolves every placeholder and selects the `#if` branches for the chosen variants.
+3. Runs the compiler's preprocessor (`-E -C`, keeping comments) over the template, which resolves every placeholder and selects the `#if` branches for the chosen options.
 4. Puts the includes back, adds an include guard and writes the result.
 
 Every template includes `cvx2/fallback.h`, which defines default placeholder values when `CVX_ENABLE_FALLBACK` is set. This lets clangd understand a template opened directly, it has no effect on generation.
 
 - `dynamic_array`: A growable array
-  - variants: None
+  - options: None
 - `circular_buffer`: A fixed-capacity ring buffer. Pushing onto a full buffer overwrites the element at the opposite end
-  - variants: None
+  - options: None
 - `linked_list`: A linked list owning its nodes. Nodes are public, so a `struct ..._node *` can be used as a position for O(1) inserts and removals
   - node: `single` or `double` (required)
 - `binary_heap`: A priority queue (max-heap ordered by `comp`; reverse `comp` for a min-heap)
-  - variants: None
+  - options: None
 - `hashtable`: A hashtable
   - kind: `map` (default) or `set`
   - collision: `open_addressing` or `separate_chaining`
 - `hamt`: Hash array mapped tree
-  - variants: None
+  - options: None
 
 ### Macros
 

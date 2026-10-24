@@ -22,7 +22,7 @@ def da(**overrides):
         "prefix": "ma",
         "file_name": None,
         "case": {"function": "snake_case", "struct": "snake_case"},
-        "variants": {},
+        "options": {},
         "out_dir": ".",
         "includes": [],
     }

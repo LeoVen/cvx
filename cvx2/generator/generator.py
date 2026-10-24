@@ -96,7 +96,7 @@ class BinaryHeapConfig(_InstantiationBase):
 @dataclasses.dataclass(kw_only=True)
 class HashtableConfig(_InstantiationBase):
     key_type: str = field_spec(type_expr=True)
-    # Required when variants.kind == "map" (the default), forbidden when
+    # Required when options.kind == "map" (the default), forbidden when
     # == "set" -- see _validate_hashtable_kind.
     value_type: str = field_spec(default=None, type_expr=True)
 
@@ -118,7 +118,7 @@ TEMPLATE_SCHEMAS = {
     "linked_list": LinkedListConfig,
 }
 
-TEMPLATE_VARIANTS = {
+TEMPLATE_OPTIONS = {
     "linked_list": {
         "node": {
             "single": "CVX2_NODE_SINGLE",
@@ -137,7 +137,7 @@ TEMPLATE_VARIANTS = {
     },
 }
 
-TEMPLATE_VARIANT_DEFAULTS = {
+TEMPLATE_OPTION_DEFAULTS = {
     "hashtable": {"kind": "map"},
 }
 
@@ -199,37 +199,37 @@ def _build(cls, instantiation, where):
     return cls(**kwargs)
 
 
-def _validate_variants(instantiation, where, template):
-    axes = TEMPLATE_VARIANTS.get(template, {})
-    defaults = TEMPLATE_VARIANT_DEFAULTS.get(template, {})
-    variants = instantiation.get("variants", {})
-    if not isinstance(variants, dict):
+def _validate_options(instantiation, where, template):
+    axes = TEMPLATE_OPTIONS.get(template, {})
+    defaults = TEMPLATE_OPTION_DEFAULTS.get(template, {})
+    options = instantiation.get("options", {})
+    if not isinstance(options, dict):
         _err(
             where,
-            "field 'variants' must be an object mapping axis name -> variant name",
+            "field 'options' must be an object mapping axis name -> option name",
         )
     for axis, names in axes.items():
-        if axis not in variants:
+        if axis not in options:
             if axis in defaults:
-                variants[axis] = defaults[axis]
+                options[axis] = defaults[axis]
                 continue
             _err(
                 where,
-                f"template {template!r} requires variants[{axis!r}] to be set (choices: {sorted(names)})",
+                f"template {template!r} requires options[{axis!r}] to be set (choices: {sorted(names)})",
             )
-    for axis, name in variants.items():
+    for axis, name in options.items():
         if axis not in axes:
             _err(
                 where,
-                f"config specifies variants[{axis!r}] but template {template!r} has no such axis "
+                f"config specifies options[{axis!r}] but template {template!r} has no such axis "
                 f"(it uses: {sorted(axes)})",
             )
         elif name not in axes[axis]:
             _err(
                 where,
-                f"variants[{axis!r}] = {name!r} is not a known variant (choices: {sorted(axes[axis])})",
+                f"options[{axis!r}] = {name!r} is not a known choice (choices: {sorted(axes[axis])})",
             )
-    return variants
+    return options
 
 
 def _validate_includes(instantiation, where):
@@ -262,19 +262,19 @@ def _validate_case(instantiation, where):
 
 
 def _validate_hashtable_kind(result, where):
-    """A hashtable with variants.kind == "set" stores keys only (no
+    """A hashtable with options.kind == "set" stores keys only (no
     value_type); == "map" (the default) stores key -> value_type, like
     before this axis existed."""
-    kind = result["variants"]["kind"]
+    kind = result["options"]["kind"]
     if kind == "map" and result["value_type"] is None:
         _err(
             where,
-            'hashtable with variants["kind"] = "map" requires \'value_type\' to be set',
+            'hashtable with options["kind"] = "map" requires \'value_type\' to be set',
         )
     if kind == "set" and result["value_type"] is not None:
         _err(
             where,
-            'hashtable with variants["kind"] = "set" must not set \'value_type\' '
+            'hashtable with options["kind"] = "set" must not set \'value_type\' '
             "-- a set has no values, only keys",
         )
 
@@ -299,7 +299,7 @@ def validate_instantiation(instantiation, index):
         "key_type", None
     )  # templates without a key_type (e.g. dynamic_array)
     result["template"] = template
-    result["variants"] = _validate_variants(instantiation, where, template)
+    result["options"] = _validate_options(instantiation, where, template)
     result["includes"] = _validate_includes(instantiation, where)
     result["case"] = _validate_case(instantiation, where)
 
@@ -503,9 +503,9 @@ def _defines_for(inst):
         if case in CASE_DEFINES[target]:
             defines.append(CASE_DEFINES[target][case])
 
-    variant = TEMPLATE_VARIANTS.get(inst["template"], {})
-    for choice, macro in inst["variants"].items():
-        defines.append(variant[choice][macro])
+    axes = TEMPLATE_OPTIONS.get(inst["template"], {})
+    for axis, choice in inst["options"].items():
+        defines.append(axes[axis][choice])
     return defines
 
 

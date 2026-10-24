@@ -22,7 +22,7 @@
         "struct": "camelCase"
       },
       "file_name": "int_map_oa",
-      "variants": {
+      "options": {
         "collision": "open_addressing"
       },
       "out_dir": "generated"
@@ -37,7 +37,7 @@
         "function": "snake_case",
         "struct": "snake_case"
       },
-      "variants": {
+      "options": {
         "collision": "separate_chaining"
       },
       "out_dir": "generated"
@@ -52,7 +52,7 @@
         "function": "snake_case",
         "struct": "snake_case"
       },
-      "variants": {
+      "options": {
         "collision": "open_addressing"
       },
       "out_dir": "generated"
@@ -109,7 +109,7 @@
       "value_type": "int",
       "struct_name": "int_slist",
       "prefix": "isl",
-      "variants": {
+      "options": {
         "node": "single"
       },
       "out_dir": "generated"
@@ -119,7 +119,7 @@
       "value_type": "int",
       "struct_name": "int_dlist",
       "prefix": "idl",
-      "variants": {
+      "options": {
         "node": "double"
       },
       "out_dir": "generated"
@@ -134,7 +134,7 @@
         "struct": "PascalCase"
       },
       "file_name": "str_list",
-      "variants": {
+      "options": {
         "node": "double"
       },
       "out_dir": "generated"
