@@ -138,6 +138,8 @@ Every template includes `cvx2/fallback.h`, which defines default placeholder val
   - variants: None
 - `linked_list`: A linked list owning its nodes. Nodes are public, so a `struct ..._node *` can be used as a position for O(1) inserts and removals
   - node: `single` or `double` (required)
+- `binary_heap`: A priority queue (max-heap ordered by `comp`; reverse `comp` for a min-heap)
+  - variants: None
 - `hashtable`: A hashtable
   - kind: `map` (default) or `set`
   - collision: `open_addressing` or `separate_chaining`

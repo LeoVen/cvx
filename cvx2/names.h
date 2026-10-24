@@ -32,6 +32,7 @@
 #define NAME_append Append
 #define NAME_back Back
 #define NAME_capacity Capacity
+#define NAME_clear Clear
 #define NAME_clone Clone
 #define NAME_compare Compare
 #define NAME_contains Contains
@@ -43,6 +44,7 @@
 #define NAME_full Full
 #define NAME_get Get
 #define NAME_get_ref GetRef
+#define NAME_heapify Heapify
 #define NAME_index_of IndexOf
 #define NAME_init Init
 #define NAME_insert Insert
@@ -51,6 +53,8 @@
 #define NAME_is_linearized IsLinearized
 #define NAME_linearize Linearize
 #define NAME_load Load
+#define NAME_merge Merge
+#define NAME_peek Peek
 #define NAME_pop Pop
 #define NAME_pop_back PopBack
 #define NAME_pop_front PopFront
@@ -58,9 +62,11 @@
 #define NAME_push Push
 #define NAME_push_back PushBack
 #define NAME_push_front PushFront
+#define NAME_push_pop PushPop
 #define NAME_remove Remove
 #define NAME_remove_after RemoveAfter
 #define NAME_replace Replace
+#define NAME_reserve Reserve
 #define NAME_resize Resize
 #define NAME_reverse Reverse
 #define NAME_seq_push SeqPush
@@ -78,6 +84,7 @@
 #define NAME_append append
 #define NAME_back back
 #define NAME_capacity capacity
+#define NAME_clear clear
 #define NAME_clone clone
 #define NAME_compare compare
 #define NAME_contains contains
@@ -89,6 +96,7 @@
 #define NAME_full full
 #define NAME_get get
 #define NAME_get_ref getRef
+#define NAME_heapify heapify
 #define NAME_index_of indexOf
 #define NAME_init init
 #define NAME_insert insert
@@ -97,6 +105,8 @@
 #define NAME_is_linearized isLinearized
 #define NAME_linearize linearize
 #define NAME_load load
+#define NAME_merge merge
+#define NAME_peek peek
 #define NAME_pop pop
 #define NAME_pop_back popBack
 #define NAME_pop_front popFront
@@ -104,9 +114,11 @@
 #define NAME_push push
 #define NAME_push_back pushBack
 #define NAME_push_front pushFront
+#define NAME_push_pop pushPop
 #define NAME_remove remove
 #define NAME_remove_after removeAfter
 #define NAME_replace replace
+#define NAME_reserve reserve
 #define NAME_resize resize
 #define NAME_reverse reverse
 #define NAME_seq_push seqPush
@@ -124,6 +136,7 @@
 #define NAME_append _append
 #define NAME_back _back
 #define NAME_capacity _capacity
+#define NAME_clear _clear
 #define NAME_clone _clone
 #define NAME_compare _compare
 #define NAME_contains _contains
@@ -135,6 +148,7 @@
 #define NAME_full _full
 #define NAME_get _get
 #define NAME_get_ref _get_ref
+#define NAME_heapify _heapify
 #define NAME_index_of _index_of
 #define NAME_init _init
 #define NAME_insert _insert
@@ -143,6 +157,8 @@
 #define NAME_is_linearized _is_linearized
 #define NAME_linearize _linearize
 #define NAME_load _load
+#define NAME_merge _merge
+#define NAME_peek _peek
 #define NAME_pop _pop
 #define NAME_pop_back _pop_back
 #define NAME_pop_front _pop_front
@@ -150,9 +166,11 @@
 #define NAME_push _push
 #define NAME_push_back _push_back
 #define NAME_push_front _push_front
+#define NAME_push_pop _push_pop
 #define NAME_remove _remove
 #define NAME_remove_after _remove_after
 #define NAME_replace _replace
+#define NAME_reserve _reserve
 #define NAME_resize _resize
 #define NAME_reverse _reverse
 #define NAME_seq_push _seq_push

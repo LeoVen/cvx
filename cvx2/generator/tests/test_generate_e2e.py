@@ -48,6 +48,8 @@ class TestGenerateEndToEnd(unittest.TestCase):
             str(generated_dir / "int_slist.c"),
             str(generated_dir / "int_dlist.c"),
             str(generated_dir / "str_list.c"),
+            str(generated_dir / "int_heap.c"),
+            str(generated_dir / "str_heap.c"),
         ]
         compile_result = subprocess.run(
             [

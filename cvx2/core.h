@@ -15,7 +15,6 @@
 #define CVX_VTAB_COPY(name, T) enum cvx_flags (*name)(T const *, T *)
 #define CVX_VTAB_DROP(name, T) void (*name)(T *)
 #define CVX_VTAB_HASH(name, T) size_t (*name)(T const *)
-#define CVX_VTAB_PRIO(name, T) int (*name)(T const *, T const *)
 
 // TODO: move to integers so I can check this at preprocessor time
 #ifndef CVX_BUFFER_GROWTH_RATE

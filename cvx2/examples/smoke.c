@@ -9,10 +9,12 @@
 #include "generated/int10_array.h"
 #include "generated/int_array.h"
 #include "generated/int_dlist.h"
+#include "generated/int_heap.h"
 #include "generated/int_map_oa.h"
 #include "generated/int_map_sc.h"
 #include "generated/int_ring.h"
 #include "generated/int_slist.h"
+#include "generated/str_heap.h"
 #include "generated/str_list.h"
 #include "generated/str_ring.h"
 #include "types.h"
@@ -646,6 +648,190 @@ static void test_linked_list_of_owned_strings(void)
     printf("linked_list<char *> (copy/drop): OK\n");
 }
 
+static void ih_check(struct int_heap *heap)
+{
+    for (size_t i = 1; i < heap->count; i++)
+        assert(heap->buffer[(i - 1) / 2] >= heap->buffer[i]);
+}
+
+static void ih_pop_all_descending(struct int_heap *heap, size_t expected_count)
+{
+    int last = 0;
+    for (size_t i = 0; i < expected_count; i++)
+    {
+        int out = 0;
+        assert(ih_pop(heap, &out) == CVX_FLAG_OK);
+        assert(i == 0 || out <= last);
+        last = out;
+        ih_check(heap);
+    }
+    assert(ih_empty(heap));
+}
+
+static int int_comp_reversed(int const *a, int const *b)
+{
+    return int_comp(b, a);
+}
+
+static void test_binary_heap(void)
+{
+    struct int_heap_vtabv vtabv = { .comp = int_comp };
+    struct int_heap_vtabv no_comp = { 0 };
+    struct int_heap heap, other, clone;
+    int out = 0;
+
+    assert(ih_init(&heap, NULL, 0) == CVX_FLAG_VTAB);
+    assert(ih_init(&heap, &no_comp, 0) == CVX_FLAG_VTAB);
+    ih_drop(&heap);
+
+    assert(ih_init(&heap, &vtabv, 0) == CVX_FLAG_OK);
+    assert(ih_empty(&heap) && ih_capacity(&heap) == 0);
+    assert(ih_peek(&heap, &out) == CVX_FLAG_EMPTY);
+    assert(ih_pop(&heap, &out) == CVX_FLAG_EMPTY);
+    assert(ih_replace(&heap, 1, &out) == CVX_FLAG_EMPTY);
+    assert(ih_push_pop(&heap, 7, &out) == CVX_FLAG_OK && out == 7);
+    assert(ih_empty(&heap));
+    assert(ih_clear(&heap) == CVX_FLAG_OK);
+    assert(ih_shrink(&heap) == CVX_FLAG_OK);
+
+    unsigned seed = 42;
+    for (int i = 0; i < 200; i++)
+    {
+        seed = seed * 1103515245u + 12345u;
+        assert(ih_push(&heap, (int)(seed >> 16) % 1000) == CVX_FLAG_OK);
+        ih_check(&heap);
+    }
+    assert(ih_count(&heap) == 200);
+    ih_pop_all_descending(&heap, 200);
+
+    // Reversing comp gives a min-heap.
+    struct int_heap_vtabv min_vtabv = { .comp = int_comp_reversed };
+    struct int_heap min_heap;
+    assert(ih_init(&min_heap, &min_vtabv, 4) == CVX_FLAG_OK);
+    int unordered[] = { 5, 1, 4, 2, 3 };
+    for (int i = 0; i < 5; i++)
+        assert(ih_push(&min_heap, unordered[i]) == CVX_FLAG_OK);
+    for (int i = 1; i <= 5; i++)
+        assert(ih_pop(&min_heap, &out) == CVX_FLAG_OK && out == i);
+    ih_drop(&min_heap);
+
+    int values[150];
+    for (int i = 0; i < 150; i++)
+        values[i] = (i * 37) % 150;
+    ih_drop(&heap);
+    assert(ih_heapify(&heap, &no_comp, values, 150) == CVX_FLAG_VTAB);
+    assert(ih_heapify(&heap, &vtabv, NULL, 0) == CVX_FLAG_OK);
+    assert(ih_empty(&heap) && ih_capacity(&heap) == 0);
+    assert(ih_heapify(&heap, &vtabv, values, 150) == CVX_FLAG_OK);
+    ih_check(&heap);
+    assert(ih_count(&heap) == 150 && ih_capacity(&heap) == 150);
+    assert(ih_peek(&heap, &out) == CVX_FLAG_OK && out == 149);
+    ih_pop_all_descending(&heap, 150);
+
+    assert(ih_push(&heap, 5) == CVX_FLAG_OK);
+    assert(ih_push(&heap, 3) == CVX_FLAG_OK);
+    assert(ih_push(&heap, 1) == CVX_FLAG_OK);
+    assert(ih_push_pop(&heap, 10, &out) == CVX_FLAG_OK && out == 10);
+    assert(ih_push_pop(&heap, 5, &out) == CVX_FLAG_OK && out == 5); // ties return item
+    assert(ih_count(&heap) == 3 && ih_peek(&heap, &out) == CVX_FLAG_OK && out == 5);
+    assert(ih_push_pop(&heap, 4, &out) == CVX_FLAG_OK && out == 5);
+    assert(ih_peek(&heap, &out) == CVX_FLAG_OK && out == 4);
+    assert(ih_replace(&heap, 9, &out) == CVX_FLAG_OK && out == 4); // replace always pops the old top
+    assert(ih_peek(&heap, &out) == CVX_FLAG_OK && out == 9);
+    assert(ih_replace(&heap, 0, NULL) == CVX_FLAG_OK);
+    ih_check(&heap);
+    assert(ih_count(&heap) == 3 && ih_peek(&heap, &out) == CVX_FLAG_OK && out == 3);
+
+    assert(ih_init(&other, &vtabv, 0) == CVX_FLAG_OK);
+    assert(ih_merge(&heap, &other) == CVX_FLAG_OK);
+    assert(ih_merge(&heap, &heap) == CVX_FLAG_INVALID);
+    for (int i = 0; i < 20; i++)
+        assert(ih_push(&other, i * 2) == CVX_FLAG_OK);
+    assert(ih_merge(&heap, &other) == CVX_FLAG_OK);
+    assert(ih_empty(&other) && ih_capacity(&other) > 0);
+    assert(ih_count(&heap) == 23);
+    ih_check(&heap);
+    assert(ih_peek(&heap, &out) == CVX_FLAG_OK && out == 38);
+
+    // other is smaller than heap, so the new elements are sifted up instead.
+    assert(ih_push(&other, 100) == CVX_FLAG_OK);
+    assert(ih_merge(&heap, &other) == CVX_FLAG_OK);
+    assert(ih_empty(&other) && ih_count(&heap) == 24);
+    ih_check(&heap);
+    assert(ih_pop(&heap, &out) == CVX_FLAG_OK && out == 100);
+
+    assert(ih_clone(&heap, &clone) == CVX_FLAG_OK);
+    assert(ih_count(&clone) == 23 && ih_capacity(&clone) == ih_capacity(&heap));
+    assert(ih_pop(&clone, NULL) == CVX_FLAG_OK);
+    assert(ih_peek(&heap, &out) == CVX_FLAG_OK && out == 38);
+    ih_pop_all_descending(&clone, 22);
+
+    size_t capacity = ih_capacity(&heap);
+    assert(ih_clear(&heap) == CVX_FLAG_OK);
+    assert(ih_empty(&heap) && ih_capacity(&heap) == capacity);
+    assert(ih_reserve(&heap, 500) == CVX_FLAG_OK && ih_capacity(&heap) == 500);
+    assert(ih_reserve(&heap, 10) == CVX_FLAG_OK && ih_capacity(&heap) == 500);
+    assert(ih_push(&heap, 1) == CVX_FLAG_OK);
+    assert(ih_push(&heap, 2) == CVX_FLAG_OK);
+    assert(ih_shrink(&heap) == CVX_FLAG_OK && ih_capacity(&heap) == 2);
+    ih_pop_all_descending(&heap, 2);
+    assert(ih_shrink(&heap) == CVX_FLAG_OK && ih_capacity(&heap) == 0 && heap.buffer == NULL);
+
+    ih_drop(&heap);
+    ih_drop(&other);
+    ih_drop(&clone);
+    printf("binary_heap: OK\n");
+}
+
+static int str_comp(char *const *a, char *const *b)
+{
+    return strcmp(*a, *b);
+}
+
+static void test_binary_heap_of_owned_strings(void)
+{
+    struct StrHeapVtabV vtabv = { .copy = str_copy, .comp = str_comp, .drop = str_drop };
+    struct StrHeap heap, clone;
+    char *out = NULL;
+    size_t drops = str_drops;
+
+    assert(shInit(&heap, &vtabv, 0) == CVX_FLAG_OK);
+    assert(shPush(&heap, str_new("b")) == CVX_FLAG_OK);
+    assert(shPush(&heap, str_new("d")) == CVX_FLAG_OK);
+    assert(shPush(&heap, str_new("a")) == CVX_FLAG_OK);
+    assert(shPush(&heap, str_new("c")) == CVX_FLAG_OK);
+
+    assert(shClone(&heap, &clone) == CVX_FLAG_OK);
+    char *cloned = NULL;
+    assert(shPeek(&clone, &cloned) == CVX_FLAG_OK && strcmp(cloned, "d") == 0);
+    assert(shPeek(&heap, &out) == CVX_FLAG_OK && out != cloned);
+
+    assert(shPop(&heap, NULL) == CVX_FLAG_OK); // drops "d"
+    assert(str_drops == drops + 1);
+    assert(shPushPop(&heap, str_new("z"), NULL) == CVX_FLAG_OK); // "z" is the new top, dropped
+    assert(str_drops == drops + 2);
+    assert(shReplace(&heap, str_new("e"), NULL) == CVX_FLAG_OK); // drops "c"
+    assert(str_drops == drops + 3);
+    assert(shPop(&heap, &out) == CVX_FLAG_OK && strcmp(out, "e") == 0); // caller owns it
+    free(out);
+
+    char *more[] = { str_new("x"), str_new("y") };
+    struct StrHeap built;
+    assert(shHeapify(&built, &vtabv, more, 2) == CVX_FLAG_OK);
+    assert(shMerge(&heap, &built) == CVX_FLAG_OK);
+    shDrop(&built);
+    assert(str_drops == drops + 3);
+    assert(shPeek(&heap, &out) == CVX_FLAG_OK && strcmp(out, "y") == 0);
+    assert(shClear(&heap) == CVX_FLAG_OK); // drops "a", "b", "x", "y"
+    assert(str_drops == drops + 7);
+
+    shDrop(&heap);
+    shDrop(&clone); // drops the copies of "a", "b", "c", "d"
+    assert(str_drops == drops + 11);
+
+    printf("binary_heap<char *> (copy/drop): OK\n");
+}
+
 int main(void)
 {
     test_dynamic_array();
@@ -661,6 +847,8 @@ int main(void)
     test_linked_list_single_remove_after();
     test_linked_list_double_node_ops();
     test_linked_list_of_owned_strings();
+    test_binary_heap();
+    test_binary_heap_of_owned_strings();
     printf("all cvx2 smoke tests passed\n");
     return 0;
 }

@@ -89,6 +89,11 @@ class LinkedListConfig(_InstantiationBase):
 
 
 @dataclasses.dataclass(kw_only=True)
+class BinaryHeapConfig(_InstantiationBase):
+    value_type: str = field_spec(type_expr=True)
+
+
+@dataclasses.dataclass(kw_only=True)
 class HashtableConfig(_InstantiationBase):
     key_type: str = field_spec(type_expr=True)
     # Required when variants.kind == "map" (the default), forbidden when
@@ -105,11 +110,12 @@ class HamtConfig(_InstantiationBase):
 # Adding a template means adding one small dataclass like the two above and
 # registering it here -- no other validation code site needs to change.
 TEMPLATE_SCHEMAS = {
-    "dynamic_array": DynamicArrayConfig,
+    "binary_heap": BinaryHeapConfig,
     "circular_buffer": CircularBufferConfig,
-    "linked_list": LinkedListConfig,
-    "hashtable": HashtableConfig,
+    "dynamic_array": DynamicArrayConfig,
     "hamt": HamtConfig,
+    "hashtable": HashtableConfig,
+    "linked_list": LinkedListConfig,
 }
 
 TEMPLATE_VARIANTS = {
@@ -359,7 +365,9 @@ BLANK_RUN_RE = re.compile(r"\n{3,}")
 # when the blank line sits inside a /* */ block.
 BLANK_MARKER = "// CVX_GENERATOR_BLANK_LINE"
 BLANK_LINE_RE = re.compile(r"^[ \t]*$\n?", re.MULTILINE)
-BLANK_MARKER_LINE_RE = re.compile(rf"^[ \t]*{re.escape(BLANK_MARKER)}[ \t]*$", re.MULTILINE)
+BLANK_MARKER_LINE_RE = re.compile(
+    rf"^[ \t]*{re.escape(BLANK_MARKER)}[ \t]*$", re.MULTILINE
+)
 
 
 INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
@@ -428,9 +436,7 @@ def _strip_unresolved_names(text, defines):
     Drops that NAME so X renders as written (hamt__make_leaf), uncased --
     names.h only needs entries for names whose case should change."""
     owners = [
-        d.split("=", 1)[1]
-        for d in defines
-        if d.startswith(("CVX_PFX=", "CVX_SNAME="))
+        d.split("=", 1)[1] for d in defines if d.startswith(("CVX_PFX=", "CVX_SNAME="))
     ]
     if not owners:
         return text

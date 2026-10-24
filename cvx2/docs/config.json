@@ -55,6 +55,18 @@
       "out_dir": "cvx"
     },
     {
+      "template": "binary_heap",
+      "value_type": "void *",
+      "struct_name": "BinaryHeap",
+      "prefix": "bh",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "binary_heap",
+      "out_dir": "cvx"
+    },
+    {
       "template": "hashtable",
       "key_type": "void *",
       "value_type": "void *",

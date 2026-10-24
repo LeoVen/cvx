@@ -138,6 +138,25 @@
         "node": "double"
       },
       "out_dir": "generated"
+    },
+    {
+      "template": "binary_heap",
+      "value_type": "int",
+      "struct_name": "int_heap",
+      "prefix": "ih",
+      "out_dir": "generated"
+    },
+    {
+      "template": "binary_heap",
+      "value_type": "char *",
+      "struct_name": "StrHeap",
+      "prefix": "sh",
+      "case": {
+        "function": "PascalCase",
+        "struct": "PascalCase"
+      },
+      "file_name": "str_heap",
+      "out_dir": "generated"
     }
   ]
 }

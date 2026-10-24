@@ -103,6 +103,16 @@ class TestValidateConfig(unittest.TestCase):
                 {"instantiations": [da(template="linked_list", variants={"node": "triple"})]}
             )
 
+    def test_valid_binary_heap(self):
+        result = generator.validate_config({"instantiations": [da(template="binary_heap")]})
+        self.assertEqual(result[0]["template"], "binary_heap")
+
+    def test_binary_heap_requires_value_type(self):
+        bad = da(template="binary_heap")
+        del bad["value_type"]
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [bad]})
+
     def test_hashtable_missing_variants_axis_errors(self):
         bad = ht()
         del bad["variants"]
