@@ -145,6 +145,8 @@ Every template includes `cvx2/fallback.h`, which defines default placeholder val
   - collision: `open_addressing` or `separate_chaining`
 - `hamt`: Hash array mapped tree
   - options: None
+- `segment_tree`: A fixed-size array answering range queries (sum, min, gcd, ...) and point updates in O(log n), for any associative `combine` with an `identity`. Elements must be plain values
+  - options: None
 
 ### Macros
 

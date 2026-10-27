@@ -111,6 +111,18 @@
       },
       "file_name": "hamt",
       "out_dir": "cvx"
+    },
+    {
+      "template": "segment_tree",
+      "value_type": "void *",
+      "struct_name": "SegmentTree",
+      "prefix": "st",
+      "case": {
+        "function": "snake_case",
+        "struct": "PascalCase"
+      },
+      "file_name": "segment_tree",
+      "out_dir": "cvx"
     }
   ]
 }

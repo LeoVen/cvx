@@ -40,6 +40,7 @@
             "circular_buffer",
             "linked_list",
             "binary_heap",
+            "segment_tree",
             "hamt",
             "hashtable"
           ]
@@ -84,7 +85,7 @@
         },
         "options": {
           "type": "object",
-          "description": "Required key set depends on `template`: dynamic_array, circular_buffer, binary_heap and hamt use none; linked_list requires \"node\"; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
+          "description": "Required key set depends on `template`: dynamic_array, circular_buffer, binary_heap, segment_tree and hamt use none; linked_list requires \"node\"; hashtable requires \"collision\" (no default) and accepts \"kind\" (defaults to \"map\").",
           "properties": {
             "collision": {
               "type": "string",

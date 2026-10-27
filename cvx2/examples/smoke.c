@@ -1,5 +1,6 @@
 // Smoke test for the generated examples; see config.json.
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,10 +14,12 @@
 #include "generated/int_map_oa.h"
 #include "generated/int_map_sc.h"
 #include "generated/int_ring.h"
+#include "generated/int_segtree.h"
 #include "generated/int_slist.h"
 #include "generated/str_heap.h"
 #include "generated/str_list.h"
 #include "generated/str_ring.h"
+#include "generated/uint_segtree.h"
 #include "types.h"
 
 static int int_comp(int const *a, int const *b)
@@ -832,6 +835,189 @@ static void test_binary_heap_of_owned_strings(void)
     printf("binary_heap<char *> (copy/drop): OK\n");
 }
 
+static int int_sum(int const *a, int const *b)
+{
+    return *a + *b;
+}
+
+static int int_min(int const *a, int const *b)
+{
+    return *a < *b ? *a : *b;
+}
+
+// Associative but not commutative: the leftmost non-zero element.
+static int int_first_nonzero(int const *a, int const *b)
+{
+    return *a != 0 ? *a : *b;
+}
+
+static int naive_query(int const *values, size_t from, size_t to,
+                       int (*combine)(int const *, int const *), int identity)
+{
+    int result = identity;
+    for (size_t i = from; i < to; i++)
+        result = combine(&result, &values[i]);
+    return result;
+}
+
+static void ist_check_every_range(struct int_segtree *tree, int const *values, size_t count)
+{
+    for (size_t from = 0; from <= count; from++)
+    {
+        for (size_t to = from; to <= count; to++)
+        {
+            int out = 0;
+            assert(ist_query(tree, from, to, &out) == CVX_FLAG_OK);
+            assert(out == naive_query(values, from, to, tree->combine, tree->identity));
+        }
+    }
+}
+
+static int sum_limit;
+
+static bool sum_within_limit(int const *sum)
+{
+    return *sum <= sum_limit;
+}
+
+static void test_segment_tree(void)
+{
+    struct int_segtree tree, clone;
+    int out = 0;
+
+    assert(ist_init(&tree, NULL, 0, 4) == CVX_FLAG_VTAB);
+    ist_drop(&tree);
+
+    assert(ist_init(&tree, int_sum, 0, 0) == CVX_FLAG_OK);
+    assert(ist_count(&tree) == 0);
+    assert(ist_all(&tree, &out) == CVX_FLAG_OK && out == 0);
+    assert(ist_query(&tree, 0, 0, &out) == CVX_FLAG_OK && out == 0);
+    assert(ist_query(&tree, 0, 1, &out) == CVX_FLAG_RANGE);
+    assert(ist_get(&tree, 0, &out) == CVX_FLAG_RANGE);
+    assert(ist_set(&tree, 0, 1) == CVX_FLAG_RANGE);
+    ist_drop(&tree);
+
+    // Every count from 1 to 33 covers both exact and padded powers of two.
+    int values[33];
+    unsigned seed = 7;
+    for (size_t count = 1; count <= 33; count++)
+    {
+        for (size_t i = 0; i < count; i++)
+        {
+            seed = seed * 1103515245u + 12345u;
+            values[i] = (int)(seed >> 16) % 21 - 10;
+        }
+
+        assert(ist_build(&tree, int_sum, 0, values, count) == CVX_FLAG_OK);
+        ist_check_every_range(&tree, values, count);
+        ist_drop(&tree);
+
+        assert(ist_build(&tree, int_min, INT_MAX, values, count) == CVX_FLAG_OK);
+        ist_check_every_range(&tree, values, count);
+        ist_drop(&tree);
+
+        for (size_t i = 0; i < count; i += 2)
+            values[i] = 0;
+        assert(ist_build(&tree, int_first_nonzero, 0, values, count) == CVX_FLAG_OK);
+        ist_check_every_range(&tree, values, count);
+        ist_drop(&tree);
+    }
+
+    assert(ist_init(&tree, int_sum, 0, 10) == CVX_FLAG_OK);
+    assert(ist_all(&tree, &out) == CVX_FLAG_OK && out == 0);
+    for (size_t i = 0; i < 10; i++)
+    {
+        values[i] = (int)i + 1;
+        assert(ist_set(&tree, i, values[i]) == CVX_FLAG_OK);
+    }
+    assert(ist_set(&tree, 10, 1) == CVX_FLAG_RANGE);
+    assert(ist_get(&tree, 3, &out) == CVX_FLAG_OK && out == 4);
+    assert(ist_get(&tree, 3, NULL) == CVX_FLAG_OK);
+    assert(ist_all(&tree, &out) == CVX_FLAG_OK && out == 55);
+    assert(ist_query(&tree, 4, 3, &out) == CVX_FLAG_RANGE);
+    assert(ist_query(&tree, 0, 11, &out) == CVX_FLAG_RANGE);
+    ist_check_every_range(&tree, values, 10);
+
+    assert(ist_clone(&tree, &clone) == CVX_FLAG_OK);
+    assert(ist_set(&clone, 0, 100) == CVX_FLAG_OK);
+    assert(ist_all(&clone, &out) == CVX_FLAG_OK && out == 154);
+    assert(ist_all(&tree, &out) == CVX_FLAG_OK && out == 55);
+    ist_drop(&clone);
+
+    // The elements are 1, 2, ..., 10.
+    size_t index = 0;
+    sum_limit = 10;
+    assert(ist_max_right(&tree, 0, sum_within_limit, &index) == CVX_FLAG_OK && index == 4);
+    assert(ist_max_right(&tree, 3, sum_within_limit, &index) == CVX_FLAG_OK && index == 5);
+    assert(ist_max_right(&tree, 10, sum_within_limit, &index) == CVX_FLAG_OK && index == 10);
+    assert(ist_max_right(&tree, 11, sum_within_limit, &index) == CVX_FLAG_RANGE);
+    assert(ist_max_right(&tree, 0, NULL, &index) == CVX_FLAG_INVALID);
+    sum_limit = 1000;
+    assert(ist_max_right(&tree, 0, sum_within_limit, &index) == CVX_FLAG_OK && index == 10);
+    sum_limit = 0;
+    assert(ist_max_right(&tree, 0, sum_within_limit, &index) == CVX_FLAG_OK && index == 0);
+    sum_limit = -1;
+    assert(ist_max_right(&tree, 0, sum_within_limit, &index) == CVX_FLAG_INVALID);
+
+    sum_limit = 19;
+    assert(ist_min_left(&tree, 10, sum_within_limit, &index) == CVX_FLAG_OK && index == 8);
+    assert(ist_min_left(&tree, 5, sum_within_limit, &index) == CVX_FLAG_OK && index == 0);
+    assert(ist_min_left(&tree, 0, sum_within_limit, &index) == CVX_FLAG_OK && index == 0);
+    assert(ist_min_left(&tree, 11, sum_within_limit, &index) == CVX_FLAG_RANGE);
+
+    for (size_t from = 0; from <= 10; from++)
+    {
+        for (int limit = 0; limit <= 60; limit++)
+        {
+            sum_limit = limit;
+            size_t expected = from;
+            while (expected < 10 && naive_query(values, from, expected + 1, int_sum, 0) <= limit)
+                expected++;
+            assert(ist_max_right(&tree, from, sum_within_limit, &index) == CVX_FLAG_OK);
+            assert(index == expected);
+
+            expected = from;
+            while (expected > 0 && naive_query(values, expected - 1, from, int_sum, 0) <= limit)
+                expected--;
+            assert(ist_min_left(&tree, from, sum_within_limit, &index) == CVX_FLAG_OK);
+            assert(index == expected);
+        }
+    }
+
+    ist_drop(&tree);
+    printf("segment_tree: OK\n");
+}
+
+static unsigned uint_gcd(unsigned const *a, unsigned const *b)
+{
+    unsigned x = *a, y = *b;
+    while (y != 0)
+    {
+        unsigned rest = x % y;
+        x = y;
+        y = rest;
+    }
+    return x;
+}
+
+static void test_segment_tree_gcd(void)
+{
+    unsigned values[] = { 12, 18, 24, 7, 35, 49 };
+    struct UintSegTree tree;
+    unsigned out = 0;
+
+    assert(ustBuild(&tree, uint_gcd, 0, values, 6) == CVX_FLAG_OK);
+    assert(ustQuery(&tree, 0, 3, &out) == CVX_FLAG_OK && out == 6);
+    assert(ustQuery(&tree, 3, 6, &out) == CVX_FLAG_OK && out == 7);
+    assert(ustAll(&tree, &out) == CVX_FLAG_OK && out == 1);
+    assert(ustSet(&tree, 3, 14) == CVX_FLAG_OK);
+    assert(ustQuery(&tree, 3, 6, &out) == CVX_FLAG_OK && out == 7);
+    assert(ustQuery(&tree, 2, 4, &out) == CVX_FLAG_OK && out == 2);
+    ustDrop(&tree);
+
+    printf("segment_tree<unsigned> (gcd): OK\n");
+}
+
 int main(void)
 {
     test_dynamic_array();
@@ -849,6 +1035,8 @@ int main(void)
     test_linked_list_of_owned_strings();
     test_binary_heap();
     test_binary_heap_of_owned_strings();
+    test_segment_tree();
+    test_segment_tree_gcd();
     printf("all cvx2 smoke tests passed\n");
     return 0;
 }

@@ -94,6 +94,11 @@ class BinaryHeapConfig(_InstantiationBase):
 
 
 @dataclasses.dataclass(kw_only=True)
+class SegmentTreeConfig(_InstantiationBase):
+    value_type: str = field_spec(type_expr=True)
+
+
+@dataclasses.dataclass(kw_only=True)
 class HashtableConfig(_InstantiationBase):
     key_type: str = field_spec(type_expr=True)
     # Required when options.kind == "map" (the default), forbidden when
@@ -116,6 +121,7 @@ TEMPLATE_SCHEMAS = {
     "hamt": HamtConfig,
     "hashtable": HashtableConfig,
     "linked_list": LinkedListConfig,
+    "segment_tree": SegmentTreeConfig,
 }
 
 TEMPLATE_OPTIONS = {
@@ -364,6 +370,11 @@ BLANK_RUN_RE = re.compile(r"\n{3,}")
 # #if branches -- see _mark_blank_lines. A // comment, so it stays inert even
 # when the blank line sits inside a /* */ block.
 BLANK_MARKER = "// CVX_GENERATOR_BLANK_LINE"
+# Appended to a block comment line ending in a backslash (e.g. a "/  \\"
+# branch of an ASCII tree), which would otherwise splice the next line onto it
+# -- see _protect_comment_backslashes.
+BACKSLASH_MARKER = "CVX_GENERATOR_BACKSLASH"
+COMMENT_BACKSLASH_RE = re.compile(r"^([ \t]*\*[^\n]*\\)$", re.MULTILINE)
 BLANK_LINE_RE = re.compile(r"^[ \t]*$\n?", re.MULTILINE)
 BLANK_MARKER_LINE_RE = re.compile(
     rf"^[ \t]*{re.escape(BLANK_MARKER)}[ \t]*$", re.MULTILINE
@@ -448,6 +459,10 @@ def _mark_blank_lines(text):
     return re.sub(r"^[ \t]*$(?=\n)", BLANK_MARKER, text, flags=re.MULTILINE)
 
 
+def _protect_comment_backslashes(text):
+    return COMMENT_BACKSLASH_RE.sub(rf"\1{BACKSLASH_MARKER}", text)
+
+
 def _restore_blank_lines(text):
     """Drops every blank line cpp produced (dropped directives, untaken #if
     branches, macros expanding to nothing), then turns the template's own
@@ -459,9 +474,13 @@ def _restore_blank_lines(text):
 def expand(text, defines, compiler):
     includes, stripped = _strip_includes(text)
     expanded = _run_preprocessor(
-        PASTE_HELPERS + NAMES_H_DEFS + _mark_blank_lines(stripped), defines, compiler
+        PASTE_HELPERS
+        + NAMES_H_DEFS
+        + _mark_blank_lines(_protect_comment_backslashes(stripped)),
+        defines,
+        compiler,
     )
-    expanded = _restore_blank_lines(expanded)
+    expanded = _restore_blank_lines(expanded).replace(BACKSLASH_MARKER, "")
     expanded = _strip_unresolved_names(expanded, defines)
     expanded = EMPTY_CLANG_FORMAT_RE.sub("", expanded)
     if includes:

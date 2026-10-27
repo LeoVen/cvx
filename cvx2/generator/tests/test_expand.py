@@ -143,6 +143,11 @@ class TestExpand(unittest.TestCase):
         out = generator.expand(text, [], COMPILER)
         self.assertEqual(out, "struct s\n{\n    int a;\n    int c;\n};\n\nint d;\n")
 
+    def test_backslash_ending_a_comment_line_is_not_a_line_continuation(self):
+        text = "/**\n *   / \\\n *  a   b\n */\nint d;\n"
+        out = generator.expand(text, [], COMPILER)
+        self.assertEqual(out, text)
+
     def test_value_type_never_case_converted(self):
         out = generator.expand(FIXTURE_HEADER, defines(value_type="char *", case_defines=CAMEL), COMPILER)
         self.assertIn("char * *buffer", out)

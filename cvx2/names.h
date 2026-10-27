@@ -29,8 +29,10 @@
 
 #ifdef CVX_FUNC_NAMES_PASCALCASE
 
+#define NAME_all All
 #define NAME_append Append
 #define NAME_back Back
+#define NAME_build Build
 #define NAME_capacity Capacity
 #define NAME_clear Clear
 #define NAME_clone Clone
@@ -53,7 +55,9 @@
 #define NAME_is_linearized IsLinearized
 #define NAME_linearize Linearize
 #define NAME_load Load
+#define NAME_max_right MaxRight
 #define NAME_merge Merge
+#define NAME_min_left MinLeft
 #define NAME_peek Peek
 #define NAME_pop Pop
 #define NAME_pop_back PopBack
@@ -63,6 +67,7 @@
 #define NAME_push_back PushBack
 #define NAME_push_front PushFront
 #define NAME_push_pop PushPop
+#define NAME_query Query
 #define NAME_remove Remove
 #define NAME_remove_after RemoveAfter
 #define NAME_replace Replace
@@ -70,6 +75,7 @@
 #define NAME_resize Resize
 #define NAME_reverse Reverse
 #define NAME_seq_push SeqPush
+#define NAME_set Set
 #define NAME_set_capacity SetCapacity
 #define NAME_shrink Shrink
 #define NAME_sort Sort
@@ -81,8 +87,10 @@
 
 #elif defined(CVX_FUNC_NAMES_CAMELCASE)
 
+#define NAME_all all
 #define NAME_append append
 #define NAME_back back
+#define NAME_build build
 #define NAME_capacity capacity
 #define NAME_clear clear
 #define NAME_clone clone
@@ -105,7 +113,9 @@
 #define NAME_is_linearized isLinearized
 #define NAME_linearize linearize
 #define NAME_load load
+#define NAME_max_right maxRight
 #define NAME_merge merge
+#define NAME_min_left minLeft
 #define NAME_peek peek
 #define NAME_pop pop
 #define NAME_pop_back popBack
@@ -115,6 +125,7 @@
 #define NAME_push_back pushBack
 #define NAME_push_front pushFront
 #define NAME_push_pop pushPop
+#define NAME_query query
 #define NAME_remove remove
 #define NAME_remove_after removeAfter
 #define NAME_replace replace
@@ -122,6 +133,7 @@
 #define NAME_resize resize
 #define NAME_reverse reverse
 #define NAME_seq_push seqPush
+#define NAME_set set
 #define NAME_set_capacity setCapacity
 #define NAME_shrink shrink
 #define NAME_sort sort
@@ -133,8 +145,10 @@
 
 #else
 
+#define NAME_all _all
 #define NAME_append _append
 #define NAME_back _back
+#define NAME_build _build
 #define NAME_capacity _capacity
 #define NAME_clear _clear
 #define NAME_clone _clone
@@ -157,7 +171,9 @@
 #define NAME_is_linearized _is_linearized
 #define NAME_linearize _linearize
 #define NAME_load _load
+#define NAME_max_right _max_right
 #define NAME_merge _merge
+#define NAME_min_left _min_left
 #define NAME_peek _peek
 #define NAME_pop _pop
 #define NAME_pop_back _pop_back
@@ -167,6 +183,7 @@
 #define NAME_push_back _push_back
 #define NAME_push_front _push_front
 #define NAME_push_pop _push_pop
+#define NAME_query _query
 #define NAME_remove _remove
 #define NAME_remove_after _remove_after
 #define NAME_replace _replace
@@ -174,6 +191,7 @@
 #define NAME_resize _resize
 #define NAME_reverse _reverse
 #define NAME_seq_push _seq_push
+#define NAME_set _set
 #define NAME_set_capacity _set_capacity
 #define NAME_shrink _shrink
 #define NAME_sort _sort

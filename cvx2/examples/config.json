@@ -157,6 +157,25 @@
       },
       "file_name": "str_heap",
       "out_dir": "generated"
+    },
+    {
+      "template": "segment_tree",
+      "value_type": "int",
+      "struct_name": "int_segtree",
+      "prefix": "ist",
+      "out_dir": "generated"
+    },
+    {
+      "template": "segment_tree",
+      "value_type": "unsigned",
+      "struct_name": "UintSegTree",
+      "prefix": "ust",
+      "case": {
+        "function": "PascalCase",
+        "struct": "PascalCase"
+      },
+      "file_name": "uint_segtree",
+      "out_dir": "generated"
     }
   ]
 }

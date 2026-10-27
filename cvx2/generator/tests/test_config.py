@@ -107,6 +107,16 @@ class TestValidateConfig(unittest.TestCase):
         result = generator.validate_config({"instantiations": [da(template="binary_heap")]})
         self.assertEqual(result[0]["template"], "binary_heap")
 
+    def test_valid_segment_tree(self):
+        result = generator.validate_config({"instantiations": [da(template="segment_tree")]})
+        self.assertEqual(result[0]["template"], "segment_tree")
+
+    def test_segment_tree_requires_value_type(self):
+        bad = da(template="segment_tree")
+        del bad["value_type"]
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [bad]})
+
     def test_binary_heap_requires_value_type(self):
         bad = da(template="binary_heap")
         del bad["value_type"]
