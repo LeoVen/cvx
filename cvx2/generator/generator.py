@@ -528,6 +528,14 @@ def _defines_for(inst):
     return defines
 
 
+def file_names(inst):
+    file_stem = inst["file_name"] or inst["struct_name"]
+    header_filename = f"{file_stem}.h"
+    source_filename = f"{file_stem}.c"
+
+    return file_stem, header_filename, source_filename
+
+
 def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
     template_name = inst["template"]
     defines = _defines_for(inst)
@@ -540,9 +548,7 @@ def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
         _local_macro_defines(header_text) + source_text, defines, compiler
     )
 
-    file_stem = inst["file_name"] or inst["struct_name"]
-    header_filename = f"{file_stem}.h"
-    source_filename = f"{file_stem}.c"
+    file_stem, header_filename, source_filename = file_names(inst)
 
     guard = f"{file_stem.upper()}_H"
     includes_block = "".join(f"{_include_directive(h)}\n" for h in inst["includes"])
@@ -554,18 +560,24 @@ def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
     return header_filename, header_out, source_filename, source_out
 
 
-def run(config_path, compiler):
+def run(config_path, compiler, list_outputs):
     raw_config = json.loads(Path(config_path).read_text())
     instantiations = validate_config(raw_config)
 
     written = []
     for inst in instantiations:
+        out_dir = Path(config_path).parent / inst["out_dir"]
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        if list_outputs:
+            _, header_filename, source_filename = file_names(inst)
+            print(out_dir / header_filename)
+            print(out_dir / source_filename)
+            continue
+
         header_filename, header_out, source_filename, source_out = (
             generate_instantiation(inst, compiler)
         )
-
-        out_dir = Path(config_path).parent / inst["out_dir"]
-        out_dir.mkdir(parents=True, exist_ok=True)
 
         (out_dir / header_filename).write_text(header_out)
         (out_dir / source_filename).write_text(source_out)
@@ -586,10 +598,16 @@ def main(argv=None):
         choices=sorted(COMPILER_FLAGS),
         help="C compiler to preprocess templates with",
     )
+    parser.add_argument(
+        "--list-outputs",
+        required=False,
+        action=argparse.BooleanOptionalAction,
+        help="list output files instead of generating them",
+    )
     args = parser.parse_args(argv)
 
     try:
-        written = run(args.config, args.compiler)
+        written = run(args.config, args.compiler, args.list_outputs)
     except (ConfigError, PreprocessError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
