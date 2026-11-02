@@ -7,8 +7,8 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from cvx2.generator import cvx_generator as generator
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
+import cvx_generator as generator
 
 COMPILER = next((c for c in generator.COMPILER_FLAGS if shutil.which(c)), None)
 
@@ -49,7 +49,7 @@ class TestGenerateInstantiationIncludes(unittest.TestCase):
         header_filename, header_out, _, _ = generator.generate_instantiation(da(), COMPILER)
         self.assertEqual(header_filename, "my_array.h")
         self.assertIn('#include "cvx2/core.h"', header_out)
-        self.assertEqual(header_out.count("#include"), 4)  # core.h, flags.h, stdbool.h, stddef.h
+        self.assertEqual(header_out.count("#include"), 6)  # core.h, flags.h, stdbool.h, stddef.h, stdlib.h, string.h
 
     def test_custom_type_header_is_included_in_generated_header(self):
         header_filename, header_out, source_filename, source_out = generator.generate_instantiation(

@@ -25,8 +25,8 @@ from pathlib import Path
 # 2. Macro Expansion
 # 3. File Generation
 
-TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
-NAMES_H_PATH = Path(__file__).resolve().parent.parent / "names.h"
+TEMPLATES_DIR = Path(__file__).resolve().parent / "cvx2" / "templates"
+NAMES_H_PATH = Path(__file__).resolve().parent / "cvx2" / "names.h"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 # based on names.h

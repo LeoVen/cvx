@@ -24,7 +24,7 @@ class TestGenerateEndToEnd(unittest.TestCase):
         gen = subprocess.run(
             [
                 sys.executable,
-                str(CVX2_DIR / "generator" / "generator.py"),
+                str(REPO_ROOT / "cvx_generator.py"),
                 "--config",
                 str(EXAMPLES_DIR / "config.json"),
                 "--compiler",

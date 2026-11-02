@@ -6,8 +6,8 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from cvx2.generator import cvx_generator as generator
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
+import cvx_generator as generator
 
 
 class TestCaseDefines(unittest.TestCase):
