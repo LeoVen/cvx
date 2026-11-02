@@ -22,6 +22,8 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "cvx2/core.h"
 #include "cvx2/flags.h"

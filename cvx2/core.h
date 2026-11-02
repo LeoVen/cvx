@@ -53,7 +53,6 @@ enum cvx_hamt_node_t
 {
     CVX_HAMT_NODE_LEAF,
     CVX_HAMT_NODE_INTERNAL,
-    CVX_HAMT_NODE_COLLISION,
 };
 
 #endif /* CVX_CORE_H */

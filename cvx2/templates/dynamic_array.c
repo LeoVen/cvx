@@ -1,8 +1,5 @@
 #include "dynamic_array.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 // Not part of the public API.
 static bool FUNC(__assert_capacity)(struct CVX_SNAME *self);
 static bool FUNC(__assert_capacity_for)(struct CVX_SNAME *self, size_t additional);

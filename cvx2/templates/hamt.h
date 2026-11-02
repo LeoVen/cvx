@@ -23,6 +23,7 @@
 #endif
 // clang-format on
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,7 +37,6 @@
 #define VTAB_V CVX_(CVX_SNAME, NAME##_vtabv)
 #define NODE CVX_(CVX_SNAME, NAME##_node)
 #define ENTRY CVX_(CVX_SNAME, NAME##_entry)
-#define COLLISION CVX_(CVX_SNAME, NAME##_collision)
 #define INTERNAL CVX_(CVX_SNAME, NAME##_internal)
 
 // clang-format off
@@ -92,14 +92,7 @@ struct ENTRY
     CVX_HAMT_HASH_T hash;
     CVX_KEY key;
     CVX_VAL val;
-    // TODO: *next pointer and remove COLLISION
-};
-
-struct COLLISION
-{
-    uint32_t hash;
-    size_t count;
-    struct NODE **entries;
+    struct ENTRY *next;
 };
 
 struct INTERNAL
@@ -110,13 +103,11 @@ struct INTERNAL
 
 struct NODE
 {
-    size_t ref_count;
     enum cvx_hamt_node_t type;
     union
     {
         struct ENTRY leaf;
         struct INTERNAL internal;
-        struct COLLISION collision;
     } as;
 };
 
@@ -128,7 +119,52 @@ struct CVX_SNAME
     struct NODE *root;
 };
 
-// Initializers and destructors
+/**
+ * @brief Initializes self.
+ *
+ * @param self a non-NULL pointer to an uninitialized HAMT
+ * @param vtabk the vtable used to hash/compare/copy/drop keys; hash and comp are required
+ * @param vtabv the vtable used to copy/drop values, may be NULL
+ *
+ * Error Handling
+ * - CVX_FLAG_VTAB: if vtabk is NULL, or vtabk->hash or vtabk->comp is NULL
+ **/
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv);
+/**
+ * @brief Frees the HAMT, dropping any entries still stored.
+ *
+ * @param self a pointer to an initialized HAMT; NULL is accepted and ignored
+ *
+ * @note If vtabk->drop is set, it is called for every stored key before the
+ * buffer itself is freed. Same for values if vtabk->drop is set.
+ *
+ * Error Handling
+ * - always returns CVX_FLAG_OK
+ **/
+enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self);
+/**
+ * @brief Initializes clone as a deep copy of orig.
+ *
+ * @param orig a non-NULL pointer to an initialized hashtable
+ * @param clone a non-NULL pointer to an uninitialized hashtable
+ *
+ * @note Keys are copied with vtabk->copy if set, otherwise shallow-copied.
+ *
+ * Error Handling
+ * - CVX_FLAG_ALLOC: if allocation of clone's nodes or buffers fails
+ **/
+enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
+/**
+ * @brief Inserts a key value pair.
+ *
+ * @param self a non-NULL pointer to an initialized HAMT
+ * @param key the key to insert
+ * @param val the value to associate with key
+ *
+ * Error Handling
+ * - CVX_FLAG_VTAB: if vtabk, vtabk->hash, or vtabk->comp is not set
+ * - CVX_FLAG_DUPLICATE: if key is already present
+ * - CVX_FLAG_ALLOC: if allocation for nodes or buffers fails
+ **/
 enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val);
 enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
