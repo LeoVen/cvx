@@ -51,16 +51,16 @@ valgrind_all:
 check_examples:
 	find ./examples -type f -name "*.c" | xargs -I {} sh -c 'just valgrind {} || exit 255'
 
-# generate cvx2 container types from a config (default: the example config)
-# compiler is mandatory, e.g.: just cvx2-generate gcc
-cvx2-generate compiler config="cvx2/examples/config.json":
+# generate cvx container types from a config (default: the example config)
+# compiler is mandatory, e.g.: just cvx-generate gcc
+cvx-generate compiler config="cvx/examples/config.json":
 	python3 cvx_generator.py --config {{config}} --compiler {{compiler}}
 
 generate-docs:
-	python3 cvx_generator.py --config cvx2/docs/config.json --compiler gcc
-	clang-format --style=file:./.clang-format -i cvx2/docs/includes/*.h cvx2/docs/src/*.c
+	python3 cvx_generator.py --config cvx/docs/config.json --compiler gcc
+	clang-format --style=file:./.clang-format -i cvx/docs/includes/*.h cvx/docs/src/*.c
 
-# run the cvx2 generator's own unit + end-to-end tests
-cvx2-test:
-	python3 -m unittest discover -s cvx2/generator/tests -p "test_*.py" -v
+# run the cvx generator's own unit + end-to-end tests
+cvx-test:
+	python3 -m unittest discover -s cvx/generator/tests -p "test_*.py" -v
 

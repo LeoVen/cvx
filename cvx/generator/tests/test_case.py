@@ -1,5 +1,5 @@
 """Case conversion itself is now done by the real preprocessor via
-cvx2/names.h (see test_expand.py) -- this only covers the small bit of
+cvx/names.h (see test_expand.py) -- this only covers the small bit of
 Python-side mapping from a config's "case" object to the -D flags that
 select the right names.h branches."""
 import sys

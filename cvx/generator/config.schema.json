@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Reference documentation for cvx2 generator config files, kept by hand in sync with the actual validator in cvx_generator.py (validate_config). Not loaded or enforced by the generator itself (stdlib-only, no jsonschema dependency) -- this exists for editors/IDEs and for humans to check the config shape against.",
-  "title": "cvx2 generator config",
+  "$comment": "Reference documentation for cvx generator config files, kept by hand in sync with the actual validator in cvx_generator.py (validate_config). Not loaded or enforced by the generator itself (stdlib-only, no jsonschema dependency) -- this exists for editors/IDEs and for humans to check the config shape against.",
+  "title": "cvx generator config",
   "type": "object",
   "required": [
     "instantiations"

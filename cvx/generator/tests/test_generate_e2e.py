@@ -1,5 +1,5 @@
-"""End-to-end: run the real CLI against cvx2/examples/config.json, then
-compile the generated output plus cvx2/examples/smoke.c with gcc and run it.
+"""End-to-end: run the real CLI against cvx/examples/config.json, then
+compile the generated output plus cvx/examples/smoke.c with gcc and run it.
 Skips (rather than fails) if gcc isn't on PATH -- unit tests above already
 cover the generator's own logic without needing a C toolchain."""
 
@@ -10,8 +10,8 @@ import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-CVX2_DIR = REPO_ROOT / "cvx2"
-EXAMPLES_DIR = CVX2_DIR / "examples"
+CVX_DIR = REPO_ROOT / "cvx"
+EXAMPLES_DIR = CVX_DIR / "examples"
 
 
 @unittest.skipUnless(shutil.which("gcc"), "gcc not found on PATH")
@@ -35,7 +35,7 @@ class TestGenerateEndToEnd(unittest.TestCase):
         )
         self.assertEqual(gen.returncode, 0, gen.stderr)
 
-        binary = Path("/tmp") / "cvx2_e2e_smoke"
+        binary = Path("/tmp") / "cvx_e2e_smoke"
         sources = [
             str(EXAMPLES_DIR / "smoke.c"),
             str(generated_dir / "int_array.c"),
@@ -78,7 +78,7 @@ class TestGenerateEndToEnd(unittest.TestCase):
         self.assertEqual(
             run_result.returncode, 0, run_result.stdout + run_result.stderr
         )
-        self.assertIn("all cvx2 smoke tests passed", run_result.stdout)
+        self.assertIn("all cvx smoke tests passed", run_result.stdout)
 
 
 if __name__ == "__main__":

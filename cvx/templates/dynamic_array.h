@@ -6,7 +6,7 @@
  *
  */
 
-#include "cvx2/fallback.h"
+#include "cvx/fallback.h"
 
 // clang-format off
 #ifndef CVX_VAL
@@ -25,9 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cvx2/core.h"
-#include "cvx2/flags.h"
-#include "cvx2/names.h"
+#include "cvx/core.h"
+#include "cvx/flags.h"
+#include "cvx/names.h"
 
 #define FUNC(X) CVX_(CVX_PFX, NAME##X)
 #define VTAB_V CVX_(CVX_SNAME, NAME##_vtabv)
@@ -347,7 +347,7 @@ enum cvx_flags FUNC(_index_of)(struct CVX_SNAME *self, CVX_VAL item, size_t *out
  * @param new_count desired element count
  *
  * @note Passing 0 empties the array entirely, without freeing the buffer --
- * this is cvx2's equivalent of other languages' "clear". Capacity is never
+ * this is cvx's equivalent of other languages' "clear". Capacity is never
  * touched; call `_shrink` afterward to reclaim memory. A no-op if new_count
  * is already >= count.
  *

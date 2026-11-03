@@ -1,5 +1,5 @@
-#ifndef CVX2_NAMES_H
-#define CVX2_NAMES_H
+#ifndef CVX_NAMES_H
+#define CVX_NAMES_H
 
 #ifdef CVX_STRUCT_NAMES_PASCALCASE
 

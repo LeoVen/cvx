@@ -70,7 +70,7 @@ int main(void)
 }
 ```
 
-The generated files include `cvx2/core.h` and `cvx2/flags.h`, so compile with the repository root on the include path:
+The generated files include `cvx/core.h` and `cvx/flags.h`, so compile with the repository root on the include path:
 
 ```sh
 gcc -I path/to/cvx main.c generated/int_array.c -o main
@@ -78,7 +78,7 @@ gcc -I path/to/cvx main.c generated/int_array.c -o main
 
 ### Configuration
 
-Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is in `cvx2/generator/config.schema.json`.
+Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is in `cvx/generator/config.schema.json`.
 
 | Field | Required | Description |
 |---|---|---|
@@ -139,14 +139,14 @@ Callbacks receive elements by pointer (`T const *` for read-only access, `T *` f
 
 ## Templates
 
-Templates live in `cvx2/templates/` as a `.h`/`.c` pair written in ordinary C, with placeholder macros where the types and names go. To generate an instantiation, the generator:
+Templates live in `cvx/templates/` as a `.h`/`.c` pair written in ordinary C, with placeholder macros where the types and names go. To generate an instantiation, the generator:
 
 1. Turns the config into `-D` defines (`CVX_VAL=int`, `CVX_SNAME=int_array`, ...).
 2. Pulls out the `#include` lines so the preprocessor doesn't inline other headers.
 3. Runs the compiler's preprocessor (`-E -C`, keeping comments) over the template, which resolves every placeholder and selects the `#if` branches for the chosen options.
 4. Puts the includes back, adds an include guard and writes the result.
 
-Every template includes `cvx2/fallback.h`, which defines default placeholder values when `CVX_ENABLE_FALLBACK` is set. This lets clangd understand a template opened directly, it has no effect on generation.
+Every template includes `cvx/fallback.h`, which defines default placeholder values when `CVX_ENABLE_FALLBACK` is set. This lets clangd understand a template opened directly, it has no effect on generation.
 
 - `dynamic_array`: A growable array
   - options: None
@@ -174,7 +174,7 @@ These are the placeholders a template uses. The generator defines them from the 
 | `CVX_KEY` | key-value containers | The key type |
 | `CVX_SNAME` | yes | The name of the generated struct (e.g. `int_array` becomes `struct int_array`) |
 | `CVX_PFX` | yes | Prefix for all generated functions (e.g. `ia` becomes `ia_push(...)`) |
-| `CVX2_*` | depends | Data structures can have more options |
+| `CVX_*` | depends | Data structures can have more options |
 
 ### Case
 
@@ -192,7 +192,7 @@ Either key can be omitted and defaults to `snake_case`. Only the suffixes are co
 | `camelCase` | `iapush`, `iaindexOf` | `IntArrayvtabV` |
 | `PascalCase` | `iaPush`, `iaIndexOf` | `IntArrayVtabV` |
 
-Suffix spellings come from `cvx2/names.h`.
+Suffix spellings come from `cvx/names.h`.
 Private functions do not follow this casing and are always written as they are, e.g. `FUNC(__assert_capacity)` with prefix `da` gives `da__assert_capacity`.
 
 ---
@@ -258,10 +258,10 @@ just example hanoi
 # Auto-format all .c and .h files with clang-format
 just format
 
-# Generate cvx2/examples/config.json
-just cvx2-generate gcc
+# Generate cvx/examples/config.json
+just cvx-generate gcc
 
-# Generate cvx2/docs/config.json and build the Doxygen docs into docs/output
+# Generate cvx/docs/config.json and build the Doxygen docs into docs/output
 just docs
 ```
 
@@ -270,10 +270,10 @@ just docs
 ## Testing
 
 ```sh
-just cvx2-test
+just cvx-test
 ```
 
-This runs the generator's unit tests in `cvx2/generator/tests/`. The end-to-end test generates `cvx2/examples/config.json`, compiles the output together with `cvx2/examples/smoke.c` and runs it, so it needs `gcc`, `clang` or `cc` on `PATH`.
+This runs the generator's unit tests in `cvx/generator/tests/`. The end-to-end test generates `cvx/examples/config.json`, compiles the output together with `cvx/examples/smoke.c` and runs it, so it needs `gcc`, `clang` or `cc` on `PATH`.
 
 The legacy `cvx/` library has its own tests in `tests/`, included from `tests.c`:
 

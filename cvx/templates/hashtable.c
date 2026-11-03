@@ -8,7 +8,7 @@ static enum cvx_flags FUNC(__init_buffer)(struct CVX_SNAME *self, size_t capacit
 static void FUNC(__drop_buffer)(struct CVX_SNAME *self);
 static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
 static bool FUNC(__key_exists)(struct CVX_SNAME *self, CVX_KEY key);
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 static CVX_VAL *FUNC(__get_ref)(struct CVX_SNAME *self, CVX_KEY key);
 static void FUNC(__insert_unchecked)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val);
 static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
@@ -35,7 +35,7 @@ static const size_t CVX_(CVX_PFX, NAME__primes)[] = {
 static const size_t CVX_(CVX_PFX, NAME__primes_count) = sizeof(CVX_(CVX_PFX, NAME__primes)) /
                                                         sizeof(CVX_(CVX_PFX, NAME__primes)[0]);
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct VTAB_V *vtabv,
                            size_t capacity)
 {
@@ -73,7 +73,7 @@ enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, size_t 
 
 enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone)
 {
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
     enum cvx_flags flag = FUNC(_init)(clone, orig->vtabk, orig->vtabv, 0);
 #else
     enum cvx_flags flag = FUNC(_init)(clone, orig->vtabk, 0);
@@ -120,7 +120,7 @@ bool FUNC(_empty)(struct CVX_SNAME *self)
     return self->count == 0;
 }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val)
 {
     if (!self->vtabk || !self->vtabk->hash || !self->vtabk->comp)
@@ -165,7 +165,7 @@ enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key)
 }
 #endif
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 enum cvx_flags FUNC(_update)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL new_val, CVX_VAL *old_out)
 {
     if (!self->vtabk || !self->vtabk->hash || !self->vtabk->comp)
@@ -185,7 +185,7 @@ enum cvx_flags FUNC(_update)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL new_va
 }
 #endif
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 enum cvx_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out)
 {
     if (!self->vtabk || !self->vtabk->hash || !self->vtabk->comp)
@@ -216,7 +216,7 @@ enum cvx_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key)
 }
 #endif
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out)
 {
     if (!self->vtabk || !self->vtabk->hash || !self->vtabk->comp)
@@ -268,7 +268,7 @@ static size_t FUNC(__next_prime)(size_t required)
     return required;
 }
 
-#ifdef CVX2_COLLISION_SEPARATE_CHAINING
+#ifdef CVX_COLLISION_SEPARATE_CHAINING
 // collision strategy: separate chaining
 
 static struct NODE *FUNC(__find_node)(struct CVX_SNAME *self, CVX_KEY key)
@@ -319,7 +319,7 @@ static void FUNC(__drop_buffer)(struct CVX_SNAME *self)
             struct NODE *next = node->next;
             if (self->vtabk && self->vtabk->drop)
                 self->vtabk->drop(&node->key);
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
             if (self->vtabv && self->vtabv->drop)
                 self->vtabv->drop(&node->val);
 #endif
@@ -357,7 +357,7 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
                 return CVX_FLAG_ALLOC;
 
             node_copy->key = node->key;
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
             node_copy->val = node->val;
 #endif
             node_copy->next = NULL;
@@ -372,7 +372,7 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
                 }
             }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
             if (orig->vtabv && orig->vtabv->copy)
             {
                 enum cvx_flags flag = orig->vtabv->copy(&node->val, &node_copy->val);
@@ -393,7 +393,7 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
     return CVX_FLAG_OK;
 }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 static CVX_VAL *FUNC(__get_ref)(struct CVX_SNAME *self, CVX_KEY key)
 {
     struct NODE *node = FUNC(__find_node)(self, key);
@@ -460,7 +460,7 @@ static enum cvx_flags FUNC(__resize)(struct CVX_SNAME *self, size_t new_cap)
     return CVX_FLAG_OK;
 }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 // Precondition: self->count > 0 and the vtab has been checked.
 static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out)
 {
@@ -523,15 +523,15 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key)
 
 #endif
 
-#ifdef CVX2_COLLISION_OPEN_ADDRESSING
+#ifdef CVX_COLLISION_OPEN_ADDRESSING
 // collision strategy: open addressing
 
 // state field values.
 enum
 {
-    CVX2_HT_ENTRY_EMPTY = 0,
-    CVX2_HT_ENTRY_FILLED = 1,
-    CVX2_HT_ENTRY_DELETED = -1,
+    CVX_HT_ENTRY_EMPTY = 0,
+    CVX_HT_ENTRY_FILLED = 1,
+    CVX_HT_ENTRY_DELETED = -1,
 };
 
 static struct ENTRY *FUNC(__find_entry)(struct CVX_SNAME *self, CVX_KEY key)
@@ -542,9 +542,9 @@ static struct ENTRY *FUNC(__find_entry)(struct CVX_SNAME *self, CVX_KEY key)
     size_t pos = self->vtabk->hash(&key) % self->capacity;
     struct ENTRY *e = &self->buffer[pos];
 
-    while (e->state != CVX2_HT_ENTRY_EMPTY)
+    while (e->state != CVX_HT_ENTRY_EMPTY)
     {
-        if (e->state == CVX2_HT_ENTRY_FILLED && self->vtabk->comp(&e->key, &key) == 0)
+        if (e->state == CVX_HT_ENTRY_FILLED && self->vtabk->comp(&e->key, &key) == 0)
             return e;
         pos++;
         e = &self->buffer[pos % self->capacity];
@@ -580,11 +580,11 @@ static void FUNC(__drop_buffer)(struct CVX_SNAME *self)
 
     for (size_t i = 0; i < self->capacity; i++)
     {
-        if (self->buffer[i].state == CVX2_HT_ENTRY_FILLED)
+        if (self->buffer[i].state == CVX_HT_ENTRY_FILLED)
         {
             if (self->vtabk && self->vtabk->drop)
                 self->vtabk->drop(&self->buffer[i].key);
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
             if (self->vtabv && self->vtabv->drop)
                 self->vtabv->drop(&self->buffer[i].val);
 #endif
@@ -607,7 +607,7 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
     for (size_t i = 0; i < orig->capacity; i++)
     {
         buf[i] = orig->buffer[i];
-        if (orig->buffer[i].state != CVX2_HT_ENTRY_FILLED)
+        if (orig->buffer[i].state != CVX_HT_ENTRY_FILLED)
             continue;
 
         if (orig->vtabk && orig->vtabk->copy)
@@ -620,7 +620,7 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
             }
         }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
         if (orig->vtabv && orig->vtabv->copy)
         {
             enum cvx_flags flag = orig->vtabv->copy(&orig->buffer[i].val, &buf[i].val);
@@ -639,7 +639,7 @@ static enum cvx_flags FUNC(__clone_buffer)(struct CVX_SNAME *orig, struct CVX_SN
     return CVX_FLAG_OK;
 }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 static CVX_VAL *FUNC(__get_ref)(struct CVX_SNAME *self, CVX_KEY key)
 {
     struct ENTRY *e = FUNC(__find_entry)(self, key);
@@ -658,12 +658,12 @@ static void FUNC(__insert_unchecked)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
     {
         struct ENTRY *e = &self->buffer[pos % self->capacity];
 
-        if (e->state != CVX2_HT_ENTRY_FILLED) // empty or tombstone: claim it
+        if (e->state != CVX_HT_ENTRY_FILLED) // empty or tombstone: claim it
         {
             e->key = k;
             e->val = v;
             e->dist = pos - orig_pos;
-            e->state = CVX2_HT_ENTRY_FILLED;
+            e->state = CVX_HT_ENTRY_FILLED;
             return;
         }
 
@@ -698,11 +698,11 @@ static void FUNC(__insert_unchecked)(struct CVX_SNAME *self, CVX_KEY key)
     {
         struct ENTRY *e = &self->buffer[pos % self->capacity];
 
-        if (e->state != CVX2_HT_ENTRY_FILLED) // empty or tombstone: claim it
+        if (e->state != CVX_HT_ENTRY_FILLED) // empty or tombstone: claim it
         {
             e->key = k;
             e->dist = pos - orig_pos;
-            e->state = CVX2_HT_ENTRY_FILLED;
+            e->state = CVX_HT_ENTRY_FILLED;
             return;
         }
 
@@ -740,8 +740,8 @@ static enum cvx_flags FUNC(__resize)(struct CVX_SNAME *self, size_t new_cap)
 
     for (size_t i = 0; i < old_cap; i++)
     {
-        if (old_buf[i].state == CVX2_HT_ENTRY_FILLED)
-#ifdef CVX2_KIND_MAP
+        if (old_buf[i].state == CVX_HT_ENTRY_FILLED)
+#ifdef CVX_KIND_MAP
             FUNC(__insert_unchecked)(self, old_buf[i].key, old_buf[i].val);
 #else
             FUNC(__insert_unchecked)(self, old_buf[i].key);
@@ -752,7 +752,7 @@ static enum cvx_flags FUNC(__resize)(struct CVX_SNAME *self, size_t new_cap)
     return CVX_FLAG_OK;
 }
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 // Precondition: self->count > 0 and the vtab has been checked.
 static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out)
 {
@@ -771,7 +771,7 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VA
     e->key = (CVX_KEY){ 0 };
     e->val = (CVX_VAL){ 0 };
     e->dist = 0;
-    e->state = CVX2_HT_ENTRY_DELETED;
+    e->state = CVX_HT_ENTRY_DELETED;
     return CVX_FLAG_OK;
 }
 #else
@@ -787,7 +787,7 @@ static enum cvx_flags FUNC(__remove)(struct CVX_SNAME *self, CVX_KEY key)
 
     e->key = (CVX_KEY){ 0 };
     e->dist = 0;
-    e->state = CVX2_HT_ENTRY_DELETED;
+    e->state = CVX_HT_ENTRY_DELETED;
     return CVX_FLAG_OK;
 }
 #endif

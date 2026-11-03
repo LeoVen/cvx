@@ -48,11 +48,11 @@ class TestIncludeDirective(unittest.TestCase):
 @unittest.skipUnless(COMPILER, "no C compiler found on PATH")
 class TestGenerateInstantiationIncludes(unittest.TestCase):
     def test_no_includes_by_default(self):
-        # Only the template's own includes (cvx2/core.h, <stdbool.h>, ...)
+        # Only the template's own includes (cvx/core.h, <stdbool.h>, ...)
         # should appear -- no custom "includes" entry was configured.
         header_filename, header_out, _, _ = generator.generate_instantiation(da(), COMPILER)
         self.assertEqual(header_filename, "my_array.h")
-        self.assertIn('#include "cvx2/core.h"', header_out)
+        self.assertIn('#include "cvx/core.h"', header_out)
         self.assertEqual(header_out.count("#include"), 6)  # core.h, flags.h, stdbool.h, stddef.h, stdlib.h, string.h
 
     def test_custom_type_header_is_included_in_generated_header(self):

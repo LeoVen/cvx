@@ -23,10 +23,10 @@
 #define CVX_VAL int
 #endif
 #ifndef CVX_SNAME
-#define CVX_SNAME cvx2_fallback
+#define CVX_SNAME cvx_fallback
 #endif
 #ifndef CVX_PFX
-#define CVX_PFX cvx2_fb
+#define CVX_PFX cvx_fb
 #endif
 
 // Dynamic Array
@@ -34,17 +34,17 @@
 #define CVX_BUFFER_GROWTH_RATE 1.2
 
 // Hashtable
-#define CVX2_KIND_MAP
-#ifndef CVX2_COLLISION_OPEN_ADDRESSING
-#ifndef CVX2_COLLISION_SEPARATE_CHAINING
-#define CVX2_COLLISION_OPEN_ADDRESSING
+#define CVX_KIND_MAP
+#ifndef CVX_COLLISION_OPEN_ADDRESSING
+#ifndef CVX_COLLISION_SEPARATE_CHAINING
+#define CVX_COLLISION_OPEN_ADDRESSING
 #endif
 #endif
 
 // Linked List
-#ifndef CVX2_NODE_SINGLE
-#ifndef CVX2_NODE_DOUBLE
-#define CVX2_NODE_DOUBLE
+#ifndef CVX_NODE_SINGLE
+#ifndef CVX_NODE_DOUBLE
+#define CVX_NODE_DOUBLE
 #endif
 #endif
 

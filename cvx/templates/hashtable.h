@@ -6,16 +6,16 @@
  *
  */
 
-#include "cvx2/fallback.h"
+#include "cvx/fallback.h"
 
 // clang-format off
 #ifndef CVX_KEY
 #error "hashtable.h requires CVX_KEY to be defined (the key type)"
 #endif
-#if defined(CVX2_KIND_MAP) && !defined(CVX_VAL)
+#if defined(CVX_KIND_MAP) && !defined(CVX_VAL)
 #error "hashtable.h requires CVX_VAL to be defined when options.kind is \"map\""
 #endif
-#if defined(CVX2_KIND_SET) && defined(CVX_VAL)
+#if defined(CVX_KIND_SET) && defined(CVX_VAL)
 #error "hashtable.h: CVX_VAL must not be defined when options.kind is \"set\" (a set has no values)"
 #endif
 #ifndef CVX_SNAME
@@ -29,9 +29,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "cvx2/core.h"
-#include "cvx2/flags.h"
-#include "cvx2/names.h"
+#include "cvx/core.h"
+#include "cvx/flags.h"
+#include "cvx/names.h"
 
 #define FUNC(X) CVX_(CVX_PFX, NAME##X)
 #define VTAB_K CVX_(CVX_SNAME, NAME##_vtabk)
@@ -55,7 +55,7 @@ struct VTAB_K
     CVX_VTAB_HASH(hash, CVX_KEY);
 };
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Virtual table of optional callbacks used to manage CVX_VAL values.
  *
@@ -71,7 +71,7 @@ struct VTAB_V
 };
 #endif
 
-#ifdef CVX2_COLLISION_OPEN_ADDRESSING
+#ifdef CVX_COLLISION_OPEN_ADDRESSING
 // collision strategy: open addressing
 
 /**
@@ -84,11 +84,11 @@ struct VTAB_V
 struct ENTRY
 {
     CVX_KEY key; //!< Stored key
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
     CVX_VAL val; //!< Stored value; only present when options.kind is "map"
 #endif
     size_t dist; //!< Displacement from the key's home slot (robin hood)
-    int state;   //!< CVX2_HT_ENTRY_EMPTY / _FILLED / _DELETED; internal, do not modify
+    int state;   //!< CVX_HT_ENTRY_EMPTY / _FILLED / _DELETED; internal, do not modify
 };
 
 /**
@@ -103,14 +103,14 @@ struct CVX_SNAME
     size_t count;         //!< Number of filled entries
     double load;          //!< Resize threshold (count >= capacity * load)
     struct VTAB_K *vtabk; //!< Virtual table for CVX_KEY; hash and comp are required
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
     struct VTAB_V *vtabv; //!< Virtual table for CVX_VAL; only present when options.kind is "map"
 #endif
     struct ENTRY *buffer; //!< Open-addressing slot buffer, capacity entries long
 };
 #endif
 
-#ifdef CVX2_COLLISION_SEPARATE_CHAINING
+#ifdef CVX_COLLISION_SEPARATE_CHAINING
 // collision strategy: separate chaining
 
 /**
@@ -119,7 +119,7 @@ struct CVX_SNAME
 struct NODE
 {
     CVX_KEY key; //!< Stored key
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
     CVX_VAL val; //!< Stored value; only present when options.kind is "map"
 #endif
     struct NODE *next; //!< Next entry in this bucket's chain, or NULL
@@ -136,14 +136,14 @@ struct CVX_SNAME
     size_t count;         //!< Number of stored entries
     double load;          //!< Resize threshold (count >= capacity * load)
     struct VTAB_K *vtabk; //!< Virtual table for CVX_KEY; hash and comp are required
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
     struct VTAB_V *vtabv; //!< Virtual table for CVX_VAL; only present when options.kind is "map"
 #endif
     struct NODE **buckets; //!< Array of capacity bucket heads, each a chain of struct NODE
 };
 #endif
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Initializes self, optionally pre-allocating capacity slots.
  *
@@ -174,7 +174,7 @@ enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct 
  **/
 enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, size_t capacity);
 #endif
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Initializes clone as a deep copy of orig.
  *
@@ -201,7 +201,7 @@ enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, size_t 
  **/
 #endif
 enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Frees the table, dropping any entries still stored.
  *
@@ -261,7 +261,7 @@ double FUNC(_load)(struct CVX_SNAME *self);
  **/
 bool FUNC(_empty)(struct CVX_SNAME *self);
 
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Inserts key/val.
  *
@@ -295,7 +295,7 @@ enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val);
  **/
 enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key);
 #endif
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Replaces the value for key, returning the old value through old_out.
  *
@@ -314,7 +314,7 @@ enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key);
 enum cvx_flags FUNC(_update)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL new_val,
                              CVX_VAL *old_out);
 #endif
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Removes key, returning its value through out.
  *
@@ -348,7 +348,7 @@ enum cvx_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);
  **/
 enum cvx_flags FUNC(_remove)(struct CVX_SNAME *self, CVX_KEY key);
 #endif
-#ifdef CVX2_KIND_MAP
+#ifdef CVX_KIND_MAP
 /**
  * @brief Gets the value for key.
  *

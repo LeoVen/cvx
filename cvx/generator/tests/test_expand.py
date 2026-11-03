@@ -1,5 +1,5 @@
 """Tests for the preprocessor-based template expansion, including case
-conversion (now done entirely by cvx2/names.h via the real preprocessor,
+conversion (now done entirely by cvx/names.h via the real preprocessor,
 not by Python -- see test_case.py for the small bit of Python-side mapping
 that remains). These need a real C compiler on PATH (the whole point of
 this design is delegating macro expansion to one) -- skipped, not failed,
@@ -14,14 +14,14 @@ import cvx_generator as generator
 
 COMPILER = next((c for c in generator.COMPILER_FLAGS if shutil.which(c)), None)
 
-# Mirrors a real template: includes cvx2/names.h and uses FUNC(X)'s NAME##X
+# Mirrors a real template: includes cvx/names.h and uses FUNC(X)'s NAME##X
 # paste for its own suffixes (_init, _vtabv, both real names.h entries) plus
 # a fixture-local one (__private_helper) defined the same way names.h does,
 # to check the public/private double-underscore distinction without
 # depending on exactly which private helpers the real templates happen to
 # declare.
 FIXTURE_HEADER = '''\
-#include "cvx2/fallback.h"
+#include "cvx/fallback.h"
 
 #ifndef CVX_VAL
 #error "requires CVX_VAL"
@@ -33,9 +33,9 @@ FIXTURE_HEADER = '''\
 #error "requires CVX_PFX"
 #endif
 
-#include "cvx2/core.h"
-#include "cvx2/flags.h"
-#include "cvx2/names.h"
+#include "cvx/core.h"
+#include "cvx/flags.h"
+#include "cvx/names.h"
 
 #ifdef CVX_FUNC_NAMES_PASCALCASE
 #define NAME__private_helper __PrivateHelper
@@ -90,8 +90,8 @@ class TestExpand(unittest.TestCase):
         self.assertNotIn("FUNC(", out)
         self.assertNotIn("NAME_", out)
         self.assertNotIn("#error", out)
-        self.assertNotIn("cvx2/fallback.h", out)
-        self.assertNotIn("cvx2/names.h", out)
+        self.assertNotIn("cvx/fallback.h", out)
+        self.assertNotIn("cvx/names.h", out)
 
     def test_camel_case_cases_the_suffix_but_not_user_text(self):
         # A single-word suffix like "_init" has no second word to
@@ -153,12 +153,12 @@ class TestExpand(unittest.TestCase):
         self.assertIn("char * *buffer", out)
 
     def test_core_and_flags_includes_survive_as_real_includes(self):
-        # cvx2/core.h/flags.h must never be resolved/inlined -- CVX_VTAB_DEFINITION
+        # cvx/core.h/flags.h must never be resolved/inlined -- CVX_VTAB_DEFINITION
         # (from core.h) has to stay a literal, unexpanded macro call in the
         # output, relying on the consumer's own build to see the real macro.
         out = generator.expand(FIXTURE_HEADER, defines(), COMPILER)
-        self.assertIn('#include "cvx2/core.h"', out)
-        self.assertIn('#include "cvx2/flags.h"', out)
+        self.assertIn('#include "cvx/core.h"', out)
+        self.assertIn('#include "cvx/flags.h"', out)
         self.assertIn("CVX_VTAB_DEFINITION(int)", out)
 
     def test_missing_define_raises_preprocess_error(self):

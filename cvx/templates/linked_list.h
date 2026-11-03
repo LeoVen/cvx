@@ -30,7 +30,7 @@
  * only for double lists.
  */
 
-#include "cvx2/fallback.h"
+#include "cvx/fallback.h"
 
 // clang-format off
 #ifndef CVX_VAL
@@ -42,17 +42,17 @@
 #ifndef CVX_PFX
 #error "linked_list.h requires CVX_PFX to be defined (the function prefix)"
 #endif
-#if defined(CVX2_NODE_SINGLE) == defined(CVX2_NODE_DOUBLE)
-#error "linked_list.h requires exactly one of CVX2_NODE_SINGLE or CVX2_NODE_DOUBLE"
+#if defined(CVX_NODE_SINGLE) == defined(CVX_NODE_DOUBLE)
+#error "linked_list.h requires exactly one of CVX_NODE_SINGLE or CVX_NODE_DOUBLE"
 #endif
 // clang-format on
 
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "cvx2/core.h"
-#include "cvx2/flags.h"
-#include "cvx2/names.h"
+#include "cvx/core.h"
+#include "cvx/flags.h"
+#include "cvx/names.h"
 
 #define FUNC(X) CVX_(CVX_PFX, NAME##X)
 #define VTAB_V CVX_(CVX_SNAME, NAME##_vtabv)
@@ -83,7 +83,7 @@ struct VTAB_V
 struct NODE
 {
     CVX_VAL value; //!< Stored element
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
     struct NODE *prev; //!< Previous node, or NULL for the head
 #endif
     struct NODE *next; //!< Next node, or NULL for the tail
@@ -246,7 +246,7 @@ enum cvx_flags FUNC(_pop)(struct CVX_SNAME *self, size_t index, CVX_VAL *out);
  * @param self a non-NULL pointer to an initialized linked list
  * @param new_count desired element count
  *
- * @note Passing 0 empties the list (cvx2's "clear"). A no-op if new_count is
+ * @note Passing 0 empties the list (cvx's "clear"). A no-op if new_count is
  * already >= count.
  *
  * Error Handling
@@ -295,7 +295,7 @@ enum cvx_flags FUNC(_find)(struct CVX_SNAME *self, CVX_VAL item, struct NODE **o
  * - CVX_FLAG_ALLOC: if allocating the node fails
  **/
 enum cvx_flags FUNC(_insert_after)(struct CVX_SNAME *self, struct NODE *node, CVX_VAL item);
-#ifdef CVX2_NODE_SINGLE
+#ifdef CVX_NODE_SINGLE
 /**
  * @brief Removes the node right after node, returning its element.
  *
@@ -312,7 +312,7 @@ enum cvx_flags FUNC(_insert_after)(struct CVX_SNAME *self, struct NODE *node, CV
  **/
 enum cvx_flags FUNC(_remove_after)(struct CVX_SNAME *self, struct NODE *node, CVX_VAL *out);
 #endif
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
 /**
  * @brief Inserts item right before node.
  *

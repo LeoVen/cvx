@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""cvx2 code generator CLI.
+"""cvx code generator CLI.
 
 Reads a JSON config listing one or more container instantiations, and for
-each one expands the matching template (cvx2/templates/<template>.h/.c)
+each one expands the matching template (cvx/templates/<template>.h/.c)
 into a simple file containing no extra macros and outputs them to the
 configured directories by `out_dir`.
 
 Usage:
     python3 cvx_generator.py --config path/to/config.json --compiler gcc [--output dir]
 
-This file should be accompanied by the cvx2/ folder containing names.h and
+This file should be accompanied by the cvx/ folder containing names.h and
 the templates/ folder with all the cvx template files.
 """
 
@@ -25,8 +25,8 @@ from pathlib import Path
 # 2. Macro Expansion
 # 3. File Generation
 
-TEMPLATES_DIR = Path(__file__).resolve().parent / "cvx2" / "templates"
-NAMES_H_PATH = Path(__file__).resolve().parent / "cvx2" / "names.h"
+TEMPLATES_DIR = Path(__file__).resolve().parent / "cvx" / "templates"
+NAMES_H_PATH = Path(__file__).resolve().parent / "cvx" / "names.h"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 DEFAULT_OUT_DIR = "."
 OUT_DIR_KINDS = ("headers", "sources")
@@ -56,7 +56,7 @@ class PreprocessError(Exception):
 def field_spec(
     default=dataclasses.MISSING, identifier=False, allowed=None, type_expr=False
 ):
-    """A dataclass field carrying cvx2 config validation rules as metadata:
+    """A dataclass field carrying cvx config validation rules as metadata:
     required unless `default` is given, optionally must be a valid C
     identifier, optionally one of `allowed`, optionally rejected if it
     looks like a raw array/function-pointer type (see _validate_field)."""
@@ -128,18 +128,18 @@ TEMPLATE_SCHEMAS = {
 TEMPLATE_OPTIONS = {
     "linked_list": {
         "node": {
-            "single": "CVX2_NODE_SINGLE",
-            "double": "CVX2_NODE_DOUBLE",
+            "single": "CVX_NODE_SINGLE",
+            "double": "CVX_NODE_DOUBLE",
         },
     },
     "hashtable": {
         "collision": {
-            "open_addressing": "CVX2_COLLISION_OPEN_ADDRESSING",
-            "separate_chaining": "CVX2_COLLISION_SEPARATE_CHAINING",
+            "open_addressing": "CVX_COLLISION_OPEN_ADDRESSING",
+            "separate_chaining": "CVX_COLLISION_SEPARATE_CHAINING",
         },
         "kind": {
-            "map": "CVX2_KIND_MAP",
-            "set": "CVX2_KIND_SET",
+            "map": "CVX_KIND_MAP",
+            "set": "CVX_KIND_SET",
         },
     },
 }
@@ -411,7 +411,7 @@ BLANK_MARKER_LINE_RE = re.compile(
 
 
 INCLUDE_RE = re.compile(r"^[ \t]*#include[^\n]*\n?", re.MULTILINE)
-GENERATION_ONLY_INCLUDES = ("cvx2/fallback.h", "cvx2/names.h")
+GENERATION_ONLY_INCLUDES = ("cvx/fallback.h", "cvx/names.h")
 
 
 def _strip_includes(text):
@@ -626,7 +626,7 @@ def run(config_path, compiler, list_outputs, output_root=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Generate cvx2 container types from a JSON config."
+        description="Generate cvx container types from a JSON config."
     )
     parser.add_argument("--config", required=True, help="path to the JSON config file")
     parser.add_argument(

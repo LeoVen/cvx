@@ -60,11 +60,9 @@ coverage/
 docs/output/
 .cache
 
-# cvx2 generator output + python caches (generator output is a build
-# artifact, not source -- see cvx2/examples/config.json for the source of
-# truth that produces it)
-cvx2/examples/generated/
-cvx2/docs/src/
-cvx2/docs/includes/
+# cvx generator output + python caches
+cvx/examples/generated/
+cvx/docs/src/
+cvx/docs/includes/
 __pycache__/
 *.pyc

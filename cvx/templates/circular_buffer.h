@@ -9,7 +9,7 @@
  *
  */
 
-#include "cvx2/fallback.h"
+#include "cvx/fallback.h"
 
 // clang-format off
 #ifndef CVX_VAL
@@ -26,9 +26,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "cvx2/core.h"
-#include "cvx2/flags.h"
-#include "cvx2/names.h"
+#include "cvx/core.h"
+#include "cvx/flags.h"
+#include "cvx/names.h"
 
 #define FUNC(X) CVX_(CVX_PFX, NAME##X)
 #define VTAB_V CVX_(CVX_SNAME, NAME##_vtabv)

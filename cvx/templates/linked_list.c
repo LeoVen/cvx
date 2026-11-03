@@ -135,7 +135,7 @@ enum cvx_flags FUNC(_pop)(struct CVX_SNAME *self, size_t index, CVX_VAL *out)
     if (index >= self->count)
         return CVX_FLAG_RANGE;
 
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
     return FUNC(_remove)(self, FUNC(__node_at)(self, index), out);
 #else
     struct NODE *prev = index == 0 ? NULL : FUNC(__node_at)(self, index - 1);
@@ -201,7 +201,7 @@ enum cvx_flags FUNC(_insert_after)(struct CVX_SNAME *self, struct NODE *node, CV
     return FUNC(__link_after)(self, node, item);
 }
 
-#ifdef CVX2_NODE_SINGLE
+#ifdef CVX_NODE_SINGLE
 enum cvx_flags FUNC(_remove_after)(struct CVX_SNAME *self, struct NODE *node, CVX_VAL *out)
 {
     if (!node && self->count == 0)
@@ -216,7 +216,7 @@ enum cvx_flags FUNC(_remove_after)(struct CVX_SNAME *self, struct NODE *node, CV
 }
 #endif
 
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
 enum cvx_flags FUNC(_insert_before)(struct CVX_SNAME *self, struct NODE *node, CVX_VAL item)
 {
     return FUNC(__link_after)(self, node ? node->prev : self->tail, item);
@@ -250,7 +250,7 @@ enum cvx_flags FUNC(_splice)(struct CVX_SNAME *self, size_t index, struct CVX_SN
     if (!next)
         self->tail = other->tail;
 
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
     other->head->prev = prev;
     if (next)
         next->prev = other->tail;
@@ -273,7 +273,7 @@ enum cvx_flags FUNC(_reverse)(struct CVX_SNAME *self)
     {
         struct NODE *next = node->next;
         node->next = prev;
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
         node->prev = next;
 #endif
         prev = node;
@@ -295,7 +295,7 @@ enum cvx_flags FUNC(_sort)(struct CVX_SNAME *self)
     struct NODE *prev = NULL;
     for (struct NODE *node = self->head; node; node = node->next)
     {
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
         node->prev = prev;
 #endif
         prev = node;
@@ -339,7 +339,7 @@ static struct NODE *FUNC(__node_at)(struct CVX_SNAME *self, size_t index)
     if (index == self->count - 1)
         return self->tail;
 
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
     if (index > self->count / 2)
     {
         struct NODE *node = self->tail;
@@ -374,7 +374,7 @@ static enum cvx_flags FUNC(__link_after)(struct CVX_SNAME *self, struct NODE *pr
     if (!next)
         self->tail = node;
 
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
     node->prev = prev;
     if (next)
         next->prev = node;
@@ -398,7 +398,7 @@ static void FUNC(__unlink)(struct CVX_SNAME *self, struct NODE *prev, struct NOD
     if (!next)
         self->tail = prev;
 
-#ifdef CVX2_NODE_DOUBLE
+#ifdef CVX_NODE_DOUBLE
     if (next)
         next->prev = prev;
 #endif

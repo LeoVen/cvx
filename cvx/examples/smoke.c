@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cvx2/flags.h"
+#include "cvx/flags.h"
 #include "generated/binop_list.h"
 #include "generated/int10_array.h"
 #include "generated/int_array.h"
@@ -1037,6 +1037,6 @@ int main(void)
     test_binary_heap_of_owned_strings();
     test_segment_tree();
     test_segment_tree_gcd();
-    printf("all cvx2 smoke tests passed\n");
+    printf("all cvx smoke tests passed\n");
     return 0;
 }
