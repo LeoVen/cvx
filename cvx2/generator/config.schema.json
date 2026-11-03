@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Reference documentation for cvx2 generator config files, kept by hand in sync with the actual validator in generator.py (validate_instantiation). Not loaded or enforced by the generator itself (stdlib-only, no jsonschema dependency) -- this exists for editors/IDEs and for humans to check the config shape against.",
+  "$comment": "Reference documentation for cvx2 generator config files, kept by hand in sync with the actual validator in cvx_generator.py (validate_config). Not loaded or enforced by the generator itself (stdlib-only, no jsonschema dependency) -- this exists for editors/IDEs and for humans to check the config shape against.",
   "title": "cvx2 generator config",
   "type": "object",
   "required": [
@@ -13,6 +13,10 @@
       "items": {
         "$ref": "#/$defs/instantiation"
       }
+    },
+    "out_dir": {
+      "$ref": "#/$defs/out_dir",
+      "description": "Default out_dir for every instantiation that doesn't set its own."
     }
   },
   "$defs": {
@@ -47,11 +51,11 @@
         },
         "value_type": {
           "type": "string",
-          "description": "Required for \"dynamic_array\" and \"circular_buffer\". Required for \"hashtable\" when variants.kind is \"map\" (the default); must be omitted when variants.kind is \"set\". A C type expression, e.g. \"int\" or \"char *\"."
+          "description": "Required for every template except \"hashtable\", where it is required when options.kind is \"map\" (the default) and must be omitted when options.kind is \"set\". A C type expression, e.g. \"int\" or \"char *\"."
         },
         "key_type": {
           "type": "string",
-          "description": "Required for \"hashtable\" only."
+          "description": "Required for \"hashtable\" and \"hamt\" only."
         },
         "struct_name": {
           "type": "string",
@@ -116,9 +120,8 @@
           "additionalProperties": false
         },
         "out_dir": {
-          "type": "string",
-          "default": ".",
-          "description": "Resolved relative to the config file's own directory."
+          "$ref": "#/$defs/out_dir",
+          "description": "Overrides the top-level out_dir."
         },
         "includes": {
           "type": "array",
@@ -129,6 +132,31 @@
           "description": "Header paths to #include at the top of the generated .h, before value_type/key_type are used. Required whenever value_type/key_type is anything the generator doesn't already know about (a struct tag, a typedef'd fixed-size-array wrapper, a typedef'd function pointer, ...) -- the generated .c is its own translation unit and only #includes its own generated .h, so without this the type has to happen to already be visible via the consumer's own include order, which is fragile. An entry wrapped in angle brackets (\"<stdint.h>\") is emitted as a system include; anything else is quoted as a local path."
         }
       }
+    },
+    "out_dir": {
+      "description": "Either a single folder for both the .h and the .c, or an object with a separate folder for each. Resolved relative to the config file's own directory, or to the --output directory when given.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "required": [
+            "headers",
+            "sources"
+          ],
+          "properties": {
+            "headers": {
+              "type": "string"
+            },
+            "sources": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "default": "."
     }
   }
 }

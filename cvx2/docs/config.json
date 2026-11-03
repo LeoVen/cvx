@@ -1,4 +1,8 @@
 {
+  "out_dir": {
+    "headers": "includes",
+    "sources": "src"
+  },
   "instantiations": [
     {
       "template": "dynamic_array",
@@ -9,8 +13,7 @@
         "function": "snake_case",
         "struct": "PascalCase"
       },
-      "file_name": "dynamic_array",
-      "out_dir": "cvx"
+      "file_name": "dynamic_array"
     },
     {
       "template": "circular_buffer",
@@ -21,8 +24,7 @@
         "function": "snake_case",
         "struct": "PascalCase"
       },
-      "file_name": "circular_buffer",
-      "out_dir": "cvx"
+      "file_name": "circular_buffer"
     },
     {
       "template": "linked_list",
@@ -36,8 +38,7 @@
       "file_name": "singly_linked_list",
       "options": {
         "node": "single"
-      },
-      "out_dir": "cvx"
+      }
     },
     {
       "template": "linked_list",
@@ -51,8 +52,7 @@
       "file_name": "doubly_linked_list",
       "options": {
         "node": "double"
-      },
-      "out_dir": "cvx"
+      }
     },
     {
       "template": "binary_heap",
@@ -63,8 +63,7 @@
         "function": "snake_case",
         "struct": "PascalCase"
       },
-      "file_name": "binary_heap",
-      "out_dir": "cvx"
+      "file_name": "binary_heap"
     },
     {
       "template": "hashtable",
@@ -80,8 +79,7 @@
       "options": {
         "kind": "map",
         "collision": "separate_chaining"
-      },
-      "out_dir": "cvx"
+      }
     },
     {
       "template": "hashtable",
@@ -96,8 +94,7 @@
       "options": {
         "kind": "set",
         "collision": "open_addressing"
-      },
-      "out_dir": "cvx"
+      }
     },
     {
       "template": "hamt",
@@ -109,8 +106,7 @@
         "function": "snake_case",
         "struct": "PascalCase"
       },
-      "file_name": "hamt",
-      "out_dir": "cvx"
+      "file_name": "hamt"
     },
     {
       "template": "segment_tree",
@@ -121,8 +117,7 @@
         "function": "snake_case",
         "struct": "PascalCase"
       },
-      "file_name": "segment_tree",
-      "out_dir": "cvx"
+      "file_name": "segment_tree"
     }
   ]
 }

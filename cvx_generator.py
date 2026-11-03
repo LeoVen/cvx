@@ -7,10 +7,10 @@ into a simple file containing no extra macros and outputs them to the
 configured directories by `out_dir`.
 
 Usage:
-    python3 generator.py --config path/to/config.json --compiler gcc
+    python3 cvx_generator.py --config path/to/config.json --compiler gcc [--output dir]
 
-This file should be accompanied by the /templates folder containing all the
-cvx template files. Both .h/.c should be in the same folder.
+This file should be accompanied by the cvx2/ folder containing names.h and
+the templates/ folder with all the cvx template files.
 """
 
 import argparse
@@ -28,6 +28,8 @@ from pathlib import Path
 TEMPLATES_DIR = Path(__file__).resolve().parent / "cvx2" / "templates"
 NAMES_H_PATH = Path(__file__).resolve().parent / "cvx2" / "names.h"
 IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+DEFAULT_OUT_DIR = "."
+OUT_DIR_KINDS = ("headers", "sources")
 
 # based on names.h
 CASE_SNAKE = "snake_case"
@@ -69,7 +71,6 @@ def field_spec(
 class _InstantiationBase:
     struct_name: str = field_spec(identifier=True)
     prefix: str = field_spec(identifier=True)
-    out_dir: str = field_spec(default=".")
     file_name: str = field_spec(default=None, identifier=True)
 
 
@@ -267,6 +268,25 @@ def _validate_case(instantiation, where):
     return result
 
 
+def _validate_out_dir(out_dir, where):
+    """`out_dir` is either a single folder for both files or an object with
+    a separate folder per kind of file, e.g. {"headers": "include",
+    "sources": "src"}. Normalized to the object form."""
+    if isinstance(out_dir, str):
+        return {kind: out_dir for kind in OUT_DIR_KINDS}
+    if (
+        not isinstance(out_dir, dict)
+        or set(out_dir) != set(OUT_DIR_KINDS)
+        or not all(isinstance(d, str) for d in out_dir.values())
+    ):
+        _err(
+            where,
+            f"field 'out_dir' must be a string or an object with string keys {OUT_DIR_KINDS}, "
+            f"got {out_dir!r}",
+        )
+    return dict(out_dir)
+
+
 def _validate_hashtable_kind(result, where):
     """A hashtable with options.kind == "set" stores keys only (no
     value_type); == "map" (the default) stores key -> value_type, like
@@ -285,7 +305,7 @@ def _validate_hashtable_kind(result, where):
         )
 
 
-def validate_instantiation(instantiation, index):
+def validate_instantiation(instantiation, index, default_out_dir=DEFAULT_OUT_DIR):
     where = f"instantiations[{index}]"
 
     if not isinstance(instantiation, dict):
@@ -308,6 +328,9 @@ def validate_instantiation(instantiation, index):
     result["options"] = _validate_options(instantiation, where, template)
     result["includes"] = _validate_includes(instantiation, where)
     result["case"] = _validate_case(instantiation, where)
+    result["out_dir"] = _validate_out_dir(
+        instantiation.get("out_dir", default_out_dir), where
+    )
 
     if template == "hashtable":
         _validate_hashtable_kind(result, where)
@@ -323,7 +346,13 @@ def validate_config(raw_config):
     if not isinstance(instantiations, list) or not instantiations:
         raise ConfigError("'instantiations' must be a non-empty array")
 
-    return [validate_instantiation(inst, i) for i, inst in enumerate(instantiations)]
+    default_out_dir = raw_config.get("out_dir", DEFAULT_OUT_DIR)
+    _validate_out_dir(default_out_dir, "config")
+
+    return [
+        validate_instantiation(inst, i, default_out_dir)
+        for i, inst in enumerate(instantiations)
+    ]
 
 
 ###
@@ -536,6 +565,16 @@ def file_names(inst):
     return file_stem, header_filename, source_filename
 
 
+def output_paths(inst, output_root):
+    """Where an instantiation's .h and .c land. The single place output
+    paths are resolved, so generation and --list-outputs always agree."""
+    _, header_filename, source_filename = file_names(inst)
+    return (
+        Path(output_root) / inst["out_dir"]["headers"] / header_filename,
+        Path(output_root) / inst["out_dir"]["sources"] / source_filename,
+    )
+
+
 def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
     template_name = inst["template"]
     defines = _defines_for(inst)
@@ -560,29 +599,27 @@ def generate_instantiation(inst, compiler, templates_dir=TEMPLATES_DIR):
     return header_filename, header_out, source_filename, source_out
 
 
-def run(config_path, compiler, list_outputs):
+def run(config_path, compiler, list_outputs, output_root=None):
     raw_config = json.loads(Path(config_path).read_text())
     instantiations = validate_config(raw_config)
+    if output_root is None:
+        output_root = Path(config_path).parent
 
     written = []
     for inst in instantiations:
-        out_dir = Path(config_path).parent / inst["out_dir"]
-        out_dir.mkdir(parents=True, exist_ok=True)
+        header_path, source_path = output_paths(inst, output_root)
 
         if list_outputs:
-            _, header_filename, source_filename = file_names(inst)
-            print(out_dir / header_filename)
-            print(out_dir / source_filename)
+            print(header_path)
+            print(source_path)
             continue
 
-        header_filename, header_out, source_filename, source_out = (
-            generate_instantiation(inst, compiler)
-        )
+        _, header_out, _, source_out = generate_instantiation(inst, compiler)
 
-        (out_dir / header_filename).write_text(header_out)
-        (out_dir / source_filename).write_text(source_out)
-        written.append(str(out_dir / header_filename))
-        written.append(str(out_dir / source_filename))
+        for path, text in ((header_path, header_out), (source_path, source_out)):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+            written.append(str(path))
 
     return written
 
@@ -604,10 +641,15 @@ def main(argv=None):
         action=argparse.BooleanOptionalAction,
         help="list output files instead of generating them",
     )
+    parser.add_argument(
+        "--output",
+        required=False,
+        help="directory out_dir is resolved against (defaults to the config file's directory)",
+    )
     args = parser.parse_args(argv)
 
     try:
-        written = run(args.config, args.compiler, args.list_outputs)
+        written = run(args.config, args.compiler, args.list_outputs, args.output)
     except (ConfigError, PreprocessError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

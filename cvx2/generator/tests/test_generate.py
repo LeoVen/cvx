@@ -2,8 +2,12 @@
 itself now shells out to a real C compiler to preprocess templates, so
 these need one on PATH (skipped, not failed, if none is found). See
 test_generate_e2e.py for the full compile-and-run version."""
+import contextlib
+import io
+import json
 import shutil
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -23,7 +27,7 @@ def da(**overrides):
         "file_name": None,
         "case": {"function": "snake_case", "struct": "snake_case"},
         "options": {},
-        "out_dir": ".",
+        "out_dir": {"headers": ".", "sources": "."},
         "includes": [],
     }
     base.update(overrides)
@@ -93,6 +97,88 @@ class TestFileName(unittest.TestCase):
         self.assertIn("#ifndef CHAR_MAP_H", header_out)
         self.assertIn("#define CHAR_MAP_H", header_out)
         self.assertNotIn("CHARMAP_H", header_out)
+
+
+class TestOutputPaths(unittest.TestCase):
+    def test_resolves_each_kind_against_output_root(self):
+        header_path, source_path = generator.output_paths(
+            da(out_dir={"headers": "include", "sources": "src"}), Path("out")
+        )
+        self.assertEqual(header_path, Path("out/include/my_array.h"))
+        self.assertEqual(source_path, Path("out/src/my_array.c"))
+
+    def test_uses_file_name(self):
+        header_path, source_path = generator.output_paths(da(file_name="arr"), Path("out"))
+        self.assertEqual(header_path, Path("out/arr.h"))
+        self.assertEqual(source_path, Path("out/arr.c"))
+
+
+class TestRun(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.config_path = self.tmp / "config" / "config.json"
+        self.config_path.parent.mkdir()
+        self.config_path.write_text(
+            json.dumps(
+                {
+                    "out_dir": {"headers": "include", "sources": "src"},
+                    "instantiations": [
+                        {"template": "dynamic_array", "value_type": "int", "struct_name": "my_array", "prefix": "ma"},
+                        {
+                            "template": "dynamic_array",
+                            "value_type": "char",
+                            "struct_name": "my_chars",
+                            "prefix": "mc",
+                            "out_dir": "gen",
+                        },
+                    ],
+                }
+            )
+        )
+
+    def list_outputs(self, output_root=None):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            generator.run(self.config_path, COMPILER, True, output_root)
+        return stdout.getvalue().splitlines()
+
+    def test_list_outputs_defaults_to_config_folder(self):
+        root = self.config_path.parent
+        self.assertEqual(
+            self.list_outputs(),
+            [
+                str(root / "include/my_array.h"),
+                str(root / "src/my_array.c"),
+                str(root / "gen/my_chars.h"),
+                str(root / "gen/my_chars.c"),
+            ],
+        )
+
+    def test_list_outputs_resolves_against_output_flag(self):
+        root = self.tmp / "elsewhere"
+        self.assertEqual(self.list_outputs(root)[:2], [str(root / "include/my_array.h"), str(root / "src/my_array.c")])
+
+    def test_list_outputs_does_not_create_folders(self):
+        self.list_outputs()
+        self.assertEqual(list(self.config_path.parent.iterdir()), [self.config_path])
+
+    @unittest.skipUnless(COMPILER, "no C compiler found on PATH")
+    def test_generation_writes_where_list_outputs_points(self):
+        root = self.tmp / "elsewhere"
+        written = generator.run(self.config_path, COMPILER, False, root)
+        self.assertEqual(written, self.list_outputs(root))
+        for path in written:
+            self.assertTrue(Path(path).is_file(), path)
+
+    @unittest.skipUnless(COMPILER, "no C compiler found on PATH")
+    def test_main_accepts_output_flag(self):
+        root = self.tmp / "elsewhere"
+        with contextlib.redirect_stdout(io.StringIO()):
+            status = generator.main(["--config", str(self.config_path), "--compiler", COMPILER, "--output", str(root)])
+        self.assertEqual(status, 0)
+        self.assertTrue((root / "include/my_array.h").is_file())
+        self.assertTrue((root / "src/my_array.c").is_file())
 
 
 if __name__ == "__main__":

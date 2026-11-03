@@ -35,7 +35,7 @@ class TestValidateConfig(unittest.TestCase):
         result = generator.validate_config({"instantiations": [da()]})
         self.assertEqual(result[0]["struct_name"], "my_array")
         self.assertEqual(result[0]["case"], {"function": "snake_case", "struct": "snake_case"})
-        self.assertEqual(result[0]["out_dir"], ".")
+        self.assertEqual(result[0]["out_dir"], {"headers": ".", "sources": "."})
 
     def test_valid_hashtable_requires_options(self):
         result = generator.validate_config({"instantiations": [ht()]})
@@ -233,6 +233,49 @@ class TestValidateConfig(unittest.TestCase):
     def test_file_name_must_be_a_string(self):
         with self.assertRaises(generator.ConfigError):
             generator.validate_config({"instantiations": [da(file_name=123)]})
+
+
+class TestOutDir(unittest.TestCase):
+    def test_string_applies_to_both_kinds(self):
+        result = generator.validate_config({"instantiations": [da(out_dir="gen")]})
+        self.assertEqual(result[0]["out_dir"], {"headers": "gen", "sources": "gen"})
+
+    def test_object_separates_headers_and_sources(self):
+        out_dir = {"headers": "include", "sources": "src"}
+        result = generator.validate_config({"instantiations": [da(out_dir=out_dir)]})
+        self.assertEqual(result[0]["out_dir"], out_dir)
+
+    def test_global_out_dir_is_the_default(self):
+        result = generator.validate_config(
+            {"out_dir": {"headers": "include", "sources": "src"}, "instantiations": [da(), ht()]}
+        )
+        for inst in result:
+            self.assertEqual(inst["out_dir"], {"headers": "include", "sources": "src"})
+
+    def test_instance_out_dir_overrides_global(self):
+        result = generator.validate_config(
+            {"out_dir": {"headers": "include", "sources": "src"}, "instantiations": [da(out_dir="gen"), ht()]}
+        )
+        self.assertEqual(result[0]["out_dir"], {"headers": "gen", "sources": "gen"})
+        self.assertEqual(result[1]["out_dir"], {"headers": "include", "sources": "src"})
+
+    def test_rejects_object_missing_a_kind(self):
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [da(out_dir={"headers": "include"})]})
+
+    def test_rejects_object_with_unknown_kind(self):
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config(
+                {"instantiations": [da(out_dir={"headers": "include", "sources": "src", "docs": "doc"})]}
+            )
+
+    def test_rejects_non_string_folder(self):
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"instantiations": [da(out_dir={"headers": "include", "sources": 1})]})
+
+    def test_rejects_invalid_global_out_dir(self):
+        with self.assertRaises(generator.ConfigError):
+            generator.validate_config({"out_dir": ["include"], "instantiations": [da()]})
 
 
 if __name__ == "__main__":

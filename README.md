@@ -26,12 +26,12 @@ Describe the containers you want in a JSON config:
 Run the generator. `--compiler` is the C compiler used to expand the templates (`gcc`, `clang` or `cc`):
 
 ```sh
-python3 cvx2/generator/generator.py --config config.json --compiler gcc
+python3 cvx_generator.py --config config.json --compiler gcc
 # wrote generated/int_array.h
 # wrote generated/int_array.c
 ```
 
-`out_dir` is resolved relative to the config file. The output is plain C: no template macros are left in it, so it reads like hand-written code and works with any LSP.
+`out_dir` is resolved relative to the config file, or to the directory given with `--output`. Pass `--list-outputs` to print the files that would be generated without writing them. The output is plain C: no template macros are left in it, so it reads like hand-written code and works with any LSP.
 
 Use it like any other header/source pair:
 
@@ -91,7 +91,23 @@ Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is 
 | `case` | no | Naming case, see [Case](#case). Defaults to snake_case for both functions and structs |
 | `options` | depends | Template-specific choices, see [Templates](#templates) |
 | `includes` | no | Headers to include at the top of the generated `.h`, needed for any non-builtin type. `"<stdint.h>"` is emitted as a system include, anything else as a quoted path |
-| `out_dir` | no | Output directory, relative to the config file. Defaults to `.` |
+| `out_dir` | no | Output directory, see [Output directories](#output-directories). Defaults to the top-level `out_dir`, or `.` |
+
+### Output directories
+
+`out_dir` can be a single folder for both files, or an object with a separate folder for headers and sources:
+
+```json
+{
+  "out_dir": { "headers": "include", "sources": "src" },
+  "instantiations": [
+    { "template": "dynamic_array", "value_type": "int", "struct_name": "int_array", "prefix": "ia" },
+    { "template": "dynamic_array", "value_type": "char", "struct_name": "char_array", "prefix": "ca", "out_dir": "generated" }
+  ]
+}
+```
+
+The top-level `out_dir` is the default for every instantiation, and an instantiation's own `out_dir` replaces it. Folders are resolved relative to the config file, or to `--output` when given. The generated `.c` includes its header by file name only, so when headers and sources are split, add the headers folder to the compiler's include path (e.g. `-I include`).
 
 ---
 
