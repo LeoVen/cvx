@@ -1,10 +1,27 @@
 #include "cvx_test.h"
+#include <stdbool.h>
 #include <stdio.h>
+
+static void dummy_test(struct cvxtest *t)
+{
+    CVXCHECK(t, 1 == true);
+}
+
+static struct cvxresult dummy(void)
+{
+    struct cvxtest t = { 0 };
+
+    printf("dummy\n");
+
+    CVXRUN(&t, dummy_test);
+
+    return CVXSUMMARY(&t);
+}
 
 int main(void)
 {
     struct cvxresult (*tests[])(void) = {
-        // TODO:
+        dummy,
     };
 
     size_t count = sizeof(tests) / sizeof(tests[0]);
