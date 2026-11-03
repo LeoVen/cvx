@@ -205,11 +205,11 @@ Every operation that can fail returns an `enum cvx_flags`, and results are writt
 int value;
 enum cvx_flags flag = ia_get(&arr, 99, &value);
 if (flag != CVX_FLAG_OK)
-    fprintf(stderr, "%s: %s\n", cvx_flags_str[flag], cvx_flags_description[flag]);
+    fprintf(stderr, "%s: %s\n", cvx_flags_str(flag), cvx_flags_description(flag));
 // RANGE: Index out of range
 ```
 
-`cvx_flags_str` and `cvx_flags_description` are indexed by flag value.
+`cvx_flags_str(flag)` and `cvx_flags_description(flag)` return the short name and description of a flag, or `"UNKNOWN"` for a value outside the enum.
 
 | Flag | Value | Meaning |
 |---|---|---|

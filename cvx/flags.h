@@ -17,38 +17,50 @@ enum cvx_flags
     CVX_FLAG_VTAB      = 10, //!< Required vtab function was not provided
 }; // clang-format on
 
-/** Short name for each cvx_flags value, indexed by its integer value. */
-// clang-format off
-static const char *cvx_flags_str[] = {
-    "OK",          // 0
-    "WRONG_TAG",   // 1
-    "ALLOC",       // 2
-    "EMPTY",       // 3
-    "FULL",        // 4
-    "RANGE",       // 5
-    "NOT_FOUND",   // 6
-    "INVALID",     // 7
-    "DUPLICATE",   // 8
-    "ERROR",       // 9
-    "VTAB",        // 10
-};
-// clang-format on
+/** Short name of a cvx_flags value, e.g. "RANGE". */
+static inline const char *cvx_flags_str(enum cvx_flags flag)
+{
+    // clang-format off
+    static const char *const names[] = {
+        "OK",          // 0
+        "WRONG_TAG",   // 1
+        "ALLOC",       // 2
+        "EMPTY",       // 3
+        "FULL",        // 4
+        "RANGE",       // 5
+        "NOT_FOUND",   // 6
+        "INVALID",     // 7
+        "DUPLICATE",   // 8
+        "ERROR",       // 9
+        "VTAB",        // 10
+    };
+    // clang-format on
+    if ((unsigned)flag >= sizeof(names) / sizeof(names[0]))
+        return "UNKNOWN";
+    return names[flag];
+}
 
-/** Human-readable description for each cvx_flags value. */
-// clang-format off
-static const char *cvx_flags_description[] = {
-    "No error",                                      // 0
-    "Tag did not match",                             // 1
-    "Allocation failed",                             // 2
-    "The container is empty when it should not be",  // 3
-    "Container is full",                             // 4
-    "Index out of range",                            // 5
-    "Key or value not found",                        // 6
-    "Invalid argument or operation",                 // 7
-    "Duplicate key or value",                        // 8
-    "Generic or unknown error",                      // 9
-    "Required VTAB function missing",                // 10
-};
-// clang-format on
+/** Human-readable description of a cvx_flags value. */
+static inline const char *cvx_flags_description(enum cvx_flags flag)
+{
+    // clang-format off
+    static const char *const descriptions[] = {
+        "No error",                                      // 0
+        "Tag did not match",                             // 1
+        "Allocation failed",                             // 2
+        "The container is empty when it should not be",  // 3
+        "Container is full",                             // 4
+        "Index out of range",                            // 5
+        "Key or value not found",                        // 6
+        "Invalid argument or operation",                 // 7
+        "Duplicate key or value",                        // 8
+        "Generic or unknown error",                      // 9
+        "Required VTAB function missing",                // 10
+    };
+    // clang-format on
+    if ((unsigned)flag >= sizeof(descriptions) / sizeof(descriptions[0]))
+        return "UNKNOWN";
+    return descriptions[flag];
+}
 
 #endif /* CVX_FLAGS_H */
