@@ -10,23 +10,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-14, windows-latest]
+        os: [ubuntu-latest, macos-14]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up MSYS2 (Windows only)
-        if: runner.os == 'Windows'
-        uses: msys2/setup-msys2@v2
+      - uses: actions/setup-python@v5
         with:
-          msystem: MINGW64
-          install: mingw-w64-x86_64-gcc
+          python-version: "3.10"
 
-      - name: Compile tests (Unix)
-        if: runner.os != 'Windows'
-        run: mkdir -p bin && gcc -g -Wall -Wextra -I . tests.c -o bin/tests
+      - name: Run generator tests
+        run: python3 -m unittest discover -s tests/generator -p "test_*.py" -v
 
-      - name: Run tests (Unix)
-        if: runner.os != 'Windows'
+      - name: Generate test containers
+        run: python3 cvx_generator.py --config tests/config.json --compiler gcc
+
+      - name: Compile tests
+        run: mkdir -p bin && gcc -g -Wall -Wextra -I . -I tests/includes tests/tests.c tests/src/*.c -o bin/tests
+
+      - name: Run tests
         run: ./bin/tests
 
       - name: Install valgrind (Linux only)
@@ -36,54 +37,6 @@ jobs:
       - name: Run tests with valgrind (Linux only)
         if: runner.os == 'Linux'
         run: valgrind --leak-check=full --error-exitcode=1 ./bin/tests
-
-      - name: Compile tests (Windows)
-        if: runner.os == 'Windows'
-        shell: msys2 {0}
-        run: mkdir -p bin && gcc -Wall -Wextra -I . tests.c -o bin/tests
-
-      - name: Run tests (Windows)
-        if: runner.os == 'Windows'
-        shell: msys2 {0}
-        run: ./bin/tests
-
-  examples:
-    name: Examples / ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-14, windows-latest]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up MSYS2 (Windows only)
-        if: runner.os == 'Windows'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          install: mingw-w64-x86_64-gcc
-
-      - name: Compile and run examples (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          mkdir -p bin
-          for f in examples/*.c; do
-            name=$(basename "$f" .c)
-            gcc -Wall -Wextra -I . "$f" -o "bin/$name"
-            "./bin/$name"
-          done
-
-      - name: Compile and run examples (Windows)
-        if: runner.os == 'Windows'
-        shell: msys2 {0}
-        run: |
-          mkdir -p bin
-          for f in examples/*.c; do
-            name=$(basename "$f" .c)
-            gcc -Wall -Wextra -I . "$f" -o "bin/$name"
-            "./bin/$name"
-          done
 
   docs:
     name: Docs
@@ -98,7 +51,7 @@ jobs:
         run: sudo apt-get install -y doxygen
 
       - name: Generate headers for docs
-        run: python3 cvx_generator.py --config cvx2/docs/config.json --compiler gcc
+        run: python3 cvx_generator.py --config docs/config.json --compiler gcc
 
       - name: Generate docs
         run: doxygen docs/Doxyfile
@@ -120,14 +73,17 @@ jobs:
       - name: Install gcovr
         run: pip install gcovr
 
+      - name: Generate test containers
+        run: python3 cvx_generator.py --config tests/config.json --compiler gcc
+
       - name: Compile with coverage instrumentation
-        run: mkdir -p bin && gcc -g -O0 --coverage -Wall -Wextra -I . tests.c -o bin/tests_cov
+        run: mkdir -p bin && gcc -g -O0 --coverage -Wall -Wextra -I . -I tests/includes tests/tests.c tests/src/*.c -o bin/tests_cov
 
       - name: Run tests
         run: ./bin/tests_cov
 
       - name: Generate coverage report
-        run: mkdir -p coverage && gcovr --root . --filter 'cvx/' --html-details coverage/index.html --print-summary
+        run: mkdir -p coverage && gcovr --root . --filter 'tests/src/' --html-details coverage/index.html --print-summary
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4

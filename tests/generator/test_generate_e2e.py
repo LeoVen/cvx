@@ -1,5 +1,5 @@
-"""End-to-end: run the real CLI against cvx/examples/config.json, then
-compile the generated output plus cvx/examples/smoke.c with gcc and run it.
+"""End-to-end: run the real CLI against e2e/config.json, then
+compile the generated output plus e2e/smoke.c with gcc and run it.
 Skips (rather than fails) if gcc isn't on PATH -- unit tests above already
 cover the generator's own logic without needing a C toolchain."""
 
@@ -9,15 +9,14 @@ import sys
 import unittest
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-CVX_DIR = REPO_ROOT / "cvx"
-EXAMPLES_DIR = CVX_DIR / "examples"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+E2E_DIR = Path(__file__).resolve().parent / "e2e"
 
 
 @unittest.skipUnless(shutil.which("gcc"), "gcc not found on PATH")
 class TestGenerateEndToEnd(unittest.TestCase):
     def test_generate_and_compile_and_run(self):
-        generated_dir = EXAMPLES_DIR / "generated"
+        generated_dir = E2E_DIR / "generated"
         if generated_dir.exists():
             shutil.rmtree(generated_dir)
 
@@ -26,7 +25,7 @@ class TestGenerateEndToEnd(unittest.TestCase):
                 sys.executable,
                 str(REPO_ROOT / "cvx_generator.py"),
                 "--config",
-                str(EXAMPLES_DIR / "config.json"),
+                str(E2E_DIR / "config.json"),
                 "--compiler",
                 "gcc",
             ],
@@ -37,7 +36,7 @@ class TestGenerateEndToEnd(unittest.TestCase):
 
         binary = Path("/tmp") / "cvx_e2e_smoke"
         sources = [
-            str(EXAMPLES_DIR / "smoke.c"),
+            str(E2E_DIR / "smoke.c"),
             str(generated_dir / "int_array.c"),
             str(generated_dir / "int_map_oa.c"),
             str(generated_dir / "int_map_sc.c"),
@@ -59,7 +58,7 @@ class TestGenerateEndToEnd(unittest.TestCase):
                 "-I",
                 str(REPO_ROOT),
                 "-I",
-                str(EXAMPLES_DIR),
+                str(E2E_DIR),
                 "-Wall",
                 "-Wextra",
                 "-Wpedantic",

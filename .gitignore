@@ -61,8 +61,10 @@ docs/output/
 .cache
 
 # cvx generator output + python caches
-cvx/examples/generated/
-cvx/docs/src/
-cvx/docs/includes/
+docs/includes/
+docs/src/
+tests/generator/e2e/generated/
+tests/includes/
+tests/src/
 __pycache__/
 *.pyc

@@ -9,7 +9,7 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 import cvx_generator as generator
 
 COMPILER = next((c for c in generator.COMPILER_FLAGS if shutil.which(c)), None)

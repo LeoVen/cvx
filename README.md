@@ -78,7 +78,7 @@ gcc -I path/to/cvx main.c generated/int_array.c -o main
 
 ### Configuration
 
-Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is in `cvx/generator/config.schema.json`.
+Each entry in `instantiations` generates one `.h`/`.c` pair. The full schema is in `config.schema.json`.
 
 | Field | Required | Description |
 |---|---|---|
@@ -241,6 +241,7 @@ Required tooling
 - watchexec
   - `brew install watchexec`
   - `cargo install watchexec`
+- doxygen
 - bear
   - `brew install bear`
 
@@ -252,16 +253,16 @@ The project uses [`just`](https://github.com/casey/just) as a command runner and
 # Run and watch a top-level .c file (e.g. main.c -> ./bin/main)
 just watch main
 
-# Run and watch an example (e.g. examples/hanoi.c -> ./bin/hanoi)
-just example hanoi
-
 # Auto-format all .c and .h files with clang-format
 just format
 
-# Generate cvx/examples/config.json
-just cvx-generate gcc
+# Generate the containers described by a config
+just cvx-generate gcc tests/config.json
 
-# Generate cvx/docs/config.json and build the Doxygen docs into docs/output
+# Write build/compile_commands.json so clangd understands the templates
+just setup
+
+# Generate docs/config.json and build the Doxygen docs into docs/output
 just docs
 ```
 
@@ -273,10 +274,13 @@ just docs
 just cvx-test
 ```
 
-This runs the generator's unit tests in `cvx/generator/tests/`. The end-to-end test generates `cvx/examples/config.json`, compiles the output together with `cvx/examples/smoke.c` and runs it, so it needs `gcc`, `clang` or `cc` on `PATH`.
+This runs the generator's unit tests in `tests/generator/`. The end-to-end test generates `tests/generator/e2e/config.json`, compiles the output together with `tests/generator/e2e/smoke.c` and runs it, so it needs `gcc`, `clang` or `cc` on `PATH`.
 
-The legacy `cvx/` library has its own tests in `tests/`, included from `tests.c`:
+The containers themselves are tested by `tests/tests.c`, against the code generated from `tests/config.json` into `tests/includes/` and `tests/src/`:
 
 ```sh
-gcc -Wall -Wextra -I . tests.c -o bin/tests && ./bin/tests
+just test
+
+# same tests, with an HTML coverage report of the generated code in coverage/index.html
+just coverage
 ```
