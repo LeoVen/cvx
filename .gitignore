@@ -68,3 +68,5 @@ tests/includes/
 tests/src/
 __pycache__/
 *.pyc
+
+cmake-build/

@@ -70,4 +70,26 @@ struct cvxresult
      (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), \
      (struct cvxresult){ .passed = (t)->passed, .failed = (t)->failed, .empty = (t)->empty })
 
+#define CVXMAIN(...) \
+    int main(void) \
+    { \
+        struct cvxresult (*tests[])(void) = { \
+            __VA_ARGS__, \
+        }; \
+        size_t count = sizeof(tests) / sizeof(tests[0]); \
+        int total_passed = 0; \
+        int total_failed = 0; \
+        int total_empty = 0; \
+        for (size_t i = 0; i < count; i++) \
+        { \
+            struct cvxresult r = tests[i](); \
+            total_passed += r.passed; \
+            total_failed += r.failed; \
+            total_empty += r.empty; \
+        } \
+        printf("Total: %d passed, %d empty, %d failed\n", total_passed, total_empty, \
+               total_failed); \
+        return total_failed != 0; \
+    }
+
 #endif /* CVX_TEST_H */

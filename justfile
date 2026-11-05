@@ -17,6 +17,8 @@ format:
 setup:
 	mkdir -p build
 	bear -o build/compile_commands.json -- sh -c 'for f in cvx/templates/*.c; do {{cc}} {{cflags}} -DCVX_ENABLE_FALLBACK -fsyntax-only "$f"; done'
+	python3 cvx_generator.py --config tests/config.json --compiler {{cc}} --output build/tests/generated
+	bear -a -o build/compile_commands.json -- sh -c 'for f in tests/tests.c tests/src/*.c; do {{cc}} {{cflags}} -I tests/include -I build/tests/generated/includes -fsyntax-only "$f"; done'
 
 valgrind-init:
 	docker build -t cvx-valgrind -f Dockerfile.valgrind .
