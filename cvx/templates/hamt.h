@@ -167,4 +167,17 @@ enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone);
  * - CVX_FLAG_ALLOC: if allocation for nodes or buffers fails
  **/
 enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val);
+/**
+ * @brief Gets the value for key.
+ *
+ * @param self a non-NULL pointer to an initialized hashtable
+ * @param key the key to look up
+ * @param out out parameter for the value associated with key
+ *
+ * @note If `out` is NULL, the value is not set and ignored.
+ *
+ * Error Handling
+ * - CVX_FLAG_VTAB: if vtabk, vtabk->hash, or vtabk->comp is not set
+ * - CVX_FLAG_NOT_FOUND: if key is absent
+ **/
 enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out);

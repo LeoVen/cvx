@@ -172,7 +172,9 @@ enum cvx_flags FUNC(_get)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL *out)
             {
                 if (self->vtabk->comp(&key, &entry_probe->key) == 0)
                 {
-                    *out = entry_probe->val;
+                    if (out)
+                        *out = entry_probe->val;
+
                     return CVX_FLAG_OK;
                 }
                 entry_probe = entry_probe->next;

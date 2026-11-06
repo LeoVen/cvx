@@ -48,31 +48,53 @@ struct cvxresult
         fn(t); \
         if ((t)->total_checks == 0) \
         { \
-            printf("  EMPTY %s\n", #fn); \
+            printf("    EMPTY %s\n", #fn); \
             (t)->empty++; \
         } \
         else if ((t)->checks_failed == 0) \
         { \
-            printf("  PASS  %s\n", #fn); \
+            printf("    PASS  %s\n", #fn); \
             (t)->passed++; \
         } \
         else \
         { \
-            printf("  FAIL  %s  (%d check(s) failed)\n", #fn, (t)->checks_failed); \
+            printf("    FAIL  %s  (%d check(s) failed)\n", #fn, (t)->checks_failed); \
             (t)->failed++; \
         } \
     } while (0)
 
 /* Print a summary line and return a cvxresult with passed and failed counts. */
 #define CVXSUMMARY(t) \
-    (printf("\n%d/%d passed", (t)->passed, (t)->total), \
+    (printf("  %d/%d passed", (t)->passed, (t)->total), \
      (t)->empty ? printf(", %d empty", (t)->empty) : 0, \
-     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n\n"), \
+     (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n"), \
      (struct cvxresult){ .passed = (t)->passed, .failed = (t)->failed, .empty = (t)->empty })
 
-#define CVXMAIN(...) \
+#define CVX_EVAL(...) CVX_EVAL4(CVX_EVAL4(CVX_EVAL4(CVX_EVAL4(__VA_ARGS__))))
+#define CVX_EVAL4(...) __VA_ARGS__
+#define CVX_PARENS ()
+
+#define CVX_FOR_EACH(t, ...) __VA_OPT__(CVX_EVAL(CVX_FOR_EACH_HELPER(t, __VA_ARGS__)))
+
+#define CVX_FOR_EACH_HELPER(t, current, ...) \
+    CVXRUN(&(t), current); \
+    __VA_OPT__(CVX_FOR_EACH_AGAIN CVX_PARENS(t, __VA_ARGS__))
+
+#define CVX_FOR_EACH_AGAIN() CVX_FOR_EACH_HELPER
+
+#define CVXSUITE(name, ...) \
+    struct cvxresult name(void) \
+    { \
+        struct cvxtest t = { 0 }; \
+        printf("  %s:\n", #name); \
+        CVX_FOR_EACH(t, __VA_ARGS__) \
+        return CVXSUMMARY(&t); \
+    }
+
+#define CVXMAIN(name, ...) \
     int main(void) \
     { \
+        printf("\nTests for %s\n", #name); \
         struct cvxresult (*tests[])(void) = { \
             __VA_ARGS__, \
         }; \

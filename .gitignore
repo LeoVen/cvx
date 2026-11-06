@@ -64,8 +64,6 @@ docs/output/
 docs/includes/
 docs/src/
 tests/generator/e2e/generated/
-tests/includes/
-tests/src/
 __pycache__/
 *.pyc
 

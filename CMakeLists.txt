@@ -4,5 +4,11 @@ enable_testing()
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
+option(CVX_SANITIZE "Build with ASan and UBSan" ON)
+if(CVX_SANITIZE)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 add_subdirectory(tests)
 
