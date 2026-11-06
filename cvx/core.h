@@ -49,6 +49,25 @@ static inline int cvx_popcount(uint64_t x)
 #endif
 }
 
+#ifndef CVX_NODISCARD
+#if defined(__has_c_attribute) && __has_c_attribute(nodiscard)
+// Standard C23 attribute syntax
+#define CVX_NODISCARD [[nodiscard]]
+#elif defined(__has_cpp_attribute) && __has_cpp_attribute(nodiscard)
+// Standard C++17 attribute syntax
+#define CVX_NODISCARD [[nodiscard]]
+#elif defined(__GNUC__) || defined(__clang__)
+// GCC / Clang legacy vendor extension
+#define CVX_NODISCARD __attribute__((warn_unused_result))
+#elif defined(_MSC_VER) && (_MSC_VER >= 1700)
+// MSVC legacy vendor extension (_Check_return_)
+#define CVX_NODISCARD _Check_return_
+#else
+// Fallback for compilers without nodiscard support
+#define CVX_NODISCARD
+#endif
+#endif
+
 enum cvx_hamt_node_t
 {
     CVX_HAMT_NODE_LEAF,

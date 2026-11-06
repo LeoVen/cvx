@@ -1,8 +1,10 @@
 #ifndef CVX_FLAGS_H
 #define CVX_FLAGS_H
 
+#include "core.h"
+
 /** @brief Status codes returned by cvx operations. */
-enum cvx_flags
+enum CVX_NODISCARD cvx_flags
 { // clang-format off
     CVX_FLAG_OK        =  0, //!< No errors
     CVX_FLAG_WRONG_TAG =  1, //!< Tags are checked so you don't pass the wrong struct to a function
