@@ -25,15 +25,13 @@ enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct 
     return CVX_FLAG_OK;
 }
 
-enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self)
+void FUNC(_drop)(struct CVX_SNAME *self)
 {
     if (!self)
-        return CVX_FLAG_OK;
+        return;
 
     FUNC(__drop_node)(self, &self->root);
     self->count = 0;
-
-    return CVX_FLAG_OK;
 }
 
 enum cvx_flags FUNC(_clone)(struct CVX_SNAME *orig, struct CVX_SNAME *clone)

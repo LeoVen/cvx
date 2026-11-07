@@ -141,7 +141,7 @@ enum cvx_flags FUNC(_init)(struct CVX_SNAME *self, struct VTAB_K *vtabk, struct 
  * Error Handling
  * - always returns CVX_FLAG_OK
  **/
-enum cvx_flags FUNC(_drop)(struct CVX_SNAME *self);
+void FUNC(_drop)(struct CVX_SNAME *self);
 /**
  * @brief Initializes clone as a deep copy of orig.
  *

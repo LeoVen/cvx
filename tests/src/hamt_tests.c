@@ -12,14 +12,14 @@ static struct HAMTVtabK int_vtabk = {
     .hash = hash_void_as_int_collide_5,
 };
 
-void hamt_test_init_validation(struct cvxtest *t)
+static void hamt_test_init_validation(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
     CVXCHECK(t, hamt_init(&hamt, &(struct HAMTVtabK){ 0 }, NULL) == CVX_FLAG_VTAB);
 }
 
-void hamt_test_init_state(struct cvxtest *t)
+static void hamt_test_init_state(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -32,12 +32,12 @@ void hamt_test_init_state(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_clone(struct cvxtest *t)
+static void hamt_test_clone(struct cvxtest *t)
 {
     CVXCHECK(t, 1 == true);
 }
 
-void hamt_test_insert_single(struct cvxtest *t)
+static void hamt_test_insert_single(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -52,7 +52,7 @@ void hamt_test_insert_single(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_insert_collide_single(struct cvxtest *t)
+static void hamt_test_insert_collide_single(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -66,7 +66,7 @@ void hamt_test_insert_collide_single(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_insert_duplicate(struct cvxtest *t)
+static void hamt_test_insert_duplicate(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -82,7 +82,7 @@ void hamt_test_insert_duplicate(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_get_empty(struct cvxtest *t)
+static void hamt_test_get_empty(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -93,7 +93,7 @@ void hamt_test_get_empty(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_get_single_leaf(struct cvxtest *t)
+static void hamt_test_get_single_leaf(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -115,7 +115,7 @@ void hamt_test_get_single_leaf(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_get_optional_out(struct cvxtest *t)
+static void hamt_test_get_optional_out(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -126,7 +126,7 @@ void hamt_test_get_optional_out(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-void hamt_test_get(struct cvxtest *t)
+static void hamt_test_get(struct cvxtest *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
