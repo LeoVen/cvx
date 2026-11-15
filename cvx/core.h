@@ -18,6 +18,16 @@
 #define CVX_VTAB_BOOL(name, T) bool (*name)(T const *)
 #define CVX_VTAB_COMBINE(name, T) T (*name)(T const *, T const *)
 
+#ifndef cvx_malloc
+#define cvx_malloc malloc
+#endif
+#ifndef cvx_realloc
+#define cvx_realloc realloc
+#endif
+#ifndef cvx_free
+#define cvx_free free
+#endif
+
 // TODO: move to integers so I can check this at preprocessor time
 #ifndef CVX_BUFFER_GROWTH_RATE
 #define CVX_BUFFER_GROWTH_RATE 1.5

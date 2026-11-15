@@ -1,11 +1,7 @@
-#ifndef CVX_COMMON_H
-#define CVX_COMMON_H
+#include "cvxt_funcs.h"
 
 #include <stddef.h>
 #include <stdint.h>
-
-#define cvxt_void(n) (void *)(intptr_t)(n)
-#define cvxt_int(n) (intptr_t)(n)
 
 int compare_void_as_int(void *const *a, void *const *b)
 {
@@ -23,6 +19,12 @@ size_t hash_void_as_int(void *const *item)
     return x;
 }
 
+size_t hash_void_as_int_collide_always(void *const *item)
+{
+    (void)item;
+    return 0xAAAAAA;
+}
+
 size_t hash_void_as_int_collide_5(void *const *item)
 {
     int x = (int)(intptr_t)(*item);
@@ -31,4 +33,7 @@ size_t hash_void_as_int_collide_5(void *const *item)
     return hash_void_as_int(item);
 }
 
-#endif /* CVX_COMMON_H */
+size_t hash_void_as_int_ret_number(void *const *item)
+{
+    return (size_t)(intptr_t)(*item);
+}

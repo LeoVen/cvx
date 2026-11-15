@@ -106,7 +106,10 @@
         "function": "snake_case",
         "struct": "PascalCase"
       },
-      "file_name": "hamt"
+      "file_name": "hamt",
+      "includes": [
+        "cvxt_alloc.h"
+      ]
     },
     {
       "template": "segment_tree",

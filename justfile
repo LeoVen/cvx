@@ -1,5 +1,5 @@
 cc := "gcc"
-cflags := "-I . -Wall -Wextra -Wpedantic -ggdb -fsanitize=address,undefined -Wno-c23-extensions"
+cflags := "-I . -Wall -Wextra -Wpedantic -ggdb -fsanitize=address,undefined -std=c23"
 cflags_valgrind := "-I . -Wall -Wextra -Wpedantic -ggdb"
 
 watch file:
@@ -30,11 +30,6 @@ valgrind +files:
 		"gcc {{cflags_valgrind}} {{files}} -o bin/valgrind_target && \
 		valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 bin/valgrind_target"
 
-# generate cvx container types from a config
-# compiler is mandatory, e.g.: just cvx-generate gcc tests/config.json
-cvx-generate compiler config:
-	python3 cvx_generator.py --config {{config}} --compiler {{compiler}}
-
 docs: generate-docs
 	doxygen docs/Doxyfile
 
@@ -42,23 +37,16 @@ generate-docs:
 	python3 cvx_generator.py --config docs/config.json --compiler gcc
 	clang-format --style=file:./.clang-format -i docs/includes/*.h docs/src/*.c
 
-# run the cvx generator's own unit + end-to-end tests
-cvx-test:
-	python3 -m unittest discover -s tests/generator -p "test_*.py" -v
-
-generate-tests:
-	python3 cvx_generator.py --config tests/config.json --compiler {{cc}}
-
 # run the container tests against the code generated from tests/config.json
-test: generate-tests
-	mkdir -p bin
-	{{cc}} {{cflags}} -I tests/includes tests/tests.c tests/src/*.c -o bin/tests
-	./bin/tests
+test:
+	cmake -S . -B cmake-build -DCVX_SANITIZE=ON -DCVX_COVERAGE=OFF
+	cmake --build cmake-build
+	ctest --test-dir cmake-build --output-on-failure
 
-# coverage of the generated containers exercised by tests/tests.c
-coverage: generate-tests
-	mkdir -p bin coverage
-	find bin -name "*.gcda" -delete
-	{{cc}} -g -O0 --coverage -Wall -Wextra -I . -I tests/includes tests/tests.c tests/src/*.c -o bin/tests_cov
-	./bin/tests_cov
-	gcovr --root . --filter 'tests/src/' --html-details coverage/index.html --print-summary
+coverage:
+	cmake -S . -B cmake-cov -DCVX_SANITIZE=OFF -DCVX_COVERAGE=ON
+	cmake --build cmake-cov
+	ctest --test-dir cmake-cov --output-on-failure
+	# TODO: this is MacOS only
+	gcovr --root . --gcov-executable "xcrun llvm-cov gcov" --filter cmake-cov/tests/generated/src/ --html-details cmake-cov/coverage.html
+

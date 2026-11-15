@@ -56,7 +56,6 @@ dkms.conf
 
 bin/
 build/
-coverage/
 docs/output/
 .cache
 
@@ -68,3 +67,5 @@ __pycache__/
 *.pyc
 
 cmake-build/
+cmake-cov/
+

@@ -100,7 +100,7 @@ enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val)
                 flag = FUNC(__make_subtree)(leaf1, leaf2, depth, slot);
                 if (flag != CVX_FLAG_OK)
                 {
-                    free(leaf2);
+                    cvx_free(leaf2);
                     return flag;
                 }
                 break;
@@ -124,11 +124,11 @@ enum cvx_flags FUNC(_insert)(struct CVX_SNAME *self, CVX_KEY key, CVX_VAL val)
                 if (flag != CVX_FLAG_OK)
                     return flag;
 
-                struct NODE **new_children =
-                    realloc(probe->as.internal.children, (old_count + 1) * sizeof(struct NODE *));
+                struct NODE **new_children = cvx_realloc(probe->as.internal.children,
+                                                         (old_count + 1) * sizeof(struct NODE *));
                 if (new_children == NULL)
                 {
-                    free(new_leaf);
+                    cvx_free(new_leaf);
                     return CVX_FLAG_ALLOC;
                 }
 
@@ -244,8 +244,8 @@ enum cvx_flags FUNC(__make_subtree)(struct NODE *leaf1, struct NODE *leaf2, size
         flag = FUNC(__make_subtree)(leaf1, leaf2, depth + 1, &subtree);
         if (flag != CVX_FLAG_OK)
         {
-            free(parent->as.internal.children);
-            free(parent);
+            cvx_free(parent->as.internal.children);
+            cvx_free(parent);
             return flag;
         }
 
@@ -259,7 +259,7 @@ enum cvx_flags FUNC(__make_subtree)(struct NODE *leaf1, struct NODE *leaf2, size
 
 enum cvx_flags FUNC(__make_node_internal)(size_t size, CVX_HAMT_BITMAP_T bitmap, struct NODE **out)
 {
-    struct NODE *result = malloc(sizeof(struct NODE));
+    struct NODE *result = cvx_malloc(sizeof(struct NODE));
     if (!result)
         return CVX_FLAG_ALLOC;
 
@@ -268,10 +268,10 @@ enum cvx_flags FUNC(__make_node_internal)(size_t size, CVX_HAMT_BITMAP_T bitmap,
 
     if (size > 0)
     {
-        struct NODE **children = malloc(sizeof(struct NODE *) * size);
+        struct NODE **children = cvx_malloc(sizeof(struct NODE *) * size);
         if (!children)
         {
-            free(result);
+            cvx_free(result);
             return CVX_FLAG_ALLOC;
         }
 
@@ -287,7 +287,7 @@ enum cvx_flags FUNC(__make_node_internal)(size_t size, CVX_HAMT_BITMAP_T bitmap,
 enum cvx_flags FUNC(__make_node_leaf)(CVX_KEY key, CVX_VAL val, CVX_HAMT_HASH_T hash,
                                       struct NODE **out)
 {
-    struct NODE *result = malloc(sizeof(struct NODE));
+    struct NODE *result = cvx_malloc(sizeof(struct NODE));
     if (!result)
         return CVX_FLAG_ALLOC;
 
@@ -304,7 +304,7 @@ enum cvx_flags FUNC(__make_node_leaf)(CVX_KEY key, CVX_VAL val, CVX_HAMT_HASH_T 
 enum cvx_flags FUNC(__make_entry)(CVX_KEY key, CVX_VAL val, CVX_HAMT_HASH_T hash,
                                   struct ENTRY **out)
 {
-    struct ENTRY *result = malloc(sizeof(struct ENTRY));
+    struct ENTRY *result = cvx_malloc(sizeof(struct ENTRY));
     if (!result)
         return CVX_FLAG_ALLOC;
 
@@ -350,8 +350,8 @@ void FUNC(__drop_node)(struct CVX_SNAME *self, struct NODE **root)
             FUNC(__drop_node)(self, &node->children[i]);
         }
 
-        free((*root)->as.internal.children);
-        free(*root);
+        cvx_free((*root)->as.internal.children);
+        cvx_free(*root);
         *root = NULL;
     }
 }
@@ -371,7 +371,7 @@ void FUNC(__drop_node_leaf)(struct CVX_SNAME *self, struct NODE **leaf)
     if (self->vtabv && self->vtabv->drop)
         self->vtabv->drop(&(*leaf)->as.leaf.val);
 
-    free(*leaf);
+    cvx_free(*leaf);
     *leaf = NULL;
 }
 
@@ -382,6 +382,6 @@ void FUNC(__drop_entry)(struct CVX_SNAME *self, struct ENTRY **entry)
         self->vtabk->drop(&(*entry)->key);
     if (self->vtabv && self->vtabv->drop)
         self->vtabv->drop(&(*entry)->val);
-    free(*entry);
+    cvx_free(*entry);
     *entry = NULL;
 }
