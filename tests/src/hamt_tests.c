@@ -7,6 +7,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// TODO:
+// leaks check using vtabs for k and v
+// -clone
+
 static struct HAMTVtabK int_vtabk = {
     .comp = compare_void_as_int,
     .copy = NULL,
@@ -19,6 +23,10 @@ static void hamt_test_init_validation(struct cvxtest *t)
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
     CVXCHECK(t, hamt_init(&hamt, &(struct HAMTVtabK){ 0 }, NULL) == CVX_FLAG_VTAB);
+    CVXCHECK(t, hamt_init(&hamt, &(struct HAMTVtabK){ .hash = hash_void_as_int }, NULL) ==
+                    CVX_FLAG_VTAB);
+    CVXCHECK(t, hamt_init(&hamt, &(struct HAMTVtabK){ .comp = compare_void_as_int }, NULL) ==
+                    CVX_FLAG_VTAB);
 }
 
 static void hamt_test_init_state(struct cvxtest *t)
@@ -34,9 +42,36 @@ static void hamt_test_init_state(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
+static void hamt_test_drop(struct cvxtest *t)
+{
+    struct HAMT *hamt = NULL;
+    hamt_drop(hamt);
+    CVXCHECK(t, true == true);
+}
+
 static void hamt_test_clone(struct cvxtest *t)
 {
     CVXCHECK(t, 1 == true);
+}
+
+static void hamt_test_insert_validation(struct cvxtest *t)
+{
+    struct HAMTVtabK vtabk = {
+        .comp = compare_void_as_int,
+        .hash = hash_void_as_int_collide_always,
+    };
+    struct HAMT hamt;
+    CVXCHECK(t, hamt_init(&hamt, &vtabk, NULL) == CVX_FLAG_OK);
+
+    vtabk.comp = NULL;
+    CVXCHECK(t, hamt_insert(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
+
+    vtabk.comp = compare_void_as_int;
+    vtabk.hash = NULL;
+    CVXCHECK(t, hamt_insert(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
+
+    hamt.vtabk = NULL;
+    CVXCHECK(t, hamt_insert(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
 }
 
 static void hamt_test_insert_single(struct cvxtest *t)
@@ -187,9 +222,15 @@ static void hamt_test_get_empty(struct cvxtest *t)
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
 
-    void *out;
+    void *out = cvxt_void(1);
     CVXCHECK(t, hamt_get(&hamt, cvxt_void(10), &out) == CVX_FLAG_EMPTY);
+    CVXCHECK(t, out == cvxt_void(1));
 
+    hamt.count = 1;
+    CVXCHECK(t, hamt_get(&hamt, cvxt_void(10), &out) == CVX_FLAG_EMPTY);
+    CVXCHECK(t, out == cvxt_void(1));
+
+    hamt.count = 0;
     hamt_drop(&hamt);
 }
 
@@ -274,10 +315,99 @@ static void hamt_test_get_optional_out(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_alloc_insert(struct cvxtest *t)
+static void prv_hamt_check_insert_alloc(struct cvxtest *t, struct HAMTVtabK *vtabk, int *values,
+                                        size_t values_len, int key, int allocs)
 {
-    struct HAMT hamt;
-    enum cvx_flags flag;
+    for (int i = 0; i <= allocs; i++)
+    {
+        struct HAMT hamt;
+        void *out;
+
+        CVXT_MALLOC_RESET();
+        CVXCHECK(t, hamt_init(&hamt, vtabk, NULL) == CVX_FLAG_OK);
+
+        for (size_t j = 0; j < values_len; j++)
+            CVXCHECK(t,
+                     hamt_insert(&hamt, cvxt_void(values[j]), cvxt_void(values[j])) == CVX_FLAG_OK);
+
+        size_t count = hamt.count;
+
+        CVXT_MALLOC_FAIL_AFTER(i);
+        enum cvx_flags flag = hamt_insert(&hamt, cvxt_void(key), cvxt_void(key));
+        CVXT_MALLOC_RESET();
+
+        if (i < allocs)
+        {
+            CVXCHECK(t, flag == CVX_FLAG_ALLOC);
+            CVXCHECK(t, hamt.count == count);
+            CVXCHECK(t, hamt_get(&hamt, cvxt_void(key), NULL) != CVX_FLAG_OK);
+        }
+        else
+        {
+            CVXCHECK(t, flag == CVX_FLAG_OK);
+            CVXCHECK(t, hamt.count == count + 1);
+            CVXCHECK(t, hamt_get(&hamt, cvxt_void(key), &out) == CVX_FLAG_OK);
+            CVXCHECK(t, cvxt_int(out) == key);
+        }
+
+        for (size_t j = 0; j < values_len; j++)
+        {
+            CVXCHECK(t, hamt_get(&hamt, cvxt_void(values[j]), &out) == CVX_FLAG_OK);
+            CVXCHECK(t, cvxt_int(out) == values[j]);
+        }
+
+        hamt_drop(&hamt);
+    }
+}
+
+static void hamt_test_alloc_insert_empty(struct cvxtest *t)
+{
+    // Leaf at the root
+    prv_hamt_check_insert_alloc(t, &int_vtabk, NULL, 0, 10, 1);
+}
+
+static void hamt_test_alloc_insert_chain(struct cvxtest *t)
+{
+    struct HAMTVtabK vtabk = {
+        .comp = compare_void_as_int,
+        .hash = hash_void_as_int_collide_always,
+    };
+    int values[] = { 10, 20 };
+
+    // Entry appended to the end of the chain
+    prv_hamt_check_insert_alloc(t, &vtabk, values, 2, 30, 1);
+}
+
+static void hamt_test_alloc_insert_split(struct cvxtest *t)
+{
+    struct HAMTVtabK vtabk = {
+        .comp = compare_void_as_int,
+        .hash = hash_void_as_int_ret_number,
+    };
+    int values[] = { 0b00001 };
+
+    // Leaf, then one internal node and its children
+    prv_hamt_check_insert_alloc(t, &vtabk, values, 1, 0b00010, 3);
+}
+
+static void hamt_test_alloc_insert_split_deep(struct cvxtest *t)
+{
+    struct HAMTVtabK vtabk = {
+        .comp = compare_void_as_int,
+        .hash = hash_void_as_int_ret_number,
+    };
+    int values[] = { 0b00001'00001'00001'00001 };
+
+    // Leaf, then four nested internal nodes and their children
+    prv_hamt_check_insert_alloc(t, &vtabk, values, 1, 0b00010'00001'00001'00001, 9);
+}
+
+static void hamt_test_alloc_insert_internal(struct cvxtest *t)
+{
+    struct HAMTVtabK vtabk = {
+        .comp = compare_void_as_int,
+        .hash = hash_void_as_int_ret_number,
+    };
 
     // clang-format off
     int values[] = {
@@ -296,60 +426,52 @@ static void hamt_test_alloc_insert(struct cvxtest *t)
     };
     // clang-format on
 
-    int key = 0b11110'01111'01001'01010'10110;
-
-    for (size_t i = 0; i < 100; i++)
-    {
-        CVXT_MALLOC_RESET();
-        CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
-
-        for (size_t j = 0; j < sizeof(values) / sizeof(values[0]); j++)
-            CVXCHECK(t,
-                     hamt_insert(&hamt, cvxt_void(values[j]), cvxt_void(values[j])) == CVX_FLAG_OK);
-
-        size_t count = hamt.count;
-
-        CVXT_MALLOC_FAIL_AFTER(i);
-        flag = hamt_insert(&hamt, cvxt_void(key), NULL);
-        if (flag != CVX_FLAG_OK)
-        {
-            CVXCHECK(t, flag == CVX_FLAG_ALLOC);
-            CVXCHECK(t, count == hamt.count);
-            CVXCHECK(t, hamt_get(&hamt, cvxt_void(key), NULL) == CVX_FLAG_NOT_FOUND);
-
-            for (size_t j = 0; j < sizeof(values) / sizeof(values[0]); j++)
-            {
-                void *out;
-                CVXCHECK(t, hamt_get(&hamt, cvxt_void(values[j]), &out) == CVX_FLAG_OK);
-                CVXCHECK(t, cvxt_int(out) == values[j]);
-            }
-
-            hamt_drop(&hamt);
-        }
-        else
-        {
-            CVXCHECK(t, i != 0);
-
-            void *out;
-            CVXCHECK(t, hamt_get(&hamt, cvxt_void(key), &out) == CVX_FLAG_OK);
-            CVXCHECK(t, cvxt_int(out) == 0);
-
-            hamt_drop(&hamt);
-            break;
-        }
-    }
-
-    CVXT_MALLOC_RESET();
+    // Leaf, then the realloc of the internal node children at depth 4
+    prv_hamt_check_insert_alloc(t, &vtabk, values, sizeof(values) / sizeof(values[0]),
+                                0b11110'01111'01001'01010'10110, 2);
 }
 
-CVXSUITE(cvx_hamt_tests_init, hamt_test_init_validation, hamt_test_init_state, )
-CVXSUITE(cvx_hamt_tests_clone, hamt_test_clone, )
-CVXSUITE(cvx_hamt_tests_insert, hamt_test_insert_single, hamt_test_insert_collide_single,
-         hamt_test_insert_duplicate, hamt_test_insert_root_split, hamt_test_insert_make_subtree, )
-CVXSUITE(cvx_hamt_tests_get, hamt_test_get_empty, hamt_test_get_single_leaf,
-         hamt_test_get_not_found_leaf, hamt_test_get_not_found_internal,
-         hamt_test_get_optional_out, )
-CVXSUITE(cvx_hamt_alloc, hamt_test_alloc_insert, )
+// clang-format off
+CVXSUITE(cvx_hamt_tests_init,
+    hamt_test_init_validation,
+    hamt_test_init_state,
+)
+CVXSUITE(cvx_hamt_tests_drop,
+    hamt_test_drop,
+)
+CVXSUITE(cvx_hamt_tests_clone,
+    hamt_test_clone,
+)
+CVXSUITE(cvx_hamt_tests_insert,
+    hamt_test_insert_validation,
+    hamt_test_insert_single,
+    hamt_test_insert_collide_single,
+    hamt_test_insert_duplicate,
+    hamt_test_insert_root_split,
+    hamt_test_insert_make_subtree,
+)
+CVXSUITE(cvx_hamt_tests_get,
+    hamt_test_get_empty,
+    hamt_test_get_not_found_leaf,
+    hamt_test_get_not_found_internal,
+    hamt_test_get_not_found_depth_max,
+    hamt_test_get_single_leaf,
+    hamt_test_get_optional_out,
+)
+CVXSUITE(cvx_hamt_alloc,
+    hamt_test_alloc_insert_empty,
+    hamt_test_alloc_insert_chain,
+    hamt_test_alloc_insert_split,
+    hamt_test_alloc_insert_split_deep,
+    hamt_test_alloc_insert_internal,
+)
 
-CVXMAIN(HAMT, cvx_hamt_tests_init, cvx_hamt_tests_clone, cvx_hamt_tests_insert, cvx_hamt_tests_get,
-        cvx_hamt_alloc)
+CVXMAIN(HAMT,
+    cvx_hamt_tests_init,
+    cvx_hamt_tests_drop,
+    cvx_hamt_tests_clone,
+    cvx_hamt_tests_insert,
+    cvx_hamt_tests_get,
+    cvx_hamt_alloc
+)
+// clang-format on

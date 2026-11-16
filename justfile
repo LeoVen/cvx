@@ -2,14 +2,6 @@ cc := "gcc"
 cflags := "-I . -Wall -Wextra -Wpedantic -ggdb -fsanitize=address,undefined -std=c23"
 cflags_valgrind := "-I . -Wall -Wextra -Wpedantic -ggdb"
 
-watch file:
-	mkdir -p ./bin
-	watchexec -f "*.c" -f "*.h" -d 500ms -r -c -- "{{cc}} {{cflags}} {{file}}.c -o ./bin/{{file}} && ./bin/{{file}}"
-
-run file:
-	mkdir -p ./bin
-	{{cc}} {{cflags}} -o ./bin/{{file}} {{file}}.c && ./bin/{{file}}
-
 format:
 	find cvx tests -type f \( -name "*.h" -o -name "*.c" \) -not -path "*/generated/*" | xargs clang-format --style=file:./.clang-format --verbose -i
 
@@ -24,11 +16,13 @@ valgrind-init:
 	docker build -t cvx-valgrind -f Dockerfile.valgrind .
 
 # build the given sources and run them under valgrind, e.g.: just valgrind main.c generated/int_array.c
-valgrind +files:
+valgrind test_binary: valgrind-init
 	mkdir -p ./bin
 	docker run --rm -v "$(pwd):/cvx" cvx-valgrind sh -c \
-		"gcc {{cflags_valgrind}} {{files}} -o bin/valgrind_target && \
-		valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 bin/valgrind_target"
+		"cmake -S . -B cmake-valgrind -DCVX_SANITIZE=OFF -DCVX_COVERAGE=OFF -DCMAKE_BUILD_TYPE=Debug && \
+		cmake --build cmake-valgrind && \
+		valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --error-exitcode=1 \
+		cmake-valgrind/tests/{{test_binary}}"
 
 docs: generate-docs
 	doxygen docs/Doxyfile

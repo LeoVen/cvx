@@ -68,4 +68,5 @@ __pycache__/
 
 cmake-build/
 cmake-cov/
+cmake-valgrind/
 
