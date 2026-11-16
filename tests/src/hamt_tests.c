@@ -18,7 +18,7 @@ static struct HAMTVtabK int_vtabk = {
     .hash = hash_void_as_int,
 };
 
-static void hamt_test_init_validation(struct cvxtest *t)
+static void hamt_test_init_validation(struct cvxt_test *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
@@ -29,7 +29,7 @@ static void hamt_test_init_validation(struct cvxtest *t)
                     CVX_FLAG_VTAB);
 }
 
-static void hamt_test_init_state(struct cvxtest *t)
+static void hamt_test_init_state(struct cvxt_test *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -42,19 +42,19 @@ static void hamt_test_init_state(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_drop(struct cvxtest *t)
+static void hamt_test_drop(struct cvxt_test *t)
 {
     struct HAMT *hamt = NULL;
     hamt_drop(hamt);
     CVXCHECK(t, true == true);
 }
 
-static void hamt_test_clone(struct cvxtest *t)
+static void hamt_test_clone(struct cvxt_test *t)
 {
     CVXCHECK(t, 1 == true);
 }
 
-static void hamt_test_insert_validation(struct cvxtest *t)
+static void hamt_test_insert_validation(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -74,7 +74,7 @@ static void hamt_test_insert_validation(struct cvxtest *t)
     CVXCHECK(t, hamt_insert(&hamt, NULL, NULL) == CVX_FLAG_VTAB);
 }
 
-static void hamt_test_insert_single(struct cvxtest *t)
+static void hamt_test_insert_single(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -93,7 +93,7 @@ static void hamt_test_insert_single(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_insert_collide_single(struct cvxtest *t)
+static void hamt_test_insert_collide_single(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -112,7 +112,7 @@ static void hamt_test_insert_collide_single(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_insert_duplicate(struct cvxtest *t)
+static void hamt_test_insert_duplicate(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -132,7 +132,7 @@ static void hamt_test_insert_duplicate(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_insert_root_split(struct cvxtest *t)
+static void hamt_test_insert_root_split(struct cvxt_test *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -146,7 +146,7 @@ static void hamt_test_insert_root_split(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_insert_make_subtree(struct cvxtest *t)
+static void hamt_test_insert_make_subtree(struct cvxt_test *t)
 {
     struct HAMTNode *node;
     struct HAMTVtabK vtabk = {
@@ -217,7 +217,7 @@ static void hamt_test_insert_make_subtree(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_get_empty(struct cvxtest *t)
+static void hamt_test_get_empty(struct cvxt_test *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -234,7 +234,7 @@ static void hamt_test_get_empty(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_get_not_found_leaf(struct cvxtest *t)
+static void hamt_test_get_not_found_leaf(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -257,7 +257,7 @@ static void hamt_test_get_not_found_leaf(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_get_not_found_internal(struct cvxtest *t)
+static void hamt_test_get_not_found_internal(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -277,12 +277,12 @@ static void hamt_test_get_not_found_internal(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_get_not_found_depth_max(struct cvxtest *t)
+static void hamt_test_get_not_found_depth_max(struct cvxt_test *t)
 {
     // TODO:
 }
 
-static void hamt_test_get_single_leaf(struct cvxtest *t)
+static void hamt_test_get_single_leaf(struct cvxt_test *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -304,7 +304,7 @@ static void hamt_test_get_single_leaf(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void hamt_test_get_optional_out(struct cvxtest *t)
+static void hamt_test_get_optional_out(struct cvxt_test *t)
 {
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &int_vtabk, NULL) == CVX_FLAG_OK);
@@ -315,7 +315,7 @@ static void hamt_test_get_optional_out(struct cvxtest *t)
     hamt_drop(&hamt);
 }
 
-static void prv_hamt_check_insert_alloc(struct cvxtest *t, struct HAMTVtabK *vtabk, int *values,
+static void prv_hamt_check_insert_alloc(struct cvxt_test *t, struct HAMTVtabK *vtabk, int *values,
                                         size_t values_len, int key, int allocs)
 {
     for (int i = 0; i <= allocs; i++)
@@ -360,13 +360,13 @@ static void prv_hamt_check_insert_alloc(struct cvxtest *t, struct HAMTVtabK *vta
     }
 }
 
-static void hamt_test_alloc_insert_empty(struct cvxtest *t)
+static void hamt_test_alloc_insert_empty(struct cvxt_test *t)
 {
     // Leaf at the root
     prv_hamt_check_insert_alloc(t, &int_vtabk, NULL, 0, 10, 1);
 }
 
-static void hamt_test_alloc_insert_chain(struct cvxtest *t)
+static void hamt_test_alloc_insert_chain(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -378,7 +378,7 @@ static void hamt_test_alloc_insert_chain(struct cvxtest *t)
     prv_hamt_check_insert_alloc(t, &vtabk, values, 2, 30, 1);
 }
 
-static void hamt_test_alloc_insert_split(struct cvxtest *t)
+static void hamt_test_alloc_insert_split(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -390,7 +390,7 @@ static void hamt_test_alloc_insert_split(struct cvxtest *t)
     prv_hamt_check_insert_alloc(t, &vtabk, values, 1, 0b00010, 3);
 }
 
-static void hamt_test_alloc_insert_split_deep(struct cvxtest *t)
+static void hamt_test_alloc_insert_split_deep(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -402,7 +402,7 @@ static void hamt_test_alloc_insert_split_deep(struct cvxtest *t)
     prv_hamt_check_insert_alloc(t, &vtabk, values, 1, 0b00010'00001'00001'00001, 9);
 }
 
-static void hamt_test_alloc_insert_internal(struct cvxtest *t)
+static void hamt_test_alloc_insert_internal(struct cvxt_test *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
@@ -431,7 +431,7 @@ static void hamt_test_alloc_insert_internal(struct cvxtest *t)
                                 0b11110'01111'01001'01010'10110, 2);
 }
 
-static void hamt_test_alloc_vtabs(struct cvxtest *t)
+static void hamt_test_alloc_vtabs(struct cvxt_test *t)
 {
     struct HAMT hamt;
     struct HAMTVtabK vtabk = {

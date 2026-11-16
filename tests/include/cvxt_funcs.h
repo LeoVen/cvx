@@ -1,6 +1,7 @@
 #ifndef CVXT_FUNCS_H
 #define CVXT_FUNCS_H
 
+#include "cvx/flags.h"
 #include <stddef.h>
 
 #define cvxt_void(n) (void *)(intptr_t)(n)

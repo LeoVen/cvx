@@ -5,7 +5,7 @@
 
 /* ---- state ---- */
 
-struct cvxtest
+struct cvxt_test
 {
     int total;
     int passed;
@@ -16,7 +16,7 @@ struct cvxtest
     const char *current;
 };
 
-struct cvxresult
+struct cvxt_result
 {
     int passed;
     int failed;
@@ -63,12 +63,12 @@ struct cvxresult
         } \
     } while (0)
 
-/* Print a summary line and return a cvxresult with passed and failed counts. */
+/* Print a summary line and return a cvxt_result with passed and failed counts. */
 #define CVXSUMMARY(t) \
     (printf("  %d/%d passed", (t)->passed, (t)->total), \
      (t)->empty ? printf(", %d empty", (t)->empty) : 0, \
      (t)->failed ? printf(", %d failed", (t)->failed) : 0, printf("\n"), \
-     (struct cvxresult){ .passed = (t)->passed, .failed = (t)->failed, .empty = (t)->empty })
+     (struct cvxt_result){ .passed = (t)->passed, .failed = (t)->failed, .empty = (t)->empty })
 
 #define CVX_EVAL(...) CVX_EVAL4(CVX_EVAL4(CVX_EVAL4(CVX_EVAL4(__VA_ARGS__))))
 #define CVX_EVAL4(...) __VA_ARGS__
@@ -83,9 +83,9 @@ struct cvxresult
 #define CVX_FOR_EACH_AGAIN() CVX_FOR_EACH_HELPER
 
 #define CVXSUITE(name, ...) \
-    struct cvxresult name(void) \
+    struct cvxt_result name(void) \
     { \
-        struct cvxtest t = { 0 }; \
+        struct cvxt_test t = { 0 }; \
         printf("  %s:\n", #name); \
         CVX_FOR_EACH(t, __VA_ARGS__) \
         return CVXSUMMARY(&t); \
@@ -95,7 +95,7 @@ struct cvxresult
     int main(void) \
     { \
         printf("\nTests for %s\n", #name); \
-        struct cvxresult (*tests[])(void) = { \
+        struct cvxt_result (*tests[])(void) = { \
             __VA_ARGS__, \
         }; \
         size_t count = sizeof(tests) / sizeof(tests[0]); \
@@ -104,7 +104,7 @@ struct cvxresult
         int total_empty = 0; \
         for (size_t i = 0; i < count; i++) \
         { \
-            struct cvxresult r = tests[i](); \
+            struct cvxt_result r = tests[i](); \
             total_passed += r.passed; \
             total_failed += r.failed; \
             total_empty += r.empty; \
