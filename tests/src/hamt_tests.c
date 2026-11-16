@@ -58,7 +58,7 @@ static void hamt_test_insert_validation(struct cvxtest *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
-        .hash = hash_void_as_int_collide_always,
+        .hash = hash_void_collide_always,
     };
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &vtabk, NULL) == CVX_FLAG_OK);
@@ -78,7 +78,7 @@ static void hamt_test_insert_single(struct cvxtest *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
-        .hash = hash_void_as_int_collide_always,
+        .hash = hash_void_collide_always,
     };
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &vtabk, NULL) == CVX_FLAG_OK);
@@ -97,7 +97,7 @@ static void hamt_test_insert_collide_single(struct cvxtest *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
-        .hash = hash_void_as_int_collide_always,
+        .hash = hash_void_collide_always,
     };
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &vtabk, NULL) == CVX_FLAG_OK);
@@ -116,7 +116,7 @@ static void hamt_test_insert_duplicate(struct cvxtest *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
-        .hash = hash_void_as_int_collide_always,
+        .hash = hash_void_collide_always,
     };
     struct HAMT hamt;
     CVXCHECK(t, hamt_init(&hamt, &vtabk, NULL) == CVX_FLAG_OK);
@@ -370,7 +370,7 @@ static void hamt_test_alloc_insert_chain(struct cvxtest *t)
 {
     struct HAMTVtabK vtabk = {
         .comp = compare_void_as_int,
-        .hash = hash_void_as_int_collide_always,
+        .hash = hash_void_collide_always,
     };
     int values[] = { 10, 20 };
 
@@ -431,6 +431,26 @@ static void hamt_test_alloc_insert_internal(struct cvxtest *t)
                                 0b11110'01111'01001'01010'10110, 2);
 }
 
+static void hamt_test_alloc_vtabs(struct cvxtest *t)
+{
+    struct HAMT hamt;
+    struct HAMTVtabK vtabk = {
+        .comp = compare_void_as_char_ptr,
+        .copy = copy_void_as_str,
+        .drop = drop_void_simple_free,
+        .hash = hash_void_as_char_ptr,
+    };
+    struct HAMTVtabV vtabv = {
+        .copy = copy_void_as_str,
+        .drop = drop_void_simple_free,
+    };
+
+    CVXCHECK(t, hamt_init(&hamt, &vtabk, &vtabv) == CVX_FLAG_OK);
+    CVXCHECK(t, hamt_insert(&hamt, strdup("Hello"), strdup("World")) == CVX_FLAG_OK);
+
+    hamt_drop(&hamt);
+}
+
 // clang-format off
 CVXSUITE(cvx_hamt_tests_init,
     hamt_test_init_validation,
@@ -464,6 +484,7 @@ CVXSUITE(cvx_hamt_alloc,
     hamt_test_alloc_insert_split,
     hamt_test_alloc_insert_split_deep,
     hamt_test_alloc_insert_internal,
+    hamt_test_alloc_vtabs,
 )
 
 CVXMAIN(HAMT,

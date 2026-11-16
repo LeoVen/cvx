@@ -54,6 +54,7 @@ add_library(cvxt STATIC
 )
 target_include_directories(cvxt PUBLIC
     include
+    ${PROJECT_SOURCE_DIR}
 )
 
 foreach(ds IN ITEMS hamt)
